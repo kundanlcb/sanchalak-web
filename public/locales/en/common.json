@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "Sanchalan",
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading..."
+  },
+  "academics": {
+    "title": "Academics",
+    "exams": {
+      "title": "Exam Configuration",
+      "subtitle": "Manage assessment periods and terms",
+      "newTerm": "New Exam Term",
+      "tabTerms": "Exam Terms",
+      "tabSubjects": "Subjects"
+    },
+    "subjects": {
+      "title": "Subjects",
+      "subtitle": "Manage curriculum subjects",
+      "add": "Add Subject"
+    },
+    "marks": {
+      "title": "Marks Entry",
+      "subtitle": "Enter marks for exam terms",
+      "maxMarks": "Max Marks"
+    },
+    "reports": {
+      "title": "Report Cards",
+      "subtitle": "Generate and print student report cards",
+      "generate": "Generate Reports",
+      "download": "Download PDF"
+    }
+  },
+  "homework": {
+    "title": "Homework & Diary",
+    "subtitle": "Assign tasks and share updates",
+    "assign": "Assign Homework",
+    "post": "Post Homework",
+    "dueDate": "Due Date"
+  }
+}

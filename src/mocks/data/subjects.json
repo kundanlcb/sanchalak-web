@@ -1,0 +1,47 @@
+[
+  {
+    "id": "SBJ-MATH-005",
+    "name": "Mathematics",
+    "code": "MATH05",
+    "classId": "CLS-2026-00003",
+    "maxMarks": 100,
+    "passingMarks": 35,
+    "grade": 5
+  },
+  {
+    "id": "SBJ-SCI-005",
+    "name": "Science",
+    "code": "SCI05",
+    "classId": "CLS-2026-00003",
+    "maxMarks": 100,
+    "passingMarks": 35,
+    "grade": 5
+  },
+  {
+    "id": "SBJ-ENG-005",
+    "name": "English",
+    "code": "ENG05",
+    "classId": "CLS-2026-00003",
+    "maxMarks": 100,
+    "passingMarks": 35,
+    "grade": 5
+  },
+  {
+    "id": "SBJ-HIN-005",
+    "name": "Hindi",
+    "code": "HIN05",
+    "classId": "CLS-2026-00003",
+    "maxMarks": 100,
+    "passingMarks": 35,
+    "grade": 5
+  },
+  {
+    "id": "SBJ-MATH-006",
+    "name": "Mathematics",
+    "code": "MATH06",
+    "classId": "CLS-2026-00004",
+    "maxMarks": 100,
+    "passingMarks": 35,
+    "grade": 6
+  }
+]

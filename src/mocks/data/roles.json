@@ -1,0 +1,71 @@
+[
+  {
+    "roleID": "role-001",
+    "roleName": "Admin",
+    "description": "Full system access with all permissions",
+    "permissions": [
+      { "feature": "Auth", "actions": ["Read", "Update"] },
+      { "feature": "Students", "actions": ["Create", "Read", "Update", "Delete"] },
+      { "feature": "Attendance", "actions": ["Create", "Read", "Update", "Delete"] },
+      { "feature": "Notices", "actions": ["Create", "Read", "Update", "Delete"] },
+      { "feature": "Reports", "actions": ["Read", "Execute"] },
+      { "feature": "Documents", "actions": ["Create", "Read", "Update", "Delete"] },
+      { "feature": "Classes", "actions": ["Create", "Read", "Update", "Delete"] },
+      { "feature": "Users", "actions": ["Create", "Read", "Update", "Delete"] }
+    ],
+    "createdDate": "2026-01-01T00:00:00Z"
+  },
+  {
+    "roleID": "role-002",
+    "roleName": "Teacher",
+    "description": "Can manage attendance, view students, create notices",
+    "permissions": [
+      { "feature": "Auth", "actions": ["Read"] },
+      { "feature": "Students", "actions": ["Read"] },
+      { "feature": "Attendance", "actions": ["Create", "Read", "Update"] },
+      { "feature": "Notices", "actions": ["Create", "Read"] },
+      { "feature": "Reports", "actions": ["Read"] },
+      { "feature": "Classes", "actions": ["Read"] }
+    ],
+    "createdDate": "2026-01-01T00:00:00Z"
+  },
+  {
+    "roleID": "role-003",
+    "roleName": "Staff",
+    "description": "Can manage student records, documents, create notices",
+    "permissions": [
+      { "feature": "Auth", "actions": ["Read"] },
+      { "feature": "Students", "actions": ["Create", "Read", "Update"] },
+      { "feature": "Attendance", "actions": ["Read"] },
+      { "feature": "Notices", "actions": ["Create", "Read"] },
+      { "feature": "Documents", "actions": ["Create", "Read", "Update"] },
+      { "feature": "Classes", "actions": ["Read"] }
+    ],
+    "createdDate": "2026-01-01T00:00:00Z"
+  },
+  {
+    "roleID": "role-004",
+    "roleName": "Parent",
+    "description": "Can view own child's information, attendance, notices, reports",
+    "permissions": [
+      { "feature": "Auth", "actions": ["Read"] },
+      { "feature": "Students", "actions": ["Read"] },
+      { "feature": "Attendance", "actions": ["Read"] },
+      { "feature": "Notices", "actions": ["Read"] },
+      { "feature": "Reports", "actions": ["Read"] }
+    ],
+    "createdDate": "2026-01-01T00:00:00Z"
+  },
+  {
+    "roleID": "role-005",
+    "roleName": "Student",
+    "description": "Can view own attendance, notices, reports",
+    "permissions": [
+      { "feature": "Auth", "actions": ["Read"] },
+      { "feature": "Attendance", "actions": ["Read"] },
+      { "feature": "Notices", "actions": ["Read"] },
+      { "feature": "Reports", "actions": ["Read"] }
+    ],
+    "createdDate": "2026-01-01T00:00:00Z"
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "RTN-001",
+    "classId": "CLS-2026-00001",
+    "day": "Monday",
+    "period": "Period 1",
+    "subjectId": "SBJ-MATH-005",
+    "teacherId": "TCH-001"
+  },
+  {
+    "id": "RTN-002",
+    "classId": "CLS-2026-00001",
+    "day": "Monday",
+    "period": "Period 2",
+    "subjectId": "SBJ-SCI-005",
+    "teacherId": "TCH-003"
+  },
+  {
+    "id": "RTN-003",
+    "classId": "CLS-2026-00001",
+    "day": "Monday",
+    "period": "Period 3",
+    "subjectId": "SBJ-ENG-005",
+    "teacherId": "TCH-002"
+  },
+  {
+    "id": "RTN-004",
+    "classId": "CLS-2026-00001",
+    "day": "Tuesday",
+    "period": "Period 1",
+    "subjectId": "SBJ-ENG-005",
+    "teacherId": "TCH-002"
+  }
+]

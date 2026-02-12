@@ -1,0 +1,8 @@
+{
+  "structures": [
+    { "id": "PAY-STR-001", "staffId": "EMP-001", "academicYear": "2025-2026", "baseSalary": 40000, "allowances": { "hra": 10000, "da": 5000, "ta": 2000 }, "deductions": { "pf": 4800, "tds": 2500 }, "paymentFrequency": "Monthly" }
+  ],
+  "records": [
+    { "id": "PAY-FEB-2026-EMP-001", "staffId": "EMP-001", "staffName": "Mr. Amit Singh", "month": "February 2026", "workingDays": 22, "presentDays": 20, "lossOfPayDays": 2, "basicPay": 36364, "totalAllowances": 17000, "totalDeductions": 7300, "netPayable": 46064, "status": "Approved", "paymentDate": "2026-02-28" }
+  ]
+}

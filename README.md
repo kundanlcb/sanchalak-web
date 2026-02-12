@@ -1,73 +1,98 @@
-# React + TypeScript + Vite
+# Sanchalak (सञ्चालक) - School Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sanchalak is a modern, centralized School Management System (SMS) designed to bridge the gap between school administration, teaching staff, and parents/students.
 
-Currently, two official plugins are available:
+## 🚀 Vision
+"The Digital Conductor of School Ecosystems"
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠️ Tech Stack
+- **Frontend**: React 19, TypeScript 5.9
+- **Build Tool**: Vite 7
+- **Styling**: Tailwind CSS 4
+- **State Management**: React Context (Auth, Theme, Toast)
+- **Routing**: React Router DOM 6
+- **Forms**: React Hook Form + Zod
+- **Icons**: Lucide React
 
-## React Compiler
+## ✨ Key Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Authentication & RBAC
+- Role-Based Access Control (Admin, Teacher, Staff, Student, Parent)
+- Dual login support (Email/Password + OTP)
+- Secure route protection
 
-## Expanding the ESLint configuration
+### 2. Student Information System (SIS)
+- Comprehensive student profiles
+- Document management (upload/verify)
+- Advanced search and filtering
+- Digital admission records
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 3. Digital Attendance
+- Class-wise attendance marking
+- Optimistic UI for instant feedback
+- Parent notifications (simulated)
+- Attendance history and stats
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 4. Notice Board
+- Priority-based notices (Urgent, High, Medium, Low)
+- Targeted audience (All, Students, Teachers, etc.)
+- Rich text content support
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📂 Project Structure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── components/         # Shared UI components
+│   ├── common/         # Generic components (Button, Modal, Toast, Skeleton)
+│   └── layout/         # Layout components (Header, Sidebar)
+├── features/           # Feature-based modules
+│   ├── auth/           # Authentication logic & views
+│   ├── students/       # Student management
+│   ├── attendance/     # Attendance system
+│   └── notices/        # Notice board
+├── hooks/              # Custom React hooks
+├── mocks/              # MSW-style mock data & handlers
+├── services/           # API clients & service layers
+├── utils/              # Helper functions & constants
+└── App.tsx             # Main application entry
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🚦 Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
+- Node.js 18+
+- npm or yarn
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server (Mocks enabled by default)
+npm run dev
 ```
+
+### Build for Production
+
+```bash
+# Type-check and build
+npm run build
+```
+
+## ⚙️ Configuration
+
+The application uses `.env` files for configuration.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_USE_MOCK_API` | Use local mock data service | `true` |
+| `VITE_API_BASE_URL` | Backend API URL | `http://localhost:8080/api` |
+
+## 🧪 Testing
+
+This project emphasizes manual testing and "Independent Checks" defined in the specifications.
+Run the app and use the provided mock data to verify scenarios.
+
+## 📝 License
+Proprietary - Sanchalak Team

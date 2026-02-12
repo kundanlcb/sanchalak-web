@@ -1,0 +1,159 @@
+[
+  {
+    "attendanceID": "ATT-2026-00001",
+    "studentID": "STU-2026-00001",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-11",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-11T09:15:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00002",
+    "studentID": "STU-2026-00002",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-11",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-11T09:15:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00003",
+    "studentID": "STU-2026-00003",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-11",
+    "status": "Absent",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-11T09:15:00Z",
+    "remarks": "Sick leave",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00004",
+    "studentID": "STU-2026-00001",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-10",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-10T09:10:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00005",
+    "studentID": "STU-2026-00002",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-10",
+    "status": "Late",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-10T09:10:00Z",
+    "remarks": "Arrived at 9:30 AM",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00006",
+    "studentID": "STU-2026-00003",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-10",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-10T09:10:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00007",
+    "studentID": "STU-2026-00008",
+    "classID": "CLS-2026-00006",
+    "date": "2026-02-11",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-11T09:20:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00008",
+    "studentID": "STU-2026-00009",
+    "classID": "CLS-2026-00006",
+    "date": "2026-02-11",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-11T09:20:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00009",
+    "studentID": "STU-2026-00001",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-07",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-07T09:05:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00010",
+    "studentID": "STU-2026-00002",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-07",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-07T09:05:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00011",
+    "studentID": "STU-2026-00003",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-07",
+    "status": "Excused",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-07T09:05:00Z",
+    "remarks": "Doctor appointment",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00012",
+    "studentID": "STU-2026-00001",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-06",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-06T09:12:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00013",
+    "studentID": "STU-2026-00002",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-06",
+    "status": "Present",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-06T09:12:00Z",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00014",
+    "studentID": "STU-2026-00003",
+    "classID": "CLS-2026-00003",
+    "date": "2026-02-06",
+    "status": "Absent",
+    "markedBy": "user-002",
+    "markedDate": "2026-02-06T09:12:00Z",
+    "remarks": "Family emergency",
+    "isModified": false
+  },
+  {
+    "attendanceID": "ATT-2026-00015",
+    "studentID": "STU-2026-00001",
+    "classID": "CLS-2026-00003",
+    "date": "2026-01-30",
+    "status": "Absent",
+    "markedBy": "user-002",
+    "markedDate": "2026-01-30T09:08:00Z",
+    "remarks": "Fever",
+    "isModified": true,
+    "modifiedBy": "user-001",
+    "modifiedDate": "2026-02-01T10:30:00Z"
+  }
+]

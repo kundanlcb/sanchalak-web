@@ -1,0 +1,32 @@
+[
+  {
+    "id": "TCH-001",
+    "name": "Rajesh Kumar",
+    "email": "rajesh.kumar@school.edu",
+    "phone": "+919876543211",
+    "joiningDate": "2020-06-15",
+    "specializedSubjects": ["SBJ-MATH-005", "SBJ-SCI-005"],
+    "qualification": "M.Sc. Mathematics",
+    "isActive": true
+  },
+  {
+    "id": "TCH-002",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@school.edu",
+    "phone": "+919876543212",
+    "joiningDate": "2019-04-01",
+    "specializedSubjects": ["SBJ-ENG-005"],
+    "qualification": "M.A. English",
+    "isActive": true
+  },
+  {
+    "id": "TCH-003",
+    "name": "Amit Patel",
+    "email": "amit.patel@school.edu",
+    "phone": "+919876543213",
+    "joiningDate": "2021-08-20",
+    "specializedSubjects": ["SBJ-SCI-005"],
+    "qualification": "B.Ed. Science",
+    "isActive": true
+  }
+]

@@ -1,0 +1,63 @@
+[
+  {
+    "userID": "user-001",
+    "name": "Admin User",
+    "email": "admin@sanchalan.com",
+    "mobileNumber": "+919876543210",
+    "role": "Admin",
+    "passwordHash": "$2a$10$dummyHashForAdminPassword",
+    "profilePhoto": null,
+    "themePreference": "system",
+    "isActive": true,
+    "createdDate": "2026-01-01T00:00:00Z",
+    "lastLoginDate": "2026-02-10T08:30:00Z"
+  },
+  {
+    "userID": "user-002",
+    "name": "Rajesh Kumar",
+    "email": "rajesh.kumar@school.edu",
+    "mobileNumber": "+919876543211",
+    "role": "Teacher",
+    "profilePhoto": null,
+    "themePreference": "light",
+    "isActive": true,
+    "createdDate": "2026-01-15T00:00:00Z",
+    "lastLoginDate": "2026-02-11T07:45:00Z"
+  },
+  {
+    "userID": "user-003",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@school.edu",
+    "mobileNumber": "+919876543212",
+    "role": "Staff",
+    "profilePhoto": null,
+    "themePreference": "dark",
+    "isActive": true,
+    "createdDate": "2026-01-20T00:00:00Z",
+    "lastLoginDate": "2026-02-10T09:15:00Z"
+  },
+  {
+    "userID": "user-004",
+    "name": "Amit Patel",
+    "email": "amit.patel@parent.com",
+    "mobileNumber": "+919876543213",
+    "role": "Parent",
+    "profilePhoto": null,
+    "themePreference": "system",
+    "isActive": true,
+    "createdDate": "2026-02-01T00:00:00Z",
+    "lastLoginDate": "2026-02-09T18:00:00Z"
+  },
+  {
+    "userID": "user-005",
+    "name": "Rohit Patel",
+    "email": "rohit.patel@student.com",
+    "mobileNumber": "+919876543214",
+    "role": "Student",
+    "profilePhoto": null,
+    "themePreference": "dark",
+    "isActive": true,
+    "createdDate": "2026-02-01T00:00:00Z",
+    "lastLoginDate": null
+  }
+]

@@ -1,0 +1,5 @@
+[
+  { "id": "FS-2026-G5-001", "academicYear": "2025-2026", "classId": "CLS-2026-005", "categoryId": "F-CAT-001", "amount": 5000, "dueDateDay": 10, "lateFeeRule": { "gracePeriodDays": 5, "penaltyType": "Fixed", "penaltyAmount": 500 } },
+  { "id": "FS-2026-G5-002", "academicYear": "2025-2026", "classId": "CLS-2026-005", "categoryId": "F-CAT-002", "amount": 1500, "dueDateDay": 10 },
+  { "id": "FS-2026-G5-003", "academicYear": "2025-2026", "classId": "CLS-2026-005", "categoryId": "F-CAT-003", "amount": 2000, "dueDateDay": 15 }
+]

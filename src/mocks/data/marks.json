@@ -1,0 +1,72 @@
+[
+  {
+    "id": "MRK-001",
+    "studentId": "STU-2026-00001",
+    "examTermId": "term_001",
+    "subjectId": "SBJ-MATH-005",
+    "marksObtained": 85.5,
+    "maxMarks": 100,
+    "remarks": "Excellent problem solving",
+    "lastUpdated": "2025-09-26T10:00:00Z"
+  },
+  {
+    "id": "MRK-002",
+    "studentId": "STU-2026-00001",
+    "examTermId": "term_001",
+    "subjectId": "SBJ-SCI-005",
+    "marksObtained": 78.0,
+    "maxMarks": 100,
+    "remarks": "Good understanding of concepts",
+    "lastUpdated": "2025-09-26T10:05:00Z"
+  },
+  {
+    "id": "MRK-003",
+    "studentId": "STU-2026-00001",
+    "examTermId": "term_001",
+    "subjectId": "SBJ-ENG-005",
+    "marksObtained": 82.0,
+    "maxMarks": 100,
+    "remarks": "Great vocubulary",
+    "lastUpdated": "2025-09-26T10:10:00Z"
+  },
+  {
+    "id": "MRK-004",
+    "studentId": "STU-2026-00002",
+    "examTermId": "term_001",
+    "subjectId": "SBJ-MATH-005",
+    "marksObtained": 92.0,
+    "maxMarks": 100,
+    "remarks": "Outstanding",
+    "lastUpdated": "2025-09-26T10:00:00Z"
+  },
+  {
+    "id": "MRK-005",
+    "studentId": "STU-2026-00002",
+    "examTermId": "term_001",
+    "subjectId": "SBJ-SCI-005",
+    "marksObtained": 88.5,
+    "maxMarks": 100,
+    "remarks": "Very good",
+    "lastUpdated": "2025-09-26T10:05:00Z"
+  },
+  {
+    "id": "MRK-006",
+    "studentId": "STU-2026-00003",
+    "examTermId": "term_001",
+    "subjectId": "SBJ-MATH-005",
+    "marksObtained": 65.0,
+    "maxMarks": 100,
+    "remarks": "Can do better",
+    "lastUpdated": "2025-09-26T10:00:00Z"
+  },
+  {
+      "id": "MRK-007",
+      "studentId": "STU-2026-00001",
+      "examTermId": "term_002",
+      "subjectId": "SBJ-MATH-005",
+      "marksObtained": 95.0,
+      "maxMarks": 100,
+      "remarks": "Improved significantly",
+      "lastUpdated": "2026-03-15T10:00:00Z"
+  }
+]

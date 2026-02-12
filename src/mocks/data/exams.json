@@ -1,0 +1,20 @@
+[
+  {
+    "id": "term_001",
+    "name": "Mid-Term Exam 2025",
+    "academicYear": "2025-2026",
+    "startDate": "2025-09-15",
+    "endDate": "2025-09-25",
+    "isActive": false,
+    "classes": ["CLS-2026-00003", "CLS-2026-00004"]
+  },
+  {
+    "id": "term_002",
+    "name": "Final Exam 2026",
+    "academicYear": "2025-2026",
+    "startDate": "2026-03-10",
+    "endDate": "2026-03-20",
+    "isActive": true,
+    "classes": ["CLS-2026-00003", "CLS-2026-00004"]
+  }
+]

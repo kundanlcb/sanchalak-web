@@ -1,0 +1,5 @@
+[
+  { "id": "F-CAT-001", "name": "Tuition Fee", "description": "Standard monthly tuition", "type": "Tuition", "frequency": "Monthly", "isMandatory": true, "active": true },
+  { "id": "F-CAT-002", "name": "Transport Fee", "description": "Optional bus service", "type": "Transport", "frequency": "Monthly", "isMandatory": false, "active": true },
+  { "id": "F-CAT-003", "name": "Annual Exam Fee", "description": "Examination charges", "type": "Exam", "frequency": "Annual", "isMandatory": true, "active": true }
+]

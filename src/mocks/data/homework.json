@@ -1,0 +1,43 @@
+[
+  {
+    "id": "hw_001",
+    "classId": "CLS-2026-00003", 
+    "subjectId": "sub-math",
+    "title": "Algebra Worksheet 1",
+    "description": "Complete items 1-15 on page 42.",
+    "dueDate": "2026-02-15",
+    "attachments": [
+      {
+        "id": "att_001",
+        "name": "worksheet.pdf",
+        "url": "https://example.com/mock-pdf.pdf",
+        "type": "pdf",
+        "size": 102400
+      }
+    ],
+    "createdAt": "2026-02-10T09:00:00Z",
+    "createdBy": "usr_teacher_01"
+  },
+  {
+    "id": "hw_002",
+    "classId": "CLS-2026-00003",
+    "subjectId": "sub-eng",
+    "title": "Essay: My Summer Vacation",
+    "description": "Write a 300-word essay about your recent holiday.",
+    "dueDate": "2026-02-18",
+    "attachments": [],
+    "createdAt": "2026-02-11T10:00:00Z",
+    "createdBy": "usr_teacher_01"
+  },
+  {
+    "id": "hw_003",
+    "classId": "CLS-2026-00011",
+    "subjectId": "sub-sci",
+    "title": "Plant Life Cycle Diagram",
+    "description": "Draw and label the life cycle of a flowering plant.",
+    "dueDate": "2026-02-20",
+    "attachments": [],
+    "createdAt": "2026-02-12T08:30:00Z",
+    "createdBy": "usr_teacher_01"
+  }
+]
