@@ -1,46 +1,61 @@
 /**
  * Student Types
- * Type definitions for student profiles, creation, updates, and queries
+ * Domain types that derive from generated API models where shapes overlap.
+ * Components should ALWAYS import from here — never from src/api/ directly.
  */
 
+// ============================================================================
+// Re-exported API Types (for service layer use)
+// ============================================================================
+
+/** Generated DTOs — use these in services that call the API directly */
+export type { Student as ApiStudentDto } from '../../../api/models/student';
+export type { StudentRequest as ApiStudentRequest } from '../../../api/models/student-request';
+export type { StudentResponse as ApiStudentResponse } from '../../../api/models/student-response';
+export type { StudentProfileDto } from '../../../api/models/student-profile-dto';
+
+// ============================================================================
+// Domain Types (used by components and stores)
+// ============================================================================
+
 export interface Student {
-  studentID: string; // Format: STU-2026-NNNNN
+  studentID: string;
   name: string;
-  dateOfBirth: string; // ISO date
+  dateOfBirth: string;
   gender: Gender;
   bloodGroup?: BloodGroup;
-  admissionDate: string; // ISO date
+  admissionDate: string;
   admissionNumber: string;
-  classID: string; // References Class.classID
+  classID: string;
   rollNumber: number;
-  section: string; // A, B, C, etc.
-  academicYear: string; // 2025-2026
-  
+  section: string;
+  academicYear: string;
+
   // Contact Information
   mobileNumber: string;
   email?: string;
   address: Address;
-  
+
   // Parent/Guardian Information
   primaryParent: ParentInfo;
   secondaryParent?: ParentInfo;
-  
+
   // Academic Information
   previousSchool?: string;
-  tcNumber?: string; // Transfer Certificate number
-  
+  tcNumber?: string;
+
   // Profile
-  profilePhoto?: string; // URL or base64
+  profilePhoto?: string;
   medicalConditions?: string[];
   allergies?: string[];
-  
+
   // Status
   isActive: boolean;
   status: StudentStatus;
-  
+
   // Metadata
-  createdBy: string; // UserID
-  createdDate: string; // ISO timestamp
+  createdBy: string;
+  createdDate: string;
   updatedBy?: string;
   updatedDate?: string;
 }
@@ -60,7 +75,7 @@ export interface Address {
 }
 
 export interface ParentInfo {
-  parentID?: string; // References Parent.parentID if parent has app access
+  parentID?: string;
   name: string;
   relationship: Relationship;
   mobileNumber: string;
@@ -72,7 +87,10 @@ export interface ParentInfo {
 
 export type Relationship = 'Father' | 'Mother' | 'Guardian' | 'Other';
 
-// Create Student Request
+// ============================================================================
+// Request/Response Types (domain layer)
+// ============================================================================
+
 export interface CreateStudentRequest {
   name: string;
   dateOfBirth: string;
@@ -83,14 +101,14 @@ export interface CreateStudentRequest {
   rollNumber: number;
   section: string;
   academicYear: string;
-  
+
   mobileNumber: string;
   email?: string;
   address: Address;
-  
+
   primaryParent: ParentInfo;
   secondaryParent?: ParentInfo;
-  
+
   previousSchool?: string;
   tcNumber?: string;
   profilePhoto?: string;
@@ -105,7 +123,6 @@ export interface CreateStudentResponse {
   message: string;
 }
 
-// Update Student Request
 export interface UpdateStudentRequest {
   studentID: string;
   name?: string;
@@ -115,14 +132,14 @@ export interface UpdateStudentRequest {
   classID?: string;
   rollNumber?: number;
   section?: string;
-  
+
   mobileNumber?: string;
   email?: string;
   address?: Partial<Address>;
-  
+
   primaryParent?: Partial<ParentInfo>;
   secondaryParent?: Partial<ParentInfo>;
-  
+
   profilePhoto?: string;
   medicalConditions?: string[];
   allergies?: string[];
@@ -136,11 +153,10 @@ export interface UpdateStudentResponse {
   message: string;
 }
 
-// Student List Query
 export interface StudentListQuery {
   page?: number;
-  limit?: number; // Default 50
-  search?: string; // Search by name, studentID, admissionNumber
+  limit?: number;
+  search?: string;
   classID?: string;
   section?: string;
   academicYear?: string;
@@ -159,7 +175,6 @@ export interface StudentListResponse {
   totalPages: number;
 }
 
-// Get Single Student
 export interface GetStudentRequest {
   studentID: string;
 }
@@ -169,7 +184,6 @@ export interface GetStudentResponse {
   student: Student;
 }
 
-// Delete Student
 export interface DeleteStudentRequest {
   studentID: string;
   reason?: string;
@@ -180,7 +194,6 @@ export interface DeleteStudentResponse {
   message: string;
 }
 
-// Bulk Import
 export interface BulkImportStudentRequest {
   students: CreateStudentRequest[];
 }

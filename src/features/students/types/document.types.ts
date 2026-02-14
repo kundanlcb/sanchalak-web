@@ -1,38 +1,51 @@
 /**
  * Document Types
- * Type definitions for student/parent document uploads and verification
+ * Domain types that derive from generated API models where shapes overlap.
+ * Components should ALWAYS import from here — never from src/api/ directly.
  */
 
+// ============================================================================
+// Re-exported API Types (for service layer use)
+// ============================================================================
+
+/** Generated DTOs — use these in services that call the API directly */
+export type { StudentDocumentDto } from '../../../api/models/student-document-dto';
+export type { CreateDocumentRequest as ApiCreateDocumentRequest } from '../../../api/models/create-document-request';
+
+// ============================================================================
+// Domain Types (used by components and stores)
+// ============================================================================
+
 export interface Document {
-  documentID: string; // Format: DOC-2026-NNNNN
+  documentID: string;
   documentType: DocumentType;
   title: string;
   description?: string;
-  
+
   // File Information
   fileName: string;
-  fileUrl: string; // URL to stored document
-  fileSize: number; // In bytes
-  mimeType: string; // application/pdf, image/jpeg, etc.
-  
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+
   // Associated Entities
   entityType: EntityType;
-  entityID: string; // studentID or parentID
-  
+  entityID: string;
+
   // Verification
   verificationStatus: VerificationStatus;
-  verifiedBy?: string; // UserID of verifier
+  verifiedBy?: string;
   verifiedDate?: string;
   verificationNotes?: string;
-  
+
   // Metadata
-  uploadedBy: string; // UserID
-  uploadedDate: string; // ISO timestamp
+  uploadedBy: string;
+  uploadedDate: string;
   updatedDate?: string;
-  
+
   // Privacy
-  isPublic: boolean; // If false, only authorized roles can view
-  expiryDate?: string; // For documents that expire (e.g., medical certificates)
+  isPublic: boolean;
+  expiryDate?: string;
 }
 
 export type DocumentType =
@@ -52,19 +65,17 @@ export type EntityType = 'Student' | 'Parent' | 'Staff' | 'Teacher';
 
 export type VerificationStatus = 'Pending' | 'Verified' | 'Rejected' | 'Expired';
 
-// Upload Document Request
+// ============================================================================
+// Request/Response Types (domain layer)
+// ============================================================================
+
 export interface UploadDocumentRequest {
   documentType: DocumentType;
   title: string;
   description?: string;
-  
-  // File data (base64 or multipart form data)
-  file: File | string; // File object in browser, base64 string in mock
-  
-  // Entity association
+  file: File | string;
   entityType: EntityType;
   entityID: string;
-  
   isPublic?: boolean;
   expiryDate?: string;
 }
@@ -76,10 +87,9 @@ export interface UploadDocumentResponse {
   message: string;
 }
 
-// Get Documents Query
 export interface GetDocumentsQuery {
   entityType?: EntityType;
-  entityID?: string; // Get all documents for specific student/parent
+  entityID?: string;
   documentType?: DocumentType;
   verificationStatus?: VerificationStatus;
   page?: number;
@@ -95,7 +105,6 @@ export interface GetDocumentsResponse {
   totalPages: number;
 }
 
-// Get Single Document
 export interface GetDocumentRequest {
   documentID: string;
 }
@@ -105,7 +114,6 @@ export interface GetDocumentResponse {
   document: Document;
 }
 
-// Update Document
 export interface UpdateDocumentRequest {
   documentID: string;
   title?: string;
@@ -121,7 +129,6 @@ export interface UpdateDocumentResponse {
   message: string;
 }
 
-// Delete Document
 export interface DeleteDocumentRequest {
   documentID: string;
 }
@@ -131,7 +138,6 @@ export interface DeleteDocumentResponse {
   message: string;
 }
 
-// Verify Document
 export interface VerifyDocumentRequest {
   documentID: string;
   verificationStatus: 'Verified' | 'Rejected';
@@ -144,7 +150,6 @@ export interface VerifyDocumentResponse {
   message: string;
 }
 
-// Bulk Upload
 export interface BulkUploadDocumentRequest {
   documents: {
     entityID: string;
@@ -166,7 +171,10 @@ export interface BulkUploadDocumentResponse {
   documentIDs: string[];
 }
 
-// File validation constants
+// ============================================================================
+// Constants (frontend-only)
+// ============================================================================
+
 export const ALLOWED_DOCUMENT_TYPES = [
   'application/pdf',
   'image/jpeg',

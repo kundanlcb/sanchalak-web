@@ -1,12 +1,29 @@
 /**
  * Authentication Types
- * Type definitions for login, OTP, JWT tokens, and auth responses
+ * Domain types that derive from generated API models where shapes overlap.
+ * Components should ALWAYS import from here — never from src/api/ directly.
  */
 
 import { type UserRole } from '../../../utils/permissions/checkPermission';
 
+// ============================================================================
+// Re-exported API Types (for service layer use)
+// ============================================================================
+
+/** Generated request/response DTOs — use these in services that call the API directly */
+export type { OtpRequestDto } from '../../../api/models/otp-request-dto';
+export type { OtpVerifyDto } from '../../../api/models/otp-verify-dto';
+export type { RefreshTokenRequestDto } from '../../../api/models/refresh-token-request-dto';
+export type { LoginRequest } from '../../../api/models/login-request';
+export type { AuthTokenResponseDto } from '../../../api/models/auth-token-response-dto';
+export type { UserProfileDto } from '../../../api/models/user-profile-dto';
+
 // Re-export UserRole for convenience
 export type { UserRole };
+
+// ============================================================================
+// Domain Types (used by components and stores)
+// ============================================================================
 
 export interface User {
   userID: string;
@@ -31,7 +48,7 @@ export interface LoginOTPRequest {
 export interface LoginOTPResponse {
   success: boolean;
   message: string;
-  otpSentAt: string; // Timestamp when OTP was sent
+  otpSentAt: string;
 }
 
 export interface VerifyOTPRequest {
@@ -51,7 +68,7 @@ export interface AuthResponse {
   token: string;
   refreshToken: string;
   user: User;
-  expiresAt: string; // ISO 8601 timestamp
+  expiresAt: string;
 }
 
 // Token refresh

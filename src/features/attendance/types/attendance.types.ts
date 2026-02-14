@@ -1,14 +1,29 @@
 /**
  * Attendance Type Definitions
- * Defines types for attendance tracking, marking, and reporting
+ * Domain types that derive from generated API models where shapes overlap.
+ * Components should ALWAYS import from here — never from src/api/ directly.
  */
 
 // ============================================================================
-// Core Attendance Types
+// Re-exported API Types (for service layer use)
+// ============================================================================
+
+/** Generated DTOs — use these in services that call the API directly */
+export type { AttendanceRecordDto } from '../../../api/models/attendance-record-dto';
+export { AttendanceRecordDtoStatusEnum } from '../../../api/models/attendance-record-dto';
+export type { AttendanceSummaryDto } from '../../../api/models/attendance-summary-dto';
+export type { ClassAttendanceSheetDto } from '../../../api/models/class-attendance-sheet-dto';
+export type { MarkAttendanceRequest as ApiMarkAttendanceRequest } from '../../../api/models/mark-attendance-request';
+export type { BulkMarkAttendanceRequest as ApiBulkMarkAttendanceRequest } from '../../../api/models/bulk-mark-attendance-request';
+export type { UpdateAttendanceRequest as ApiUpdateAttendanceRequest } from '../../../api/models/update-attendance-request';
+
+// ============================================================================
+// Core Attendance Types (domain layer)
 // ============================================================================
 
 /**
- * Attendance status enum
+ * Attendance status — title-case string union for UI display.
+ * Service layer maps to/from AttendanceRecordDtoStatusEnum.
  */
 export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'Excused' | 'Holiday';
 
@@ -19,15 +34,15 @@ export interface Attendance {
   attendanceID: string;
   studentID: string;
   classID: string;
-  date: string; // ISO date string (YYYY-MM-DD)
+  date: string;
   status: AttendanceStatus;
-  markedBy: string; // userID of teacher/admin who marked attendance
-  markedDate: string; // ISO datetime when attendance was marked
+  markedBy: string;
+  markedDate: string;
   remarks?: string;
   isModified: boolean;
   modifiedBy?: string;
   modifiedDate?: string;
-  requiresApproval?: boolean; // True if modified after 24hrs
+  requiresApproval?: boolean;
 }
 
 /**
@@ -102,12 +117,9 @@ export interface ClassAttendanceSummary {
 }
 
 // ============================================================================
-// Request/Response Types
+// Request/Response Types (domain layer)
 // ============================================================================
 
-/**
- * Request to mark attendance for a student
- */
 export interface MarkAttendanceRequest {
   studentID: string;
   classID: string;
@@ -116,19 +128,13 @@ export interface MarkAttendanceRequest {
   remarks?: string;
 }
 
-/**
- * Response after marking attendance
- */
 export interface MarkAttendanceResponse {
   success: boolean;
   attendanceID: string;
   message: string;
-  notifications?: string[]; // Parent notification IDs
+  notifications?: string[];
 }
 
-/**
- * Bulk mark attendance for entire class
- */
 export interface BulkMarkAttendanceRequest {
   classID: string;
   date: string;
@@ -140,9 +146,6 @@ export interface BulkMarkAttendanceRequest {
   markedBy: string;
 }
 
-/**
- * Response for bulk attendance marking
- */
 export interface BulkMarkAttendanceResponse {
   success: boolean;
   marked: number;
@@ -154,9 +157,6 @@ export interface BulkMarkAttendanceResponse {
   message: string;
 }
 
-/**
- * Query parameters for getting attendance records
- */
 export interface AttendanceQuery {
   studentID?: string;
   classID?: string;
@@ -167,9 +167,6 @@ export interface AttendanceQuery {
   limit?: number;
 }
 
-/**
- * Response for attendance query
- */
 export interface AttendanceQueryResponse {
   attendances: Attendance[];
   total: number;
@@ -178,17 +175,11 @@ export interface AttendanceQueryResponse {
   totalPages: number;
 }
 
-/**
- * Request to get class attendance sheet
- */
 export interface GetClassAttendanceSheetRequest {
   classID: string;
   date: string;
 }
 
-/**
- * Request to get attendance summary
- */
 export interface GetAttendanceSummaryRequest {
   studentID?: string;
   classID?: string;
@@ -196,9 +187,6 @@ export interface GetAttendanceSummaryRequest {
   endDate: string;
 }
 
-/**
- * Request to modify attendance (with approval workflow)
- */
 export interface ModifyAttendanceRequest {
   attendanceID: string;
   status: AttendanceStatus;
@@ -206,18 +194,12 @@ export interface ModifyAttendanceRequest {
   modifiedBy: string;
 }
 
-/**
- * Response for modify attendance
- */
 export interface ModifyAttendanceResponse {
   success: boolean;
   requiresApproval: boolean;
   message: string;
 }
 
-/**
- * Attendance correction request (after 24hrs)
- */
 export interface AttendanceCorrectionRequest {
   attendanceID: string;
   newStatus: AttendanceStatus;
@@ -225,9 +207,6 @@ export interface AttendanceCorrectionRequest {
   requestedBy: string;
 }
 
-/**
- * Attendance correction approval
- */
 export interface AttendanceCorrectionApproval {
   correctionID: string;
   approved: boolean;
@@ -237,12 +216,9 @@ export interface AttendanceCorrectionApproval {
 }
 
 // ============================================================================
-// Notification Types
+// Notification Types (frontend-only)
 // ============================================================================
 
-/**
- * Parent notification for absence
- */
 export interface AbsenceNotification {
   notificationID: string;
   parentID: string;
@@ -256,12 +232,9 @@ export interface AbsenceNotification {
 }
 
 // ============================================================================
-// Calendar Types
+// Calendar Types (frontend-only)
 // ============================================================================
 
-/**
- * Calendar date with attendance info
- */
 export interface AttendanceCalendarDay {
   date: string;
   status?: AttendanceStatus;
@@ -270,9 +243,6 @@ export interface AttendanceCalendarDay {
   remarks?: string;
 }
 
-/**
- * Monthly attendance calendar
- */
 export interface AttendanceCalendar {
   studentID: string;
   month: number;
@@ -288,7 +258,7 @@ export interface AttendanceCalendar {
 }
 
 // ============================================================================
-// Constants
+// Constants (frontend-only)
 // ============================================================================
 
 export const ATTENDANCE_STATUS_COLORS: Record<AttendanceStatus, string> = {
@@ -307,5 +277,5 @@ export const ATTENDANCE_STATUS_ICONS: Record<AttendanceStatus, string> = {
   Holiday: '🏖',
 };
 
-export const LOW_ATTENDANCE_THRESHOLD = 75; // Below 75% is considered low
-export const SAME_DAY_CORRECTION_HOURS = 24; // Can correct within 24 hours
+export const LOW_ATTENDANCE_THRESHOLD = 75;
+export const SAME_DAY_CORRECTION_HOURS = 24;
