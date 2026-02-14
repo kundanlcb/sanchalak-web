@@ -14,7 +14,7 @@ export const useAcademicStructure = () => {
   const classesQuery = useQuery<Class[]>({
     queryKey: ['academic', 'classes'],
     queryFn: schoolOpsApi.getClasses,
-    staleTime: 30 * 60 * 1000, // 30 min — rarely changes
+    staleTime: 30 * 60 * 1000,
   });
 
   // --- Query: Subjects ---
@@ -24,16 +24,40 @@ export const useAcademicStructure = () => {
     staleTime: 30 * 60 * 1000,
   });
 
-  // --- Mutation: Add class ---
+  // --- Mutation: Add class (optimistic) ---
   const addClassMutation = useMutation({
+    mutationKey: ['academic', 'class', 'add'],
     mutationFn: (data: Partial<Class>) => schoolOpsApi.createClass(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['academic', 'classes'] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['academic', 'classes'] });
+      const previous = queryClient.getQueryData<Class[]>(['academic', 'classes']);
+      const temp = { id: `temp-${Date.now()}`, ...data } as Class;
+      queryClient.setQueryData<Class[]>(['academic', 'classes'], (old) => [
+        ...(old ?? []),
+        temp,
+      ]);
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['academic', 'classes'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['academic', 'classes'] }),
   });
 
-  // --- Mutation: Add subject ---
+  // --- Mutation: Add subject (optimistic) ---
   const addSubjectMutation = useMutation({
+    mutationKey: ['academic', 'subject', 'add'],
     mutationFn: (data: Partial<Subject>) => schoolOpsApi.createSubject(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['academic', 'subjects'] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['academic', 'subjects'] });
+      const previous = queryClient.getQueryData<Subject[]>(['academic', 'subjects']);
+      const temp = { id: `temp-${Date.now()}`, ...data } as Subject;
+      queryClient.setQueryData<Subject[]>(['academic', 'subjects'], (old) => [
+        ...(old ?? []),
+        temp,
+      ]);
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['academic', 'subjects'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['academic', 'subjects'] }),
   });
 
   return {

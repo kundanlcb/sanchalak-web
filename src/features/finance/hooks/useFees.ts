@@ -18,7 +18,7 @@ export const useFees = () => {
       const res = await axios.get('/api/finance/fees/categories');
       return res.data;
     },
-    staleTime: 10 * 60 * 1000, // 10 min — fee categories rarely change
+    staleTime: 10 * 60 * 1000,
   });
 
   // --- Query: Fee structures ---
@@ -31,32 +31,68 @@ export const useFees = () => {
     staleTime: 10 * 60 * 1000,
   });
 
-  // --- Mutations ---
+  // --- Mutations (all with mutationKey for persistence) ---
+
   const createCategoryMutation = useMutation({
+    mutationKey: ['fees', 'category', 'create'],
     mutationFn: async (data: FeeCategoryFormData) => {
       const res = await axios.post('/api/finance/fees/categories', data);
       return res.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'categories'] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['fees', 'categories'] });
+      const previous = queryClient.getQueryData<FeeCategory[]>(['fees', 'categories']);
+      const temp = { id: `temp-${Date.now()}`, ...data } as unknown as FeeCategory;
+      queryClient.setQueryData<FeeCategory[]>(['fees', 'categories'], (old) => [
+        ...(old ?? []),
+        temp,
+      ]);
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['fees', 'categories'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['fees', 'categories'] }),
   });
 
   const createStructureMutation = useMutation({
+    mutationKey: ['fees', 'structure', 'create'],
     mutationFn: async (data: FeeStructureFormData) => {
       const res = await axios.post('/api/finance/fees/structures', data);
       return res.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'structures'] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['fees', 'structures'] });
+      const previous = queryClient.getQueryData<FeeStructure[]>(['fees', 'structures']);
+      const temp = { id: `temp-${Date.now()}`, ...data } as unknown as FeeStructure;
+      queryClient.setQueryData<FeeStructure[]>(['fees', 'structures'], (old) => [
+        ...(old ?? []),
+        temp,
+      ]);
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['fees', 'structures'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['fees', 'structures'] }),
   });
 
   const updateCategoryMutation = useMutation({
+    mutationKey: ['fees', 'category', 'update'],
     mutationFn: async ({ id, data }: { id: string; data: Partial<FeeCategoryFormData> }) => {
       const res = await axios.put(`/api/finance/fees/categories/${id}`, data);
       return res.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'categories'] }),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['fees', 'categories'] });
+      const previous = queryClient.getQueryData<FeeCategory[]>(['fees', 'categories']);
+      queryClient.setQueryData<FeeCategory[]>(['fees', 'categories'], (old) =>
+        old?.map((c) => (c.id === id ? { ...c, ...data } : c)) ?? [],
+      );
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['fees', 'categories'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['fees', 'categories'] }),
   });
 
   const deleteCategoryMutation = useMutation({
+    mutationKey: ['fees', 'category', 'delete'],
     mutationFn: async (id: string) => {
       await axios.delete(`/api/finance/fees/categories/${id}`);
       return id;
@@ -74,14 +110,25 @@ export const useFees = () => {
   });
 
   const updateStructureMutation = useMutation({
+    mutationKey: ['fees', 'structure', 'update'],
     mutationFn: async ({ id, data }: { id: string; data: Partial<FeeStructureFormData> }) => {
       const res = await axios.put(`/api/finance/fees/structures/${id}`, data);
       return res.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'structures'] }),
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['fees', 'structures'] });
+      const previous = queryClient.getQueryData<FeeStructure[]>(['fees', 'structures']);
+      queryClient.setQueryData<FeeStructure[]>(['fees', 'structures'], (old) =>
+        old?.map((s) => (s.id === id ? { ...s, ...data } : s)) ?? [],
+      );
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['fees', 'structures'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['fees', 'structures'] }),
   });
 
   const deleteStructureMutation = useMutation({
+    mutationKey: ['fees', 'structure', 'delete'],
     mutationFn: async (id: string) => {
       await axios.delete(`/api/finance/fees/structures/${id}`);
       return id;

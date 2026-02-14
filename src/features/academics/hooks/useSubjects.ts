@@ -15,15 +15,28 @@ export const useSubjects = () => {
       const response = await axios.get<Subject[]>('/api/academics/subjects');
       return response.data;
     },
-    staleTime: 30 * 60 * 1000, // subjects rarely change
+    staleTime: 30 * 60 * 1000,
   });
 
+  // --- Mutation: Create subject (optimistic) ---
   const createMutation = useMutation({
+    mutationKey: ['subjects', 'create'],
     mutationFn: async (data: CreateSubjectRequest) => {
       const response = await axios.post<Subject>('/api/academics/subjects', data);
       return response.data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['subjects'] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['subjects'] });
+      const previous = queryClient.getQueryData<Subject[]>(['subjects']);
+      const temp = { id: `temp-${Date.now()}`, ...data } as Subject;
+      queryClient.setQueryData<Subject[]>(['subjects'], (old) => [
+        ...(old ?? []),
+        temp,
+      ]);
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['subjects'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['subjects'] }),
   });
 
   return {

@@ -29,8 +29,9 @@ export const useHomework = (initialClassId?: string) => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // --- Mutation: Create homework ---
+  // --- Mutation: Create homework (optimistic) ---
   const createMutation = useMutation({
+    mutationKey: ['homework', 'create'],
     mutationFn: async (data: CreateHomeworkRequest & { files?: File[] }) => {
       const payload: CreateHomeworkRequest = {
         classId: data.classId,
@@ -43,19 +44,42 @@ export const useHomework = (initialClassId?: string) => {
       const response = await axios.post<Homework>('/api/homework', payload);
       return response.data;
     },
-    onSuccess: () => {
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Homework[]>(queryKey);
+      // Optimistic: append a temp item
+      const tempItem = {
+        id: `temp-${Date.now()}`,
+        classId: data.classId,
+        subjectId: data.subjectId,
+        title: data.title,
+        description: data.description ?? '',
+        dueDate: data.dueDate,
+        attachments: data.attachments || [],
+        createdAt: new Date().toISOString(),
+      } as unknown as Homework;
+      queryClient.setQueryData<Homework[]>(queryKey, (old) => [
+        ...(old ?? []),
+        tempItem,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _data, context) => {
+      queryClient.setQueryData(queryKey, context?.previous);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['homework'] });
     },
   });
 
-  // --- Mutation: Delete homework ---
+  // --- Mutation: Delete homework (optimistic) ---
   const deleteMutation = useMutation({
+    mutationKey: ['homework', 'delete'],
     mutationFn: async (id: string) => {
       await axios.delete(`/api/homework/${id}`);
       return id;
     },
     onMutate: async (id: string) => {
-      // Optimistic: remove from list immediately
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<Homework[]>(queryKey);
       queryClient.setQueryData<Homework[]>(queryKey, (old) =>

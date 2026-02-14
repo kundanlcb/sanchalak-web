@@ -6,6 +6,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useAuth } from './features/auth/services/authContext';
+import { useMutationToast } from './hooks/useMutationToast';
 import { SidebarProvider } from './components/layout/SidebarContext';
 import { ToastProvider } from './components/common/ToastContext';
 import { Header } from './components/layout/Header';
@@ -75,6 +76,9 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 function App() {
+  // Activate global mutation toast feedback (offline/sync/error)
+  useMutationToast();
+
   return (
     <ErrorBoundary>
       <ToastProvider>

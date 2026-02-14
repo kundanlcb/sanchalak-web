@@ -45,6 +45,7 @@ export const useMarks = (filters: UseMarksFilters) => {
 
   // --- Mutation: Update mark (with optimistic update) ---
   const updateMarkMutation = useMutation({
+    mutationKey: ['marks', 'update'],
     mutationFn: async (data: UpdateMarkRequest) => {
       await axios.post('/api/academics/marks', data);
       return data;

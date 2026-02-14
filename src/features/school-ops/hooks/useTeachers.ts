@@ -22,25 +22,55 @@ export const useTeachers = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // --- Mutation: Add teacher ---
+  // --- Mutation: Add teacher (optimistic) ---
   const addMutation = useMutation({
+    mutationKey: ['teachers', 'add'],
     mutationFn: (data: Partial<Teacher>) => schoolOpsApi.createTeacher(data),
-    onSuccess: () => {
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ['teachers'] });
+      const previous = queryClient.getQueryData<Teacher[]>(['teachers']);
+      const tempTeacher = {
+        id: `temp-${Date.now()}`,
+        ...data,
+      } as Teacher;
+      queryClient.setQueryData<Teacher[]>(['teachers'], (old) => [
+        ...(old ?? []),
+        tempTeacher,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _data, context) => {
+      queryClient.setQueryData(['teachers'], context?.previous);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
     },
   });
 
-  // --- Mutation: Update teacher ---
+  // --- Mutation: Update teacher (optimistic) ---
   const updateMutation = useMutation({
+    mutationKey: ['teachers', 'update'],
     mutationFn: ({ id, data }: { id: string; data: Partial<Teacher> }) =>
       schoolOpsApi.updateTeacher(id, data),
-    onSuccess: () => {
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['teachers'] });
+      const previous = queryClient.getQueryData<Teacher[]>(['teachers']);
+      queryClient.setQueryData<Teacher[]>(['teachers'], (old) =>
+        old?.map((t) => (t.id === id ? { ...t, ...data } : t)) ?? [],
+      );
+      return { previous };
+    },
+    onError: (_err, _data, context) => {
+      queryClient.setQueryData(['teachers'], context?.previous);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
     },
   });
 
-  // --- Mutation: Delete teacher ---
+  // --- Mutation: Delete teacher (optimistic) ---
   const removeMutation = useMutation({
+    mutationKey: ['teachers', 'remove'],
     mutationFn: (id: string) => schoolOpsApi.deleteTeacher(id),
     onMutate: async (id: string) => {
       await queryClient.cancelQueries({ queryKey: ['teachers'] });

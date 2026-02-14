@@ -12,6 +12,7 @@ export const usePayment = () => {
 
   // --- Fetch ledger for a student ---
   const fetchLedgerMutation = useMutation({
+    mutationKey: ['payment', 'fetchLedger'],
     mutationFn: async (studentId: string) => {
       const res = await axios.get(`/api/finance/ledger/${studentId}`);
       if (res.data.records && res.data.records.length > 0) {
@@ -26,6 +27,7 @@ export const usePayment = () => {
 
   // --- Fetch transactions for a student ---
   const fetchTransactionsMutation = useMutation({
+    mutationKey: ['payment', 'fetchTransactions'],
     mutationFn: async (studentId: string) => {
       const res = await axios.get(`/api/finance/transactions/${studentId}`);
       return res.data as PaymentTransaction[];
@@ -37,6 +39,7 @@ export const usePayment = () => {
 
   // --- Initiate payment ---
   const paymentMutation = useMutation({
+    mutationKey: ['payment', 'process'],
     mutationFn: async ({
       studentId,
       amount,
