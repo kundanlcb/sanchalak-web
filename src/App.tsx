@@ -10,6 +10,7 @@ import { SidebarProvider } from './components/layout/SidebarContext';
 import { ToastProvider } from './components/common/ToastContext';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
+import { NetworkStatusBanner } from './components/NetworkStatusBanner';
 import { Login } from './features/auth/components/Login';
 import { ProtectedRoute } from './features/auth/components/ProtectedRoute';
 import { UnauthorizedPage } from './components/common/UnauthorizedPage';
@@ -75,229 +76,230 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
 
 function App() {
   return (
-  <ErrorBoundary>
-    <ToastProvider>
-      <SidebarProvider>
-        <BrowserRouter>
-          <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/unauthorized" element={<UnauthorizedPage />} />
-        <Route path="/logout" element={<Logout />} />
+    <ErrorBoundary>
+      <ToastProvider>
+        <SidebarProvider>
+          <BrowserRouter>
+            <NetworkStatusBanner />
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/unauthorized" element={<UnauthorizedPage />} />
+              <Route path="/logout" element={<Logout />} />
 
-        {/* Protected Routes */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <DashboardHome />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/students"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff']}>
-              <AuthenticatedLayout>
-                <StudentList />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/students/new"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
-              <AuthenticatedLayout>
-                <StudentForm />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/students/:studentID/edit"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
-              <AuthenticatedLayout>
-                <StudentForm />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/students/:studentID"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff']}>
-              <AuthenticatedLayout>
-                <StudentDetail />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/attendance"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff', 'Parent', 'Student']}>
-              <AuthenticatedLayout>
-                <AttendancePage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/academics/setup"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <AcademicSetupPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/teachers"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <TeacherListPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/academics/routine"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <RoutineManagementPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/academics/exams"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <ExamConfigPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/academics/reports"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <ReportGenerationPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teacher/marks"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Teacher']}>
-              <AuthenticatedLayout>
-                <MarksEntryPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/homework"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Student', 'Parent']}>
-              <AuthenticatedLayout>
-                <HomeworkPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
+              {/* Protected Routes */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedLayout>
+                      <DashboardHome />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff']}>
+                    <AuthenticatedLayout>
+                      <StudentList />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/new"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                    <AuthenticatedLayout>
+                      <StudentForm />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/:studentID/edit"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                    <AuthenticatedLayout>
+                      <StudentForm />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/students/:studentID"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff']}>
+                    <AuthenticatedLayout>
+                      <StudentDetail />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/attendance"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff', 'Parent', 'Student']}>
+                    <AuthenticatedLayout>
+                      <AttendancePage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/academics/setup"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <AcademicSetupPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/teachers"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <TeacherListPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/academics/routine"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <RoutineManagementPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/academics/exams"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <ExamConfigPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/academics/reports"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <ReportGenerationPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/marks"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher']}>
+                    <AuthenticatedLayout>
+                      <MarksEntryPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/homework"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Student', 'Parent']}>
+                    <AuthenticatedLayout>
+                      <HomeworkPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
 
-        {/* Finance Routes */}
-        <Route
-          path="/admin/finance/fees"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <FeeManagementPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/finance/pay"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Parent', 'Student']}>
-              <AuthenticatedLayout>
-                <FeePaymentPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/finance/payroll"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <PayrollPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/finance/reports"
-          element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AuthenticatedLayout>
-                <FinancialReportsPage />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
+              {/* Finance Routes */}
+              <Route
+                path="/admin/finance/fees"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <FeeManagementPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/finance/pay"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Parent', 'Student']}>
+                    <AuthenticatedLayout>
+                      <FeePaymentPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/finance/payroll"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <PayrollPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/finance/reports"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <FinancialReportsPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
 
-        {/* Notice Routes */}
-        <Route
-          path="/notices"
-          element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <NoticeBoard />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notices/new"
-          element={
-            <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff']}>
-              <AuthenticatedLayout>
-                <NoticeForm />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notices/:id"
-          element={
-            <ProtectedRoute>
-              <AuthenticatedLayout>
-                <NoticeDetail />
-              </AuthenticatedLayout>
-            </ProtectedRoute>
-          }
-        />
+              {/* Notice Routes */}
+              <Route
+                path="/notices"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedLayout>
+                      <NoticeBoard />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notices/new"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff']}>
+                    <AuthenticatedLayout>
+                      <NoticeForm />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notices/:id"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedLayout>
+                      <NoticeDetail />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
 
-        {/* Catch-all redirect */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </BrowserRouter>
-  </SidebarProvider>
-    </ToastProvider>
-  </ErrorBoundary>
+              {/* Catch-all redirect */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </BrowserRouter>
+        </SidebarProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 

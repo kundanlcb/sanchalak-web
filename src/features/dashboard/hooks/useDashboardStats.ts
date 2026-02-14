@@ -1,41 +1,23 @@
-import { useState, useEffect } from 'react';
+/**
+ * Dashboard Stats Hook — TanStack Query powered
+ * Fetches dashboard statistics with caching and offline support.
+ */
+
+import { useQuery } from '@tanstack/react-query';
 import { getDashboardStats } from '../services/dashboardService';
 import type { DashboardStatsResponse } from '../services/dashboardService';
 
 export const useDashboardStats = () => {
-  const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error, refetch } = useQuery<DashboardStatsResponse>({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: getDashboardStats,
+    staleTime: 2 * 60 * 1000, // 2 min — dashboard data changes frequently
+  });
 
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const data = await getDashboardStats();
-        if (mounted) {
-          setStats(data);
-          setError(null);
-        }
-      } catch (err) {
-        if (mounted) {
-          console.error('Failed to fetch dashboard stats:', err);
-          setError('Failed to load dashboard statistics.');
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchStats();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  return { stats, loading, error };
+  return {
+    stats: data ?? null,
+    loading: isLoading,
+    error: error?.message ?? null,
+    refetch,
+  };
 };

@@ -1,136 +1,121 @@
-import { useState, useCallback } from 'react';
+/**
+ * Fees Hook — TanStack Query powered
+ * Queries and mutations for fee categories and structures with caching.
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import type { FeeCategory, FeeStructure } from '../types';
 import type { FeeCategoryFormData, FeeStructureFormData } from '../types/schema';
 
 export const useFees = () => {
-  const [categories, setCategories] = useState<FeeCategory[]>([]);
-  const [structures, setStructures] = useState<FeeStructure[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchCategories = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
+  // --- Query: Fee categories ---
+  const categoriesQuery = useQuery<FeeCategory[]>({
+    queryKey: ['fees', 'categories'],
+    queryFn: async () => {
       const res = await axios.get('/api/finance/fees/categories');
-      setCategories(res.data);
-    } catch (err) {
-      setError('Failed to fetch categories');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      return res.data;
+    },
+    staleTime: 10 * 60 * 1000, // 10 min — fee categories rarely change
+  });
 
-  const fetchStructures = useCallback(async (classId?: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const url = classId 
-        ? `/api/finance/fees/structures?classId=${classId}` 
-        : '/api/finance/fees/structures';
-      const res = await axios.get(url);
-      setStructures(res.data);
-    } catch (err) {
-      setError('Failed to fetch structures');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // --- Query: Fee structures ---
+  const structuresQuery = useQuery<FeeStructure[]>({
+    queryKey: ['fees', 'structures'],
+    queryFn: async () => {
+      const res = await axios.get('/api/finance/fees/structures');
+      return res.data;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
 
-  const createCategory = async (data: FeeCategoryFormData) => {
-    setIsLoading(true);
-    setError(null);
-    try {
+  // --- Mutations ---
+  const createCategoryMutation = useMutation({
+    mutationFn: async (data: FeeCategoryFormData) => {
       const res = await axios.post('/api/finance/fees/categories', data);
-      setCategories(prev => [...prev, res.data]);
       return res.data;
-    } catch (err) {
-      setError('Failed to create category');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'categories'] }),
+  });
 
-  const createStructure = async (data: FeeStructureFormData) => {
-    setIsLoading(true);
-    setError(null);
-    try {
+  const createStructureMutation = useMutation({
+    mutationFn: async (data: FeeStructureFormData) => {
       const res = await axios.post('/api/finance/fees/structures', data);
-      setStructures(prev => [...prev, res.data]);
       return res.data;
-    } catch (err) {
-      setError('Failed to create structure');
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'structures'] }),
+  });
 
-  const updateCategory = async (id: string, data: Partial<FeeCategoryFormData>) => {
-    setIsLoading(true);
-    try {
+  const updateCategoryMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<FeeCategoryFormData> }) => {
       const res = await axios.put(`/api/finance/fees/categories/${id}`, data);
-      setCategories(prev => prev.map(c => c.id === id ? res.data : c));
       return res.data;
-    } catch (err) {
-      throw new Error('Failed to update category');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'categories'] }),
+  });
 
-  const deleteCategory = async (id: string) => {
-    setIsLoading(true);
-    try {
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
       await axios.delete(`/api/finance/fees/categories/${id}`);
-      setCategories(prev => prev.filter(c => c.id !== id));
-    } catch (err) {
-      throw new Error('Failed to delete category');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return id;
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['fees', 'categories'] });
+      const prev = queryClient.getQueryData<FeeCategory[]>(['fees', 'categories']);
+      queryClient.setQueryData<FeeCategory[]>(['fees', 'categories'], (old) =>
+        old?.filter((c) => c.id !== id) ?? [],
+      );
+      return { prev };
+    },
+    onError: (_e, _id, ctx) => queryClient.setQueryData(['fees', 'categories'], ctx?.prev),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['fees', 'categories'] }),
+  });
 
-  const updateStructure = async (id: string, data: Partial<FeeStructureFormData>) => {
-    setIsLoading(true);
-    try {
+  const updateStructureMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<FeeStructureFormData> }) => {
       const res = await axios.put(`/api/finance/fees/structures/${id}`, data);
-      setStructures(prev => prev.map(s => s.id === id ? res.data : s));
       return res.data;
-    } catch (err) {
-      throw new Error('Failed to update structure');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fees', 'structures'] }),
+  });
 
-  const deleteStructure = async (id: string) => {
-    setIsLoading(true);
-    try {
+  const deleteStructureMutation = useMutation({
+    mutationFn: async (id: string) => {
       await axios.delete(`/api/finance/fees/structures/${id}`);
-      setStructures(prev => prev.filter(s => s.id !== id));
-    } catch (err) {
-      throw new Error('Failed to delete structure');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return id;
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['fees', 'structures'] });
+      const prev = queryClient.getQueryData<FeeStructure[]>(['fees', 'structures']);
+      queryClient.setQueryData<FeeStructure[]>(['fees', 'structures'], (old) =>
+        old?.filter((s) => s.id !== id) ?? [],
+      );
+      return { prev };
+    },
+    onError: (_e, _id, ctx) => queryClient.setQueryData(['fees', 'structures'], ctx?.prev),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['fees', 'structures'] }),
+  });
 
+  const isPending = [createCategoryMutation, createStructureMutation, updateCategoryMutation,
+    deleteCategoryMutation, updateStructureMutation, deleteStructureMutation]
+    .some(m => m.isPending);
 
   return {
-    categories,
-    structures,
-    isLoading,
-    error,
-    fetchCategories,
-    fetchStructures,
-    createCategory,
-    createStructure,
-    updateCategory,
-    deleteCategory,
-    updateStructure,
-    deleteStructure
+    categories: categoriesQuery.data ?? [],
+    structures: structuresQuery.data ?? [],
+    isLoading: categoriesQuery.isLoading || structuresQuery.isLoading || isPending,
+    error: categoriesQuery.error?.message ?? structuresQuery.error?.message ?? null,
+    fetchCategories: categoriesQuery.refetch,
+    fetchStructures: structuresQuery.refetch,
+    createCategory: createCategoryMutation.mutateAsync,
+    createStructure: createStructureMutation.mutateAsync,
+    updateCategory: (id: string, data: Partial<FeeCategoryFormData>) =>
+      updateCategoryMutation.mutateAsync({ id, data }),
+    deleteCategory: deleteCategoryMutation.mutateAsync,
+    updateStructure: (id: string, data: Partial<FeeStructureFormData>) =>
+      updateStructureMutation.mutateAsync({ id, data }),
+    deleteStructure: deleteStructureMutation.mutateAsync,
   };
 };

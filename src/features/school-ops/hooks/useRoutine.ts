@@ -1,60 +1,52 @@
-import { useState, useCallback } from 'react';
+/**
+ * Routine Hook — TanStack Query powered
+ * Queries and mutations for timetable routines with caching.
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Routine } from '../types';
 import { schoolOpsApi } from '../services/api';
 
 export const useRoutine = (initialFilters?: { classId?: string; teacherId?: string }) => {
-  const [routines, setRoutines] = useState<Routine[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const queryKey = ['routines', initialFilters ?? {}];
 
-  const fetchRoutines = useCallback(async (filters = initialFilters) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await schoolOpsApi.getRoutines(filters);
-      setRoutines(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch routines');
-    } finally {
-      setLoading(false);
-    }
-  }, [initialFilters]);
+  const {
+    data: routines = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<Routine[]>({
+    queryKey,
+    queryFn: () => schoolOpsApi.getRoutines(initialFilters),
+    staleTime: 30 * 60 * 1000, // 30 min — timetable rarely changes
+  });
 
-  const addRoutine = async (entry: Routine) => {
-      setLoading(true);
-      setError(null);
-      try {
-          const newEntry = await schoolOpsApi.createRoutine(entry);
-          setRoutines(prev => [...prev, newEntry]);
-          return newEntry;
-      } catch (err: any) {
-          // MSW returns 409 for conflicts, extract message
-          const msg = err.response?.data?.message || err.message || 'Failed to create routine';
-          setError(msg);
-          throw new Error(msg);
-      } finally {
-          setLoading(false);
-      }
-  };
+  const addMutation = useMutation({
+    mutationFn: (entry: Routine) => schoolOpsApi.createRoutine(entry),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routines'] }),
+  });
 
-  const removeRoutine = async (id: string) => {
-      setLoading(true);
-      try {
-          await schoolOpsApi.deleteRoutine(id);
-          setRoutines(prev => prev.filter(r => r.id !== id));
-      } catch (err: any) {
-          setError(err.message || 'Failed to delete routine');
-      } finally {
-          setLoading(false);
-      }
-  };
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => schoolOpsApi.deleteRoutine(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey });
+      const prev = queryClient.getQueryData<Routine[]>(queryKey);
+      queryClient.setQueryData<Routine[]>(queryKey, (old) =>
+        old?.filter((r) => r.id !== id) ?? [],
+      );
+      return { prev };
+    },
+    onError: (_e, _id, ctx) => queryClient.setQueryData(queryKey, ctx?.prev),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['routines'] }),
+  });
 
   return {
     routines,
-    loading,
-    error,
-    fetchRoutines,
-    addRoutine,
-    removeRoutine
+    loading: isLoading || addMutation.isPending || removeMutation.isPending,
+    error: queryError?.message ?? addMutation.error?.message ?? removeMutation.error?.message ?? null,
+    fetchRoutines: refetch,
+    addRoutine: addMutation.mutateAsync,
+    removeRoutine: removeMutation.mutateAsync,
   };
 };

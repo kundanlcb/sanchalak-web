@@ -1,97 +1,84 @@
-import { useState, useCallback } from 'react';
+/**
+ * Payment Hook — TanStack Query powered
+ * Fetches student ledger/transactions and processes payments.
+ */
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import type { PaymentTransaction, StudentFeeRecord } from '../types';
 
 export const usePayment = () => {
-  const [ledger, setLedger] = useState<StudentFeeRecord | null>(null);
-  const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchLedger = useCallback(async (studentId: string) => {
-    setIsProcessing(true);
-    try {
+  // --- Fetch ledger for a student ---
+  const fetchLedgerMutation = useMutation({
+    mutationFn: async (studentId: string) => {
       const res = await axios.get(`/api/finance/ledger/${studentId}`);
-      // The mock returns { summary, records }, we just want the first record for this simple view
       if (res.data.records && res.data.records.length > 0) {
-        setLedger(res.data.records[0]);
+        return res.data.records[0] as StudentFeeRecord;
       }
-    } catch (err) {
-      console.error(err);
-      setError('Failed to fetch ledger');
-    } finally {
-      setIsProcessing(false);
-    }
-  }, []);
+      return null;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['payment', 'ledger'], data);
+    },
+  });
 
-  const fetchTransactions = useCallback(async (studentId: string) => {
-    try {
+  // --- Fetch transactions for a student ---
+  const fetchTransactionsMutation = useMutation({
+    mutationFn: async (studentId: string) => {
       const res = await axios.get(`/api/finance/transactions/${studentId}`);
-      setTransactions(res.data);
-    } catch (err) {
-      console.error(err);
-      // Non-blocking error
-    }
-  }, []);
+      return res.data as PaymentTransaction[];
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['payment', 'transactions'], data);
+    },
+  });
 
-  const initiatePayment = async (
-    studentId: string, 
-    amount: number, 
-    method: 'UPI' | 'Card', 
-    mockTxnId?: string // For mock gateway integration
-  ) => {
-    setIsProcessing(true);
-    setError(null);
-    try {
-      // 1. Simulate API Call to Create Order (in real world)
-      // 2. Mock Gateway handles the UI interaction (handled by component)
-      // 3. This function is called AFTER success to record it in backend
-      
+  // --- Initiate payment ---
+  const paymentMutation = useMutation({
+    mutationFn: async ({
+      studentId,
+      amount,
+      method,
+      mockTxnId,
+    }: {
+      studentId: string;
+      amount: number;
+      method: 'UPI' | 'Card';
+      mockTxnId?: string;
+    }) => {
       const payload: Partial<PaymentTransaction> = {
         studentId,
         amount,
         paymentMethod: method,
         paymentGatewayRefId: mockTxnId || `ref_${Date.now()}`,
         status: 'Success',
-        breakdown: [{ category: 'Tuition', amount }] // Simplified for demo
+        breakdown: [{ category: 'Tuition', amount }],
       };
-
       const res = await axios.post('/api/finance/transactions', payload);
-      
-      // Update local state
-      setTransactions(prev => [res.data, ...prev]);
-      
-      // Refresh ledger
-      await fetchLedger(studentId);
-      
-      return res.data;
-    } catch (err) {
-      setError('Payment recording failed');
-      throw err;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+      return res.data as PaymentTransaction;
+    },
+    onSuccess: (newTxn) => {
+      queryClient.setQueryData<PaymentTransaction[]>(['payment', 'transactions'], (old) =>
+        [newTxn, ...(old ?? [])],
+      );
+      queryClient.invalidateQueries({ queryKey: ['payment', 'ledger'] });
+      queryClient.invalidateQueries({ queryKey: ['finance'] });
+    },
+  });
 
-  /**
-   * T052: Webhook Simulation
-   * In a real app, the server receives the webhook. 
-   * Here we simulate checking the server for updates.
-   */
-  const checkPaymentStatus = async (_txnId: string) => {
-    // Determine status from server
-    // For mock, we assume it's settled.
-    return 'Success';
-  };
+  const checkPaymentStatus = async (_txnId: string) => 'Success';
 
   return {
-    ledger,
-    transactions,
-    isProcessing,
-    error,
-    fetchLedger,
-    fetchTransactions,
-    initiatePayment,
-    checkPaymentStatus
+    ledger: (queryClient.getQueryData(['payment', 'ledger']) as StudentFeeRecord | null) ?? null,
+    transactions: (queryClient.getQueryData(['payment', 'transactions']) as PaymentTransaction[]) ?? [],
+    isProcessing: fetchLedgerMutation.isPending || paymentMutation.isPending,
+    error: fetchLedgerMutation.error?.message ?? paymentMutation.error?.message ?? null,
+    fetchLedger: fetchLedgerMutation.mutateAsync,
+    fetchTransactions: fetchTransactionsMutation.mutateAsync,
+    initiatePayment: (studentId: string, amount: number, method: 'UPI' | 'Card', mockTxnId?: string) =>
+      paymentMutation.mutateAsync({ studentId, amount, method, mockTxnId }),
+    checkPaymentStatus,
   };
 };

@@ -1,43 +1,31 @@
-import { useState, useCallback, useEffect } from 'react';
+/**
+ * Students By Class Hook — TanStack Query powered
+ */
+
+import { useQuery } from '@tanstack/react-query';
 import { getStudents } from '../../students/services/studentService';
 import type { Student } from '../../students/types/student.types';
 
 export const useStudentsByClass = (classId: string, section: string) => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const enabled = classId === 'all' || !!classId;
 
-  const fetchStudents = useCallback(async () => {
-    // If selecting specific class/section, ensure we have values (unless 'all')
-    if (classId !== 'all' && !classId) {
-        setStudents([]);
-        return;
-    }
-
-    setIsLoading(true);
-    try {
+  const { data: students = [], isLoading } = useQuery<Student[]>({
+    queryKey: ['students', 'byClass', classId, section],
+    queryFn: async () => {
       const response = await getStudents({
         classID: classId === 'all' ? undefined : classId,
         section: section === 'all' ? undefined : section,
-        limit: 100 // Fetch reasonably large batch for dropdown
+        limit: 100,
       });
-      
       const data = response.students || [];
-      
-      // Sort by roll number or name
-      data.sort((a, b) => (a.rollNumber || '').toString().localeCompare((b.rollNumber || '').toString()));
-      
-      setStudents(data);
-    } catch (err) {
-      console.error("Failed to fetch students", err);
-      setStudents([]); 
-    } finally {
-      setIsLoading(false);
-    }
-  }, [classId, section]);
-
-  useEffect(() => {
-    fetchStudents();
-  }, [fetchStudents]);
+      data.sort((a, b) =>
+        (a.rollNumber || '').toString().localeCompare((b.rollNumber || '').toString()),
+      );
+      return data;
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
 
   return { students, isLoading };
 };

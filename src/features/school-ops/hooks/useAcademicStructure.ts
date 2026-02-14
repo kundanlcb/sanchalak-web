@@ -1,68 +1,51 @@
-import { useState, useCallback, useEffect } from 'react';
+/**
+ * Academic Structure Hook — TanStack Query powered
+ * Fetches classes and subjects with caching and offline support.
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Class, Subject } from '../types';
 import { schoolOpsApi } from '../services/api';
 
 export const useAcademicStructure = () => {
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchStructure = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [classesData, subjectsData] = await Promise.all([
-        schoolOpsApi.getClasses(),
-        schoolOpsApi.getSubjects()
-      ]);
-      setClasses(classesData);
-      setSubjects(subjectsData);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch academic structure');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // --- Query: Classes ---
+  const classesQuery = useQuery<Class[]>({
+    queryKey: ['academic', 'classes'],
+    queryFn: schoolOpsApi.getClasses,
+    staleTime: 30 * 60 * 1000, // 30 min — rarely changes
+  });
 
-  useEffect(() => {
-    fetchStructure();
-  }, [fetchStructure]);
+  // --- Query: Subjects ---
+  const subjectsQuery = useQuery<Subject[]>({
+    queryKey: ['academic', 'subjects'],
+    queryFn: schoolOpsApi.getSubjects,
+    staleTime: 30 * 60 * 1000,
+  });
 
-  const addClass = async (data: Partial<Class>) => {
-    setLoading(true);
-    try {
-      const newClass = await schoolOpsApi.createClass(data);
-      setClasses(prev => [...prev, newClass]);
-      return newClass;
-    } catch (err: any) {
-      setError(err.message || 'Failed to add class');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // --- Mutation: Add class ---
+  const addClassMutation = useMutation({
+    mutationFn: (data: Partial<Class>) => schoolOpsApi.createClass(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['academic', 'classes'] }),
+  });
 
-  const addSubject = async (data: Partial<Subject>) => {
-    setLoading(true);
-    try {
-      const newSubject = await schoolOpsApi.createSubject(data);
-      setSubjects(prev => [...prev, newSubject]);
-      return newSubject;
-    } catch (err: any) {
-      setError(err.message || 'Failed to add subject');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // --- Mutation: Add subject ---
+  const addSubjectMutation = useMutation({
+    mutationFn: (data: Partial<Subject>) => schoolOpsApi.createSubject(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['academic', 'subjects'] }),
+  });
 
   return {
-    classes,
-    subjects,
-    loading,
-    error,
-    refresh: fetchStructure,
-    addClass,
-    addSubject
+    classes: classesQuery.data ?? [],
+    subjects: subjectsQuery.data ?? [],
+    loading: classesQuery.isLoading || subjectsQuery.isLoading,
+    error: classesQuery.error?.message ?? subjectsQuery.error?.message ?? null,
+    refresh: () => {
+      classesQuery.refetch();
+      subjectsQuery.refetch();
+    },
+    addClass: addClassMutation.mutateAsync,
+    addSubject: addSubjectMutation.mutateAsync,
   };
 };

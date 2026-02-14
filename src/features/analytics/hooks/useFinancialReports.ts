@@ -1,4 +1,8 @@
-import { useState, useEffect } from 'react';
+/**
+ * Financial Reports Hook — TanStack Query powered
+ */
+
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import type { PaymentTransaction } from '../../finance/types';
 
@@ -12,29 +16,27 @@ export interface Defaulter {
 }
 
 export const useFinancialReports = () => {
-    const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
-    const [defaulters, setDefaulters] = useState<Defaulter[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const transactionsQuery = useQuery<PaymentTransaction[]>({
+        queryKey: ['finance', 'transactions'],
+        queryFn: async () => {
+            const res = await axios.get<PaymentTransaction[]>('/api/finance/transactions');
+            return res.data;
+        },
+        staleTime: 5 * 60 * 1000,
+    });
 
-    useEffect(() => {
-        const fetchAll = async () => {
-            setIsLoading(true);
-            try {
-                const [txnRes, defRes] = await Promise.all([
-                    axios.get<PaymentTransaction[]>('/api/finance/transactions'),
-                    axios.get<Defaulter[]>('/api/finance/defaulters')
-                ]);
-                
-                setTransactions(txnRes.data);
-                setDefaulters(defRes.data);
-            } catch (error) {
-                console.error("Failed to fetch financial reports", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchAll();
-    }, []);
+    const defaultersQuery = useQuery<Defaulter[]>({
+        queryKey: ['finance', 'defaulters'],
+        queryFn: async () => {
+            const res = await axios.get<Defaulter[]>('/api/finance/defaulters');
+            return res.data;
+        },
+        staleTime: 5 * 60 * 1000,
+    });
 
-    return { transactions, defaulters, isLoading };
+    return {
+        transactions: transactionsQuery.data ?? [],
+        defaulters: defaultersQuery.data ?? [],
+        isLoading: transactionsQuery.isLoading || defaultersQuery.isLoading,
+    };
 };

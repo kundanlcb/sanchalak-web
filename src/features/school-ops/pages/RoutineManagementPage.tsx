@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAcademicStructure } from '../hooks/useAcademicStructure';
 import { useRoutine } from '../hooks/useRoutine';
 import { useTeachers } from '../hooks/useTeachers';
@@ -12,19 +12,17 @@ export const RoutineManagementPage: React.FC = () => {
     const { classes, subjects, loading: academicLoading } = useAcademicStructure();
     const { teachers, loading: teachersLoading } = useTeachers();
     const [selectedClassId, setSelectedClassId] = useState<string>('');
-    
+
     // Derived state for the modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingCell, setEditingCell] = useState<{day: string, period: string, routine?: Routine} | null>(null);
+    const [editingCell, setEditingCell] = useState<{ day: string, period: string, routine?: Routine } | null>(null);
 
     // Fetch routines for selected class
-    const { routines, loading: routineLoading, addRoutine, removeRoutine, fetchRoutines, error } = useRoutine();
+    const { routines, loading: routineLoading, addRoutine, removeRoutine, error } = useRoutine(
+        selectedClassId ? { classId: selectedClassId } : undefined
+    );
 
-    useEffect(() => {
-        if (selectedClassId) {
-            fetchRoutines({ classId: selectedClassId });
-        }
-    }, [selectedClassId, fetchRoutines]);
+    // TanStack Query auto-refetches when selectedClassId changes via queryKey
 
     const handleClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedClassId(e.target.value);
@@ -44,7 +42,7 @@ export const RoutineManagementPage: React.FC = () => {
         // Let's assume Add overwrites or fails. 
         // Actually, if a routine exists in that slot, we should delete it first or update it.
         // Our mocking logic checks for conflicts.
-        
+
         try {
             if (editingCell.routine) {
                 // Delete existing if replacing
@@ -58,7 +56,7 @@ export const RoutineManagementPage: React.FC = () => {
                 subjectId: data.subjectId,
                 teacherId: data.teacherId
             };
-            
+
             await addRoutine(newRoutine);
         } catch (e) {
             // Error handling is managed by the hook (sets error state)
@@ -74,7 +72,7 @@ export const RoutineManagementPage: React.FC = () => {
     };
 
     const selectedClass = classes.find(c => c.classID === selectedClassId);
-    
+
     const classOptions = classes.map(c => ({
         value: c.classID,
         label: `${c.className || `Grade ${c.grade}-${c.section}`}`

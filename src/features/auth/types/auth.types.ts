@@ -4,7 +4,7 @@
  * Components should ALWAYS import from here — never from src/api/ directly.
  */
 
-import { type UserRole } from '../../../utils/permissions/checkPermission';
+import type { UserRole } from '../../../utils/permissions/checkPermission';
 
 // ============================================================================
 // Re-exported API Types (for service layer use)

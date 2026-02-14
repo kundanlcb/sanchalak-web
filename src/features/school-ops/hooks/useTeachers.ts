@@ -1,78 +1,78 @@
-import { useState, useCallback, useEffect } from 'react';
+/**
+ * Teachers Hook — TanStack Query powered
+ * Queries and mutations for teacher CRUD with caching and offline support.
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Teacher } from '../types';
 import { schoolOpsApi } from '../services/api';
 
 export const useTeachers = () => {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchTeachers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await schoolOpsApi.getTeachers();
-      setTeachers(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch teachers');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // --- Query: Fetch teachers list ---
+  const {
+    data: teachers = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<Teacher[]>({
+    queryKey: ['teachers'],
+    queryFn: schoolOpsApi.getTeachers,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const addTeacher = async (data: Partial<Teacher>) => {
-    setLoading(true);
-    try {
-      const newTeacher = await schoolOpsApi.createTeacher(data);
-      setTeachers(prev => [...prev, newTeacher]);
-      return newTeacher;
-    } catch (err: any) {
-      setError(err.message || 'Failed to add teacher');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // --- Mutation: Add teacher ---
+  const addMutation = useMutation({
+    mutationFn: (data: Partial<Teacher>) => schoolOpsApi.createTeacher(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+    },
+  });
 
-  const updateTeacher = async (id: string, data: Partial<Teacher>) => {
-    setLoading(true);
-    try {
-      const updated = await schoolOpsApi.updateTeacher(id, data);
-      setTeachers(prev => prev.map(t => t.id === id ? updated : t));
-      return updated;
-    } catch (err: any) {
-      setError(err.message || 'Failed to update teacher');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // --- Mutation: Update teacher ---
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Teacher> }) =>
+      schoolOpsApi.updateTeacher(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+    },
+  });
 
-  const removeTeacher = async (id: string) => {
-    setLoading(true);
-    try {
-        await schoolOpsApi.deleteTeacher(id);
-        setTeachers(prev => prev.filter(t => t.id !== id));
-    } catch (err: any) {
-        setError(err.message || 'Failed to delete teacher');
-        throw err;
-    } finally {
-        setLoading(false);
-    }
-  };
+  // --- Mutation: Delete teacher ---
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => schoolOpsApi.deleteTeacher(id),
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['teachers'] });
+      const previous = queryClient.getQueryData<Teacher[]>(['teachers']);
+      queryClient.setQueryData<Teacher[]>(['teachers'], (old) =>
+        old?.filter((t) => t.id !== id) ?? [],
+      );
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      queryClient.setQueryData(['teachers'], context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers'] });
+    },
+  });
 
-  // Initial fetch
-  useEffect(() => {
-    fetchTeachers();
-  }, [fetchTeachers]);
+  // Keep compatible return interface
+  const addTeacher = async (data: Partial<Teacher>) => addMutation.mutateAsync(data);
+  const updateTeacher = async (id: string, data: Partial<Teacher>) =>
+    updateMutation.mutateAsync({ id, data });
+  const removeTeacher = async (id: string) => removeMutation.mutateAsync(id);
+
+  const isPending = addMutation.isPending || updateMutation.isPending || removeMutation.isPending;
 
   return {
     teachers,
-    loading,
-    error,
-    fetchTeachers,
+    loading: isLoading || isPending,
+    error: queryError?.message ?? addMutation.error?.message ?? updateMutation.error?.message ?? removeMutation.error?.message ?? null,
+    fetchTeachers: refetch,
     addTeacher,
     updateTeacher,
-    removeTeacher
+    removeTeacher,
   };
 };

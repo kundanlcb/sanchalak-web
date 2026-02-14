@@ -1,50 +1,36 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * Subjects Hook — TanStack Query powered
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { type Subject, type CreateSubjectRequest } from '../types';
 
 export const useSubjects = () => {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchSubjects = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
+  const { data: subjects = [], isLoading, error: queryError, refetch } = useQuery<Subject[]>({
+    queryKey: ['subjects'],
+    queryFn: async () => {
       const response = await axios.get<Subject[]>('/api/academics/subjects');
-      setSubjects(response.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch subjects');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const createSubject = async (data: CreateSubjectRequest) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await axios.post<Subject>('/api/academics/subjects', data);
-      setSubjects((prev) => [...prev, response.data]);
       return response.data;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to create subject';
-      setError(msg);
-      throw new Error(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    staleTime: 30 * 60 * 1000, // subjects rarely change
+  });
 
-  useEffect(() => {
-    fetchSubjects();
-  }, [fetchSubjects]);
+  const createMutation = useMutation({
+    mutationFn: async (data: CreateSubjectRequest) => {
+      const response = await axios.post<Subject>('/api/academics/subjects', data);
+      return response.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['subjects'] }),
+  });
 
   return {
     subjects,
-    isLoading,
-    error,
-    createSubject,
-    refetch: fetchSubjects,
+    isLoading: isLoading || createMutation.isPending,
+    error: queryError?.message ?? createMutation.error?.message ?? null,
+    createSubject: createMutation.mutateAsync,
+    refetch,
   };
 };

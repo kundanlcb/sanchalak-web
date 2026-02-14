@@ -1,6 +1,6 @@
 /**
  * Application Entry Point
- * Initializes providers: Theme, Auth, i18n, and React strict mode
+ * Initializes providers: Theme, Auth, QueryClient, and React strict mode
  */
 
 import { StrictMode } from 'react';
@@ -10,6 +10,9 @@ import './utils/i18n/i18nConfig'; // Initialize i18n
 import App from './App.tsx';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './features/auth/services/authContext';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { queryClient } from './lib/queryClient';
+import { persister } from './lib/persister';
 
 async function enableMocking() {
   if (import.meta.env.VITE_USE_MOCK_API !== 'true') {
@@ -24,12 +27,22 @@ async function enableMocking() {
 enableMocking().then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeProvider>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister }}
+        onSuccess={() => {
+          // Resume any mutations that were paused while offline
+          queryClient.resumePausedMutations();
+        }}
+      >
+        <ThemeProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </ThemeProvider>
+      </PersistQueryClientProvider>
     </StrictMode>,
   );
 });
+
 

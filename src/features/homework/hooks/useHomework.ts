@@ -1,79 +1,82 @@
-import { useState, useCallback, useEffect } from 'react';
+/**
+ * Homework Hook — TanStack Query powered
+ * Queries and mutations for homework CRUD with caching and offline support.
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { type Homework, type CreateHomeworkRequest } from '../types';
 
 export const useHomework = (initialClassId?: string) => {
-  const [exercises, setExercises] = useState<Homework[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const queryKey = ['homework', initialClassId ?? 'all'];
 
-  const fetchHomework = useCallback(async (classId?: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const url = classId ? `/api/homework?classId=${classId}` : '/api/homework';
+  // --- Query: Fetch homework list ---
+  const {
+    data: homeworkList = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<Homework[]>({
+    queryKey,
+    queryFn: async () => {
+      const url = initialClassId
+        ? `/api/homework?classId=${initialClassId}`
+        : '/api/homework';
       const response = await axios.get<Homework[]>(url);
-      setExercises(response.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch homework');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const createHomework = async (data: CreateHomeworkRequest & { files?: File[] }) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Simulate File Upload Logic here if needed.
-      // In real app, we upload files first -> get URLs -> submit payload.
-      // For mock, likely just send "attachments" metadata in body or multipart.
-      // Our handler likely expects JSON with 'attachments' array.
-      
+  // --- Mutation: Create homework ---
+  const createMutation = useMutation({
+    mutationFn: async (data: CreateHomeworkRequest & { files?: File[] }) => {
       const payload: CreateHomeworkRequest = {
         classId: data.classId,
         subjectId: data.subjectId,
         title: data.title,
         description: data.description,
         dueDate: data.dueDate,
-        attachments: data.attachments || []
-        // We assume 'files' are processed into 'attachments' by the component
+        attachments: data.attachments || [],
       };
-
       const response = await axios.post<Homework>('/api/homework', payload);
-      setExercises((prev) => [response.data, ...prev]);
       return response.data;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to create homework';
-      setError(msg);
-      throw new Error(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['homework'] });
+    },
+  });
 
-  const deleteHomework = async (id: string) => {
-    setIsLoading(true);
-    try {
-        await axios.delete(`/api/homework/${id}`);
-        setExercises(prev => prev.filter(h => h.id !== id));
-    } catch (err) {
-        setError("Failed to delete homework");
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchHomework(initialClassId);
-  }, [fetchHomework, initialClassId]);
+  // --- Mutation: Delete homework ---
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await axios.delete(`/api/homework/${id}`);
+      return id;
+    },
+    onMutate: async (id: string) => {
+      // Optimistic: remove from list immediately
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<Homework[]>(queryKey);
+      queryClient.setQueryData<Homework[]>(queryKey, (old) =>
+        old?.filter((h) => h.id !== id) ?? [],
+      );
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      queryClient.setQueryData(queryKey, context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['homework'] });
+    },
+  });
 
   return {
-    homeworkList: exercises,
-    isLoading,
-    error,
-    createHomework,
-    deleteHomework,
-    refetch: fetchHomework
+    homeworkList,
+    isLoading: isLoading || createMutation.isPending || deleteMutation.isPending,
+    error: queryError?.message ?? createMutation.error?.message ?? deleteMutation.error?.message ?? null,
+    createHomework: createMutation.mutateAsync,
+    deleteHomework: deleteMutation.mutateAsync,
+    refetch,
   };
 };
