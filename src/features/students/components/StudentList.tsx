@@ -365,7 +365,7 @@ export const StudentList: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      Grade {student.classID.includes('00001') ? '1' : student.classID.includes('00003') ? '5' : '8'}-{student.section}
+                      Grade {student.classID?.includes('00001') ? '1' : student.classID?.includes('00003') ? '5' : '8'}-{student.section}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {student.rollNumber}
