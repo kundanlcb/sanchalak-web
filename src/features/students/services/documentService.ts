@@ -4,16 +4,6 @@
  */
 
 import apiClient from '../../../services/api/client';
-import API_CONFIG from '../../../services/api/config';
-import {
-  handleUploadDocument,
-  handleGetDocuments,
-  handleGetDocument,
-  handleUpdateDocument,
-  handleDeleteDocument,
-  handleVerifyDocument,
-  handleBulkUploadDocuments,
-} from '../../../mocks/handlers/documentHandlers';
 import type {
   UploadDocumentRequest,
   UploadDocumentResponse,
@@ -35,10 +25,6 @@ import type {
 export async function uploadDocument(
   request: UploadDocumentRequest
 ): Promise<UploadDocumentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleUploadDocument(request);
-  }
-  
   // In real API, use FormData for file upload
   const formData = new FormData();
   formData.append('file', request.file as File);
@@ -49,7 +35,7 @@ export async function uploadDocument(
   formData.append('entityID', request.entityID);
   if (request.isPublic !== undefined) formData.append('isPublic', String(request.isPublic));
   if (request.expiryDate) formData.append('expiryDate', request.expiryDate);
-  
+
   const response = await apiClient.post<UploadDocumentResponse>('/documents', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -62,10 +48,6 @@ export async function uploadDocument(
  * Get documents with filters
  */
 export async function getDocuments(query: GetDocumentsQuery): Promise<GetDocumentsResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleGetDocuments(query);
-  }
-  
   const response = await apiClient.get<GetDocumentsResponse>('/documents', {
     params: query,
   });
@@ -76,10 +58,6 @@ export async function getDocuments(query: GetDocumentsQuery): Promise<GetDocumen
  * Get single document
  */
 export async function getDocument(documentID: string): Promise<GetDocumentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleGetDocument({ documentID });
-  }
-  
   const response = await apiClient.get<GetDocumentResponse>(`/documents/${documentID}`);
   return response.data;
 }
@@ -90,10 +68,6 @@ export async function getDocument(documentID: string): Promise<GetDocumentRespon
 export async function updateDocument(
   request: UpdateDocumentRequest
 ): Promise<UpdateDocumentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleUpdateDocument(request);
-  }
-  
   const response = await apiClient.put<UpdateDocumentResponse>(
     `/documents/${request.documentID}`,
     request
@@ -105,10 +79,6 @@ export async function updateDocument(
  * Delete document
  */
 export async function deleteDocument(documentID: string): Promise<DeleteDocumentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleDeleteDocument({ documentID });
-  }
-  
   const response = await apiClient.delete<DeleteDocumentResponse>(`/documents/${documentID}`);
   return response.data;
 }
@@ -119,10 +89,6 @@ export async function deleteDocument(documentID: string): Promise<DeleteDocument
 export async function verifyDocument(
   request: VerifyDocumentRequest
 ): Promise<VerifyDocumentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleVerifyDocument(request);
-  }
-  
   const response = await apiClient.post<VerifyDocumentResponse>(
     `/documents/${request.documentID}/verify`,
     request
@@ -136,10 +102,6 @@ export async function verifyDocument(
 export async function bulkUploadDocuments(
   request: BulkUploadDocumentRequest
 ): Promise<BulkUploadDocumentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleBulkUploadDocuments(request);
-  }
-  
   const formData = new FormData();
   request.documents.forEach((doc, index) => {
     formData.append(`files[${index}]`, doc.file as File);
@@ -150,7 +112,7 @@ export async function bulkUploadDocuments(
       entityID: doc.entityID,
     }));
   });
-  
+
   const response = await apiClient.post<BulkUploadDocumentResponse>(
     '/documents/bulk-upload',
     formData,

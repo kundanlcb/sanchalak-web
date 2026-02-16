@@ -12,7 +12,7 @@ import { Input } from '../../../components/common/Input';
 import { Skeleton } from '../../../components/common/Skeleton';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
 import { useToast } from '../../../components/common/ToastContext';
-import { getStudents, deleteStudent } from '../services/studentService';
+import { getStudents, deleteStudent, bulkImportStudents } from '../services/studentService';
 import type { Student, StudentListQuery } from '../types/student.types';
 
 export const StudentList: React.FC = () => {
@@ -20,30 +20,62 @@ export const StudentList: React.FC = () => {
   const { showToast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
   const [error, setError] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const downloadRef = React.useRef<HTMLAnchorElement>(null);
+
+  const triggerImport = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Reset input so same file can be selected again if needed
+    event.target.value = '';
+
+    try {
+      setImporting(true);
+      const response = await bulkImportStudents({ file });
+      if (response.success) {
+        showToast(response.message || 'Students imported successfully', 'success');
+        fetchStudents();
+      } else {
+        showToast('Failed to import students', 'error');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to import students';
+      showToast(errorMessage, 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   // Filters and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 50;
-  
+
   // Fetch students
   const fetchStudents = async () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const query: StudentListQuery = {
         page: currentPage,
         limit,
         search: searchTerm,
-        sortBy: 'rollNumber',
+        sortBy: 'rollNo',
         sortOrder: 'asc',
       };
-      
+
       const response = await getStudents(query);
       setStudents(response.students);
       setTotal(response.total);
@@ -67,20 +99,20 @@ export const StudentList: React.FC = () => {
       setDeleteId(null);
     }
   };
-  
+
   useEffect(() => {
     fetchStudents();
   }, [currentPage, searchTerm]);
-  
+
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setCurrentPage(1); // Reset to page 1 on search
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, [searchTerm]);
-  
+
   return (
     <div className="space-y-4 sm:space-y-6 animate-in">
       {/* Header */}
@@ -96,26 +128,74 @@ export const StudentList: React.FC = () => {
             </span>
           </div>
         </div>
-        
+
         <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
-          <Button variant="outline" onClick={() => {}} className="flex-1 sm:flex-none justify-center">
-            <Upload className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Import</span>
-            <span className="sm:hidden">Imp</span>
-          </Button>
-          <Button variant="outline" onClick={() => {}} className="flex-1 sm:flex-none justify-center">
-            <Download className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Export</span>
-            <span className="sm:hidden">Exp</span>
-          </Button>
-          <Button onClick={() => navigate('/students/new')} className="flex-1 sm:flex-none justify-center whitespace-nowrap">
-            <Plus className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Add Student</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept=".csv"
+            onChange={handleImport}
+          />
+          <a
+            href="/assets/student_import_template.csv"
+            download
+            className="hidden"
+            ref={downloadRef}
+          >
+            Template
+          </a>
+
+          {/* Mobile Actions Menu */}
+          <div className="sm:hidden flex gap-2 w-full">
+            <Button
+              variant="outline"
+              onClick={triggerImport}
+              className="flex-1 justify-center"
+              disabled={importing}
+              title="Import Students"
+            >
+              <Upload className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => downloadRef.current?.click()}
+              className="flex-1 justify-center"
+              title="Download Template"
+            >
+              <Download className="w-4 h-4" />
+            </Button>
+            <Button onClick={() => navigate('/students/new')} className="flex-1 justify-center">
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden sm:flex gap-3">
+            <Button
+              variant="outline"
+              onClick={triggerImport}
+              disabled={importing}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {importing ? 'Importing...' : 'Import'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => downloadRef.current?.click()}
+              title="Download CSV Template"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Template
+            </Button>
+            <Button onClick={() => navigate('/students/new')}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Student
+            </Button>
+          </div>
         </div>
       </div>
-      
+
       {/* Search and Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-soft border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex gap-4">
@@ -132,14 +212,14 @@ export const StudentList: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Error Message */}
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-800 dark:text-red-200">{error}</p>
         </div>
       )}
-      
+
       {/* Students Table */}
       {loading ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-soft-lg overflow-hidden">
@@ -269,14 +349,14 @@ export const StudentList: React.FC = () => {
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
                           <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                            <span className="text-blue-600 dark:text-blue-300 font-medium">
-                              {student.name.charAt(0)}
+                            <span className="font-medium text-primary-700">
+                              {(student.name || student.firstName || '?').charAt(0).toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {student.name}
+                            {student.name || student.firstName}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             {student.admissionNumber}
@@ -295,11 +375,10 @@ export const StudentList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          student.status === 'Active'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                        }`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'Active'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                          }`}
                       >
                         {student.status}
                       </span>
@@ -335,7 +414,7 @@ export const StudentList: React.FC = () => {
               </tbody>
             </table>
           </div>
-          
+
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -379,7 +458,7 @@ export const StudentList: React.FC = () => {
           )}
         </div>
       )}
-      
+
       <ConfirmationDialog
         isOpen={!!deleteId}
         title="Delete Student"

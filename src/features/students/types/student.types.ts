@@ -20,6 +20,8 @@ export type { StudentProfileDto } from '../../../api/models/student-profile-dto'
 
 export interface Student {
   studentID: string;
+  firstName?: string;
+  lastName?: string;
   name: string;
   dateOfBirth: string;
   gender: Gender;
@@ -162,7 +164,7 @@ export interface StudentListQuery {
   academicYear?: string;
   status?: StudentStatus;
   gender?: Gender;
-  sortBy?: 'name' | 'rollNumber' | 'admissionDate' | 'dateOfBirth';
+  sortBy?: 'name' | 'rollNo' | 'admissionDate' | 'dateOfBirth';
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -195,15 +197,10 @@ export interface DeleteStudentResponse {
 }
 
 export interface BulkImportStudentRequest {
-  students: CreateStudentRequest[];
+  file: File;
 }
 
 export interface BulkImportStudentResponse {
   success: boolean;
-  imported: number;
-  failed: number;
-  errors: Array<{
-    row: number;
-    error: string;
-  }>;
+  message: string;
 }

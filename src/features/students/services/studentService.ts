@@ -4,15 +4,6 @@
  */
 
 import apiClient from '../../../services/api/client';
-import API_CONFIG from '../../../services/api/config';
-import {
-  handleGetStudents,
-  handleGetStudent,
-  handleCreateStudent,
-  handleUpdateStudent,
-  handleDeleteStudent,
-  handleBulkImportStudents,
-} from '../../../mocks/handlers/studentHandlers';
 import type {
   StudentListQuery,
   StudentListResponse,
@@ -30,13 +21,38 @@ import type {
  * Get list of students with filters and pagination
  */
 export async function getStudents(query: StudentListQuery): Promise<StudentListResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleGetStudents(query);
-  }
-  
-  const response = await apiClient.get<StudentListResponse>('/students', {
+  // Use 'any' generic because backend returns Page<StudentResponse> structure
+  const response = await apiClient.get<any>('/academics/students', {
     params: query,
   });
+
+  // Handle Spring Page response
+  if (response.data.content && Array.isArray(response.data.content)) {
+    return {
+      success: true,
+      students: response.data.content,
+      total: response.data.totalElements,
+      page: response.data.number + 1, // Convert 0-based backend page to 1-based frontend
+      limit: response.data.size,
+      totalPages: response.data.totalPages,
+    };
+  }
+
+  // Fallback for legacy raw list (just in case)
+  if (Array.isArray(response.data)) {
+    const students = response.data;
+    const limit = query.limit || 50;
+    const total = students.length;
+    return {
+      success: true,
+      students: students,
+      total: total,
+      page: query.page || 1,
+      limit: limit,
+      totalPages: Math.ceil(total / limit) || 1,
+    };
+  }
+
   return response.data;
 }
 
@@ -44,11 +60,7 @@ export async function getStudents(query: StudentListQuery): Promise<StudentListR
  * Get single student by ID
  */
 export async function getStudent(studentID: string): Promise<GetStudentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleGetStudent({ studentID });
-  }
-  
-  const response = await apiClient.get<GetStudentResponse>(`/students/${studentID}`);
+  const response = await apiClient.get<GetStudentResponse>(`/academics/students/${studentID}`);
   return response.data;
 }
 
@@ -58,11 +70,7 @@ export async function getStudent(studentID: string): Promise<GetStudentResponse>
 export async function createStudent(
   request: CreateStudentRequest
 ): Promise<CreateStudentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleCreateStudent(request);
-  }
-  
-  const response = await apiClient.post<CreateStudentResponse>('/students', request);
+  const response = await apiClient.post<CreateStudentResponse>('/academics/students', request);
   return response.data;
 }
 
@@ -72,12 +80,8 @@ export async function createStudent(
 export async function updateStudent(
   request: UpdateStudentRequest
 ): Promise<UpdateStudentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleUpdateStudent(request);
-  }
-  
   const response = await apiClient.put<UpdateStudentResponse>(
-    `/students/${request.studentID}`,
+    `/academics/students/${request.studentID}`,
     request
   );
   return response.data;
@@ -87,11 +91,7 @@ export async function updateStudent(
  * Delete student (soft delete)
  */
 export async function deleteStudent(studentID: string): Promise<DeleteStudentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleDeleteStudent({ studentID });
-  }
-  
-  const response = await apiClient.delete<DeleteStudentResponse>(`/students/${studentID}`);
+  const response = await apiClient.delete<DeleteStudentResponse>(`/academics/students/${studentID}`);
   return response.data;
 }
 
@@ -101,15 +101,18 @@ export async function deleteStudent(studentID: string): Promise<DeleteStudentRes
 export async function bulkImportStudents(
   request: BulkImportStudentRequest
 ): Promise<BulkImportStudentResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleBulkImportStudents(request);
-  }
-  
-  const response = await apiClient.post<BulkImportStudentResponse>(
-    '/students/bulk-import',
-    request
+  const formData = new FormData();
+  formData.append('file', request.file);
+
+  const response = await apiClient.post<string>(
+    '/academics/students/bulk-import',
+    formData
   );
-  return response.data;
+
+  return {
+    success: true,
+    message: response.data
+  };
 }
 
 /**

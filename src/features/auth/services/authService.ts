@@ -3,15 +3,7 @@
  * API client functions for auth operations
  */
 
-import API_CONFIG from '../../../services/api/config';
 import { authApi } from '../../../api/instances';
-import {
-  handleLoginOTP,
-  handleVerifyOTP,
-  handleLoginEmail,
-  handleRefreshToken,
-  handleLogout,
-} from '../../../mocks/handlers/authHandlers';
 // Import types from generated client and local types
 import type {
   LoginOTPResponse,
@@ -24,10 +16,6 @@ import type {
  * Request OTP for mobile number
  */
 export async function loginWithOTP(mobileNumber: string): Promise<LoginOTPResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleLoginOTP({ mobileNumber });
-  }
-
   try {
     const response = await authApi.requestOtp({ otpRequestDto: { mobileNumber } });
     // Map backend response to frontend expected format
@@ -48,14 +36,26 @@ export async function loginWithOTP(mobileNumber: string): Promise<LoginOTPRespon
 /**
  * Verify OTP and get auth token
  */
+const mapBackendRoleToFrontend = (backendRole: string): 'Admin' | 'Teacher' | 'Staff' | 'Parent' | 'Student' => {
+  switch (backendRole) {
+    case 'ROLE_ADMIN':
+      return 'Admin';
+    case 'ROLE_TEACHER':
+      return 'Teacher';
+    case 'ROLE_STUDENT':
+      return 'Student';
+    case 'ROLE_PARENT':
+      return 'Parent';
+    case 'ROLE_USER':
+    default:
+      return 'Staff'; // Default fallback
+  }
+};
+
 export async function verifyOTP(
   mobileNumber: string,
   otp: string
 ): Promise<AuthResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleVerifyOTP({ mobileNumber, otp });
-  }
-
   try {
     const response = await authApi.verifyOtp({ otpVerifyDto: { mobileNumber, otp } });
     const data = response.data.data;
@@ -73,7 +73,7 @@ export async function verifyOTP(
         name: `${data.user?.firstName || ''} ${data.user?.lastName || ''}`.trim(),
         email: data.user?.email || '',
         mobileNumber: data.user?.mobileNumber || '',
-        role: (data.user?.role as any) || 'ROLE_USER',
+        role: mapBackendRoleToFrontend(data.user?.role as string),
         themePreference: 'system',
         isActive: true, // Backend doesn't return this yet
         createdDate: new Date().toISOString()
@@ -93,10 +93,6 @@ export async function loginWithEmail(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleLoginEmail({ email, password });
-  }
-
   try {
     const response = await authApi.authenticateUser({ loginRequest: { email, password } });
 
@@ -117,10 +113,10 @@ export async function loginWithEmail(
       refreshToken: data.refreshToken,
       user: {
         userID: data.user?.userId || '',
-        name: `${data.user?.firstName} ${data.user?.lastName}`,
+        name: `${data.user?.firstName || ''} ${data.user?.lastName || ''}`.trim(),
         email: data.user?.email,
         mobileNumber: data.user?.mobileNumber,
-        role: data.user?.role,
+        role: mapBackendRoleToFrontend(data.user?.role as string),
         themePreference: 'system',
         isActive: true,
         createdDate: new Date().toISOString()
@@ -136,10 +132,6 @@ export async function loginWithEmail(
  * Refresh JWT token using refresh token
  */
 export async function refreshToken(refreshTokenValue: string): Promise<RefreshTokenResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleRefreshToken({ refreshToken: refreshTokenValue });
-  }
-
   try {
     const response = await authApi.refreshToken({ refreshTokenRequestDto: { refreshToken: refreshTokenValue } });
     const data = response.data.data;
@@ -160,10 +152,6 @@ export async function refreshToken(refreshTokenValue: string): Promise<RefreshTo
  * Logout current user
  */
 export async function logout(token: string): Promise<LogoutResponse> {
-  if (API_CONFIG.USE_MOCK_API) {
-    return handleLogout({ token });
-  }
-
   try {
     const response = await authApi.logout({ refreshTokenRequestDto: { refreshToken: token } });
 
