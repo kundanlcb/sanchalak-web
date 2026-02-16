@@ -22,7 +22,7 @@ export const StudentDetail: React.FC = () => {
   const { studentID } = useParams<{ studentID: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  
+
   const [student, setStudent] = useState<Student | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<Attendance[]>([]);
@@ -46,21 +46,21 @@ export const StudentDetail: React.FC = () => {
       setShowDeleteConfirm(false);
     }
   };
-  
+
   useEffect(() => {
     const fetchData = async () => {
       if (!studentID) return;
-      
+
       try {
         setLoading(true);
         setError('');
-        
+
         const [studentResponse, docsResponse, attendanceResponse] = await Promise.all([
           getStudent(studentID),
           getStudentDocuments(studentID),
           getAttendance({ studentID, limit: 100 })
         ]);
-        
+
         setStudent(studentResponse.student);
         setDocuments(docsResponse.documents);
         setAttendanceHistory(attendanceResponse.attendances);
@@ -70,10 +70,10 @@ export const StudentDetail: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [studentID]);
-  
+
   if (loading) {
     return (
       <div className="space-y-6 animate-in">
@@ -95,19 +95,19 @@ export const StudentDetail: React.FC = () => {
             </div>
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                 <div className="space-y-2 w-full sm:w-auto">
-                    <Skeleton className="h-8 w-48 sm:w-64" />
-                    <Skeleton className="h-5 w-32 sm:w-48" />
-                 </div>
-                 <Skeleton className="h-6 w-20 rounded-full" />
+                <div className="space-y-2 w-full sm:w-auto">
+                  <Skeleton className="h-8 w-48 sm:w-64" />
+                  <Skeleton className="h-5 w-32 sm:w-48" />
+                </div>
+                <Skeleton className="h-6 w-20 rounded-full" />
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 py-4 border-t border-gray-100 dark:border-gray-700">
-                 {[...Array(4)].map((_, i) => (
-                    <div key={i} className="space-y-2">
-                       <Skeleton className="h-3 w-16" />
-                       <Skeleton className="h-5 w-full" />
-                    </div>
-                 ))}
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-5 w-full" />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -115,20 +115,20 @@ export const StudentDetail: React.FC = () => {
 
         {/* Tabs Skeleton */}
         <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 pb-2 overflow-x-auto">
-           <Skeleton className="h-8 w-24 shrink-0" />
-           <Skeleton className="h-8 w-32 shrink-0" />
-           <Skeleton className="h-8 w-28 shrink-0" />
+          <Skeleton className="h-8 w-24 shrink-0" />
+          <Skeleton className="h-8 w-32 shrink-0" />
+          <Skeleton className="h-8 w-28 shrink-0" />
         </div>
 
         {/* Content Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-           <Skeleton className="h-64 rounded-lg" />
-           <Skeleton className="h-64 rounded-lg" />
+          <Skeleton className="h-64 rounded-lg" />
+          <Skeleton className="h-64 rounded-lg" />
         </div>
       </div>
     );
   }
-  
+
   if (error || !student) {
     return (
       <div className="p-4 sm:p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -139,7 +139,7 @@ export const StudentDetail: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-4 sm:space-y-6 animate-in">
       {/* Top Navigation Bar */}
@@ -159,12 +159,12 @@ export const StudentDetail: React.FC = () => {
           </Button>
         </div>
       </div>
-      
+
       {/* Overview Card */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         {/* Decorative Header */}
         <div className="h-24 bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700"></div>
-        
+
         <div className="px-4 sm:px-6 pb-6">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 relative">
             {/* Avatar */}
@@ -178,12 +178,12 @@ export const StudentDetail: React.FC = () => {
               ) : (
                 <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-md">
                   <span className="text-3xl sm:text-5xl font-bold text-blue-600 dark:text-blue-400">
-                    {student.name.charAt(0)}
+                    {(student.name || student.firstName || '?').charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
             </div>
-            
+
             {/* Basic Info */}
             <div className="pt-2 sm:pt-4 flex-1 text-center sm:text-left min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
@@ -191,16 +191,15 @@ export const StudentDetail: React.FC = () => {
                   {student.name}
                 </h1>
                 <span
-                  className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium self-center sm:self-auto ${
-                    student.status === 'Active'
+                  className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium self-center sm:self-auto ${student.status === 'Active'
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                       : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                  }`}
+                    }`}
                 >
                   {student.status}
                 </span>
               </div>
-              
+
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
                 {student.studentID} • {student.admissionNumber}
               </p>
@@ -210,7 +209,7 @@ export const StudentDetail: React.FC = () => {
                 <div className="text-center sm:text-left">
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Class</p>
                   <p className="font-medium text-gray-900 dark:text-white truncate">
-                    Grade {student.classID.split('-')[2]}-{student.section}
+                    Grade {student.classID?.split('-')[2] || student.className || 'N/A'}-{student.section || 'A'}
                   </p>
                 </div>
                 <div className="text-center sm:text-left">
@@ -220,7 +219,7 @@ export const StudentDetail: React.FC = () => {
                 <div className="text-center sm:text-left">
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Date of Birth</p>
                   <p className="font-medium text-gray-900 dark:text-white truncate">
-                    {new Date(student.dateOfBirth).toLocaleDateString()}
+                    {student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
                 <div className="text-center sm:text-left">
@@ -232,43 +231,40 @@ export const StudentDetail: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
         <div className="flex gap-4 min-w-max">
           <button
             onClick={() => setActiveTab('info')}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === 'info'
+            className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'info'
                 ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
                 : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-            }`}
+              }`}
           >
             Information
           </button>
           <button
             onClick={() => setActiveTab('documents')}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === 'documents'
+            className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'documents'
                 ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
                 : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-            }`}
+              }`}
           >
             Documents ({documents.length})
           </button>
           <button
             onClick={() => setActiveTab('attendance')}
-            className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === 'attendance'
+            className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'attendance'
                 ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
                 : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-            }`}
+              }`}
           >
             Attendance
           </button>
         </div>
       </div>
-      
+
       {/* Tab Content */}
       {activeTab === 'info' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -277,7 +273,7 @@ export const StudentDetail: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Contact Information
             </h3>
-            
+
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-gray-400 shrink-0" />
@@ -286,7 +282,7 @@ export const StudentDetail: React.FC = () => {
                   <p className="font-medium text-gray-900 dark:text-white truncate">{student.mobileNumber}</p>
                 </div>
               </div>
-              
+
               {student.email && (
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-gray-400 shrink-0" />
@@ -296,27 +292,27 @@ export const StudentDetail: React.FC = () => {
                   </div>
                 </div>
               )}
-              
+
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Address</p>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {student.address.street}<br />
-                    {student.address.city}, {student.address.state}<br />
-                    {student.address.pincode}, {student.address.country}
+                    {student.address?.street || 'N/A'}<br />
+                    {student.address?.city || ''}, {student.address?.state || ''}<br />
+                    {student.address?.pincode || ''}, {student.address?.country || ''}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          
+
           {/* Parent Information */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Parent/Guardian Information
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
@@ -324,27 +320,27 @@ export const StudentDetail: React.FC = () => {
                 </p>
                 <div className="space-y-2">
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {student.primaryParent.name}
+                    {student.primaryParent?.name || 'N/A'}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {student.primaryParent.relationship}
+                    {student.primaryParent?.relationship || ''}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {student.primaryParent.mobileNumber}
+                    {student.primaryParent?.mobileNumber || ''}
                   </p>
-                  {student.primaryParent.email && (
+                  {student.primaryParent?.email && (
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {student.primaryParent.email}
                     </p>
                   )}
-                  {student.primaryParent.occupation && (
+                  {student.primaryParent?.occupation && (
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {student.primaryParent.occupation}
                     </p>
                   )}
                 </div>
               </div>
-              
+
               {student.secondaryParent && (
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
@@ -367,13 +363,13 @@ export const StudentDetail: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {activeTab === 'documents' && (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Documents ({documents.length})
           </h3>
-          
+
           {documents.length === 0 ? (
             <p className="text-gray-600 dark:text-gray-400">No documents uploaded yet</p>
           ) : (
@@ -389,20 +385,19 @@ export const StudentDetail: React.FC = () => {
                       {doc.documentType} • {(doc.fileSize / 1024).toFixed(0)} KB
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full shrink-0 ${
-                        doc.verificationStatus === 'Verified'
+                      className={`px-2 py-1 text-xs font-semibold rounded-full shrink-0 ${doc.verificationStatus === 'Verified'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                           : doc.verificationStatus === 'Pending'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                      }`}
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                        }`}
                     >
                       {doc.verificationStatus}
                     </span>
-                    
+
                     <Button size="sm" variant="ghost">
                       View
                     </Button>
@@ -413,9 +408,9 @@ export const StudentDetail: React.FC = () => {
           )}
         </div>
       )}
-      
+
       {activeTab === 'attendance' && (
-        <AttendanceHistory 
+        <AttendanceHistory
           records={attendanceHistory.map(a => ({
             date: a.date,
             status: a.status,

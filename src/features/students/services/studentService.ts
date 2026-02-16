@@ -60,8 +60,13 @@ export async function getStudents(query: StudentListQuery): Promise<StudentListR
  * Get single student by ID
  */
 export async function getStudent(studentID: string): Promise<GetStudentResponse> {
-  const response = await apiClient.get<GetStudentResponse>(`/academics/students/${studentID}`);
-  return response.data;
+  const response = await apiClient.get<any>(`/academics/students/${studentID}`);
+  // Handle direct StudentResponse or wrapped GetStudentResponse
+  const student = response.data.student || response.data;
+  return {
+    success: true,
+    student: student,
+  };
 }
 
 /**
@@ -70,8 +75,14 @@ export async function getStudent(studentID: string): Promise<GetStudentResponse>
 export async function createStudent(
   request: CreateStudentRequest
 ): Promise<CreateStudentResponse> {
-  const response = await apiClient.post<CreateStudentResponse>('/academics/students', request);
-  return response.data;
+  const response = await apiClient.post<any>('/academics/students', request);
+  const student = response.data;
+  return {
+    success: true,
+    studentID: student.studentID || String(student.id),
+    admissionNumber: student.admissionNumber || '',
+    message: 'Student created successfully',
+  };
 }
 
 /**
@@ -80,11 +91,15 @@ export async function createStudent(
 export async function updateStudent(
   request: UpdateStudentRequest
 ): Promise<UpdateStudentResponse> {
-  const response = await apiClient.put<UpdateStudentResponse>(
+  const response = await apiClient.put<any>(
     `/academics/students/${request.studentID}`,
     request
   );
-  return response.data;
+  return {
+    success: true,
+    student: response.data,
+    message: 'Student updated successfully',
+  };
 }
 
 /**

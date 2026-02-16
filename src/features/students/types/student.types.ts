@@ -19,27 +19,29 @@ export type { StudentProfileDto } from '../../../api/models/student-profile-dto'
 // ============================================================================
 
 export interface Student {
+  id?: number | string;
   studentID: string;
   firstName?: string;
   lastName?: string;
   name: string;
-  dateOfBirth: string;
+  dateOfBirth?: string;
   gender: Gender;
   bloodGroup?: BloodGroup;
-  admissionDate: string;
+  admissionDate?: string;
   admissionNumber: string;
   classID: string;
+  className?: string; // For frontend compatibility
   rollNumber: number;
   section: string;
-  academicYear: string;
+  academicYear?: string;
 
   // Contact Information
   mobileNumber: string;
   email?: string;
-  address: Address;
+  address?: Address;
 
   // Parent/Guardian Information
-  primaryParent: ParentInfo;
+  primaryParent?: ParentInfo;
   secondaryParent?: ParentInfo;
 
   // Academic Information
@@ -52,12 +54,12 @@ export interface Student {
   allergies?: string[];
 
   // Status
-  isActive: boolean;
+  isActive?: boolean;
   status: StudentStatus;
 
   // Metadata
-  createdBy: string;
-  createdDate: string;
+  createdBy?: string;
+  createdDate?: string;
   updatedBy?: string;
   updatedDate?: string;
 }
