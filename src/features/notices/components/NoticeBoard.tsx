@@ -98,7 +98,7 @@ export const NoticeBoard: React.FC = () => {
               className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          
+
           <div className="relative">
             <select
               value={audienceFilter}
@@ -163,7 +163,7 @@ export const NoticeBoard: React.FC = () => {
           <div className="text-center py-12 text-red-600 bg-red-50 dark:bg-red-900/10 rounded-xl">
             {error}
           </div>
-        ) : notices.length === 0 ? (
+        ) : (!notices || notices.length === 0) ? (
           <div className="text-center py-12 text-gray-500 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-dashed border-2 border-gray-200 dark:border-gray-700">
             <Bell className="w-12 h-12 mx-auto mb-3 text-gray-300" />
             <p>No notices found matching your filters</p>
@@ -179,7 +179,7 @@ export const NoticeBoard: React.FC = () => {
                 />
               ))}
             </div>
-            
+
             {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 pt-4">

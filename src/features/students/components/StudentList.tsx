@@ -40,7 +40,7 @@ export const StudentList: React.FC = () => {
 
     try {
       setImporting(true);
-      const response = await bulkImportStudents({ file });
+      const response = await bulkImportStudents({ file, students: [] });
       if (response.success) {
         showToast(response.message || 'Students imported successfully', 'success');
         fetchStudents();

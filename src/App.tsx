@@ -297,6 +297,17 @@ function App() {
                 }
               />
 
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedLayout>
+                      <div className="p-8 text-center text-gray-500">Settings coming soon...</div>
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Catch-all redirect */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

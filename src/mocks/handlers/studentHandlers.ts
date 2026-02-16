@@ -18,6 +18,8 @@ import type {
   DeleteStudentResponse,
   BulkImportStudentRequest,
   BulkImportStudentResponse,
+  Address,
+  ParentInfo,
 } from '../../features/students/types/student.types';
 
 // Simulate network delay
@@ -122,12 +124,12 @@ export async function handleGetStudents(
         bValue = b.rollNumber;
         break;
       case 'admissionDate':
-        aValue = new Date(a.admissionDate).getTime();
-        bValue = new Date(b.admissionDate).getTime();
+        aValue = new Date(a.admissionDate || '').getTime();
+        bValue = new Date(b.admissionDate || '').getTime();
         break;
       case 'dateOfBirth':
-        aValue = new Date(a.dateOfBirth).getTime();
-        bValue = new Date(b.dateOfBirth).getTime();
+        aValue = new Date(a.dateOfBirth || '').getTime();
+        bValue = new Date(b.dateOfBirth || '').getTime();
         break;
       default:
         aValue = a.rollNumber;
@@ -285,12 +287,27 @@ export async function handleUpdateStudent(
     ...(request.section && { section: request.section }),
     ...(request.mobileNumber && { mobileNumber: request.mobileNumber }),
     ...(request.email && { email: request.email }),
-    ...(request.address && { address: { ...existingStudent.address, ...request.address } }),
+    ...(request.address && {
+      address: {
+        ...existingStudent.address,
+        ...(request.address.street && { street: request.address.street }),
+        ...(request.address.city && { city: request.address.city }),
+        ...(request.address.state && { state: request.address.state }),
+        ...(request.address.pincode && { pincode: request.address.pincode }),
+        ...(request.address.country && { country: request.address.country }),
+      } as Address,
+    }),
     ...(request.primaryParent && {
-      primaryParent: { ...existingStudent.primaryParent, ...request.primaryParent },
+      primaryParent: {
+        ...existingStudent.primaryParent,
+        ...request.primaryParent,
+      } as ParentInfo,
     }),
     ...(request.secondaryParent && existingStudent.secondaryParent && {
-      secondaryParent: { ...existingStudent.secondaryParent, ...request.secondaryParent },
+      secondaryParent: {
+        ...existingStudent.secondaryParent,
+        ...request.secondaryParent,
+      } as ParentInfo,
     }),
     ...(request.profilePhoto && { profilePhoto: request.profilePhoto }),
     ...(request.medicalConditions && { medicalConditions: request.medicalConditions }),
@@ -346,11 +363,11 @@ export async function handleBulkImportStudents(
   request: BulkImportStudentRequest
 ): Promise<BulkImportStudentResponse> {
   await delay(500);
-  
+
   let imported = 0;
   let failed = 0;
   const errors: Array<{ row: number; error: string }> = [];
-  
+
   for (let i = 0; i < request.students.length; i++) {
     try {
       await handleCreateStudent(request.students[i]);
@@ -363,9 +380,10 @@ export async function handleBulkImportStudents(
       });
     }
   }
-  
+
   return {
     success: true,
+    message: `Imported ${imported} students successfully.`,
     imported,
     failed,
     errors,

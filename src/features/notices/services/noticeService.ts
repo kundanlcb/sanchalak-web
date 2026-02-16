@@ -8,8 +8,20 @@ import type {
 } from '../types/notice.types';
 
 export const getNotices = async (query: NoticeListQuery): Promise<NoticeListResponse> => {
-  const response = await apiClient.get<NoticeListResponse>('/notices', { params: query });
-  return response.data;
+  const response = await apiClient.get<any>('/notices', { params: query });
+  // The backend returns ApiResult<Map<String, Object>>
+  // where data contains { notices: [], unreadCount: X, totalCount: Y }
+  if (response.data?.success && response.data?.data) {
+    const { notices, totalCount } = response.data.data;
+    return {
+      notices: notices || [],
+      total: totalCount || 0,
+      page: query.page || 1,
+      limit: query.limit || 10,
+      totalPages: Math.ceil((totalCount || 0) / (query.limit || 10))
+    };
+  }
+  return { notices: [], total: 0, page: 1, limit: 10, totalPages: 1 };
 };
 
 export const getNotice = async (id: string): Promise<Notice> => {

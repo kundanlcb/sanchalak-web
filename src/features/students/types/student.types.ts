@@ -199,10 +199,14 @@ export interface DeleteStudentResponse {
 }
 
 export interface BulkImportStudentRequest {
-  file: File;
+  file?: File;
+  students: CreateStudentRequest[];
 }
 
 export interface BulkImportStudentResponse {
   success: boolean;
   message: string;
+  imported?: number;
+  failed?: number;
+  errors?: Array<{ row: number; error: string }>;
 }

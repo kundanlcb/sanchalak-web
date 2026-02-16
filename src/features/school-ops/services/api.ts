@@ -33,7 +33,7 @@ export const schoolOpsApi = {
 
   // Classes
   getClasses: async (): Promise<Class[]> => {
-    const response = await client.get<Class[]>(`${BASE_URL}/classes`);
+    const response = await client.get<Class[]>('/academic/classes');
     return response.data;
   },
 
@@ -50,7 +50,7 @@ export const schoolOpsApi = {
   // Subjects (from Academics module)
   getSubjects: async (): Promise<any[]> => {
     // Reusing the academics endpoint
-    const response = await client.get('/academics/subjects');
+    const response = await client.get('/academic/subjects');
     return response.data;
   },
 
@@ -64,7 +64,7 @@ export const schoolOpsApi = {
     const params = new URLSearchParams();
     if (filters?.classId) params.append('classId', filters.classId);
     if (filters?.teacherId) params.append('teacherId', filters.teacherId);
-    
+
     const response = await client.get<Routine[]>(`${BASE_URL}/routines?${params.toString()}`);
     return response.data;
   },

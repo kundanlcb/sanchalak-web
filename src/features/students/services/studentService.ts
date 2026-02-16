@@ -117,7 +117,9 @@ export async function bulkImportStudents(
   request: BulkImportStudentRequest
 ): Promise<BulkImportStudentResponse> {
   const formData = new FormData();
-  formData.append('file', request.file);
+  if (request.file) {
+    formData.append('file', request.file);
+  }
 
   const response = await apiClient.post<string>(
     '/academics/students/bulk-import',

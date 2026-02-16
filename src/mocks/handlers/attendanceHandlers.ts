@@ -34,15 +34,15 @@ const generateAttendanceID = (): string => {
 // Simulate parent notification (Log only)
 const simulateParentNotification = (student: Student, date: string, status: AttendanceStatus): string => {
   const notificationID = `NOT-${Date.now()}`;
-  
+
   // Console log to simulate notification
   console.log(`
 🔔 PARENT NOTIFICATION SENT (Mock Simulation)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📧 Notification ID: ${notificationID}
-👨‍👩‍👧 Parent: ${student.primaryParent.name}
-📱 Mobile: ${student.primaryParent.mobileNumber}
-📧 Email: ${student.primaryParent.email || 'N/A'}
+👨‍👩‍👧 Parent: ${student.primaryParent?.name || 'N/A'}
+📱 Mobile: ${student.primaryParent?.mobileNumber || 'N/A'}
+📧 Email: ${student.primaryParent?.email || 'N/A'}
 
 👤 Student: ${student.name} (${student.studentID})
 📅 Date: ${date}
@@ -55,29 +55,29 @@ ${status === 'Absent' ? 'Please contact the school if this is unexpected.' : ''}
 ✅ Sent via: SMS, Email, Push Notification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   `);
-  
+
   return notificationID;
 };
 
 // Mark individual attendance
 export const handleMarkAttendance = async (request: MarkAttendanceRequest): Promise<MarkAttendanceResponse> => {
   await new Promise(resolve => setTimeout(resolve, 200));
-  
+
   // Validate student exists
   const student = db.students.find(s => s.studentID === request.studentID);
   if (!student) {
     throw new Error(`Student ${request.studentID} not found`);
   }
-  
+
   // Check if attendance already exists for this date
   const existingIndex = db.attendance.findIndex(
     a => a.studentID === request.studentID && a.classID === request.classID && a.date === request.date
   );
-  
+
   if (existingIndex !== -1) {
     throw new Error(`Attendance already marked for ${student.name} on ${request.date}`);
   }
-  
+
   // Create attendance record
   const attendance: Attendance = {
     attendanceID: generateAttendanceID(),
@@ -90,17 +90,17 @@ export const handleMarkAttendance = async (request: MarkAttendanceRequest): Prom
     remarks: request.remarks,
     isModified: false,
   };
-  
+
   db.attendance.push(attendance);
   persistAttendance();
-  
+
   // Send notification if absent or late
   const notifications: string[] = [];
   if (request.status === 'Absent' || request.status === 'Late') {
     const notificationID = simulateParentNotification(student, request.date, request.status);
     notifications.push(notificationID);
   }
-  
+
   return {
     success: true,
     attendanceID: attendance.attendanceID,
@@ -112,17 +112,17 @@ export const handleMarkAttendance = async (request: MarkAttendanceRequest): Prom
 // Bulk mark attendance for entire class
 export const handleBulkMarkAttendance = async (request: BulkMarkAttendanceRequest): Promise<BulkMarkAttendanceResponse> => {
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   let marked = 0;
   const errors: Array<{ studentID: string; error: string }> = [];
-  
+
   for (const item of request.attendances) {
     try {
       // Check if already exists
       const existing = db.attendance.find(
         a => a.studentID === item.studentID && a.classID === request.classID && a.date === request.date
       );
-      
+
       if (existing) {
         // If it exists, update it instead of erroring in bulk mode?
         // Spec says "Mark All Present" often used as default. 
@@ -130,13 +130,13 @@ export const handleBulkMarkAttendance = async (request: BulkMarkAttendanceReques
         errors.push({ studentID: item.studentID, error: 'Already marked' });
         continue;
       }
-      
+
       const student = db.students.find(s => s.studentID === item.studentID);
       if (!student) {
         errors.push({ studentID: item.studentID, error: 'Student not found' });
         continue;
       }
-      
+
       // Create record
       const attendance: Attendance = {
         attendanceID: generateAttendanceID(),
@@ -149,10 +149,10 @@ export const handleBulkMarkAttendance = async (request: BulkMarkAttendanceReques
         remarks: item.remarks,
         isModified: false,
       };
-      
+
       db.attendance.push(attendance);
       marked++;
-      
+
       // Send notification if absent or late
       if (item.status === 'Absent' || item.status === 'Late') {
         simulateParentNotification(student, request.date, item.status);
@@ -161,11 +161,11 @@ export const handleBulkMarkAttendance = async (request: BulkMarkAttendanceReques
       errors.push({ studentID: item.studentID, error: err instanceof Error ? err.message : 'Unknown error' });
     }
   }
-  
+
   if (marked > 0) {
     persistAttendance();
   }
-  
+
   return {
     success: errors.length === 0,
     marked,
@@ -178,39 +178,39 @@ export const handleBulkMarkAttendance = async (request: BulkMarkAttendanceReques
 // Get attendance records
 export const handleGetAttendance = async (query: AttendanceQuery): Promise<AttendanceQueryResponse> => {
   await new Promise(resolve => setTimeout(resolve, 200));
-  
+
   let filtered = [...db.attendance];
-  
+
   // Apply filters
   if (query.studentID) {
     filtered = filtered.filter(a => a.studentID === query.studentID);
   }
-  
+
   if (query.classID) {
     filtered = filtered.filter(a => a.classID === query.classID);
   }
-  
+
   if (query.startDate) {
     filtered = filtered.filter(a => a.date >= query.startDate!);
   }
-  
+
   if (query.endDate) {
     filtered = filtered.filter(a => a.date <= query.endDate!);
   }
-  
+
   if (query.status) {
     filtered = filtered.filter(a => a.status === query.status);
   }
-  
+
   // Sort by date descending
   filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  
+
   // Pagination
   const page = query.page || 1;
   const limit = query.limit || 50;
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
-  
+
   return {
     attendances: filtered.slice(startIndex, endIndex),
     total: filtered.length,
@@ -223,24 +223,24 @@ export const handleGetAttendance = async (query: AttendanceQuery): Promise<Atten
 // Get class attendance sheet for specific date
 export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceSheetRequest): Promise<ClassAttendanceSheet> => {
   await new Promise(resolve => setTimeout(resolve, 250));
-  
+
   // Get all students in class
   // Note: classID is strict match. Students have classID like "CL-...", request is strict.
   const classStudents = db.students.filter(s => s.classID === request.classID);
-  
+
   if (classStudents.length === 0) {
     throw new Error(`No students found in class ${request.classID}`);
   }
-  
+
   // Get attendance for this date
   const dateAttendances = db.attendance.filter(
     a => a.classID === request.classID && a.date === request.date
   );
-  
+
   // Build student attendance list
   const studentAttendances: StudentAttendance[] = classStudents.map(student => {
     const attendance = dateAttendances.find(a => a.studentID === student.studentID);
-    
+
     return {
       studentID: student.studentID,
       name: student.name,
@@ -250,25 +250,25 @@ export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceS
       remarks: attendance?.remarks,
     };
   });
-  
+
   // Calculate counts
   const presentCount = studentAttendances.filter(s => s.status === 'Present').length;
   const absentCount = studentAttendances.filter(s => s.status === 'Absent').length;
   const lateCount = studentAttendances.filter(s => s.status === 'Late').length;
   const excusedCount = studentAttendances.filter(s => s.status === 'Excused').length;
-  
+
   const totalStudents = classStudents.length;
   const attendancePercentage = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
-  
+
   const isMarked = dateAttendances.length > 0;
   const firstRecord = dateAttendances[0];
 
-   // Find class detail
+  // Find class detail
   const classObj = db.classes.find(c => c.classID === request.classID);
-  const className = classObj 
+  const className = classObj
     ? (classObj.className || `Class ${classObj.grade}-${classObj.section}`)
     : request.classID;
-  
+
   return {
     classID: request.classID,
     className,
@@ -289,11 +289,11 @@ export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceS
 // Get attendance summary for student
 export const handleGetAttendanceSummary = async (request: GetAttendanceSummaryRequest): Promise<AttendanceSummary> => {
   await new Promise(resolve => setTimeout(resolve, 300));
-  
+
   if (!request.studentID) {
     throw new Error('Student ID is required');
   }
-  
+
   // Get attendance records for date range
   const records = db.attendance.filter(
     a =>
@@ -301,17 +301,17 @@ export const handleGetAttendanceSummary = async (request: GetAttendanceSummaryRe
       a.date >= request.startDate &&
       a.date <= request.endDate
   );
-  
+
   // Calculate counts
   const presentDays = records.filter(r => r.status === 'Present').length;
   const absentDays = records.filter(r => r.status === 'Absent').length;
   const lateDays = records.filter(r => r.status === 'Late').length;
   const excusedDays = records.filter(r => r.status === 'Excused').length;
   const holidayDays = records.filter(r => r.status === 'Holiday').length;
-  
+
   const totalDays = records.length;
   const attendancePercentage = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
-  
+
   return {
     studentID: request.studentID,
     startDate: request.startDate,
@@ -330,20 +330,20 @@ export const handleGetAttendanceSummary = async (request: GetAttendanceSummaryRe
 // Modify attendance (with 24hr rule check)
 export const handleModifyAttendance = async (request: ModifyAttendanceRequest): Promise<ModifyAttendanceResponse> => {
   await new Promise(resolve => setTimeout(resolve, 250));
-  
+
   const attendance = db.attendance.find(a => a.attendanceID === request.attendanceID);
-  
+
   if (!attendance) {
     throw new Error('Attendance record not found');
   }
-  
+
   // Check if modification is within 24 hours
   const markedTime = new Date(attendance.markedDate).getTime();
   const now = Date.now();
   const hoursDiff = (now - markedTime) / (1000 * 60 * 60);
-  
+
   const requiresApproval = hoursDiff > 24;
-  
+
   if (!requiresApproval) {
     // Direct update allowed
     attendance.status = request.status;
@@ -353,7 +353,7 @@ export const handleModifyAttendance = async (request: ModifyAttendanceRequest): 
     attendance.modifiedDate = new Date().toISOString();
 
     persistAttendance();
-    
+
     return {
       success: true,
       requiresApproval: false,
@@ -363,7 +363,7 @@ export const handleModifyAttendance = async (request: ModifyAttendanceRequest): 
     // Requires admin approval
     attendance.requiresApproval = true;
     persistAttendance();
-    
+
     console.log(`
 ⚠️  ATTENDANCE CORRECTION REQUEST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -377,7 +377,7 @@ export const handleModifyAttendance = async (request: ModifyAttendanceRequest): 
 ✋ Requires Admin Approval (>24hrs)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     `);
-    
+
     return {
       success: true,
       requiresApproval: true,
