@@ -64,9 +64,9 @@ export interface Student {
   updatedDate?: string;
 }
 
-export type Gender = 'Male' | 'Female' | 'Other';
+export type Gender = string;
 
-export type BloodGroup = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+export type BloodGroup = string;
 
 export type StudentStatus = 'Active' | 'Inactive' | 'Transferred' | 'Graduated' | 'Suspended';
 
@@ -89,7 +89,7 @@ export interface ParentInfo {
   isPrimaryContact: boolean;
 }
 
-export type Relationship = 'Father' | 'Mother' | 'Guardian' | 'Other';
+export type Relationship = string;
 
 // ============================================================================
 // Request/Response Types (domain layer)

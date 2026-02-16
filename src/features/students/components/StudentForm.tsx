@@ -8,6 +8,7 @@ import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { useToast } from '../../../components/common/ToastContext';
 import { createStudent, updateStudent, getStudent } from '../services/studentService';
+import { DOMAINS, getMasterValues, type MasterValue } from '../../../services/api/masterDataService';
 
 // Validation Schema
 const studentSchema = z.object({
@@ -20,8 +21,8 @@ const studentSchema = z.object({
   academicYear: z.string().min(1, 'Academic year is required'),
 
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
-  gender: z.enum(['Male', 'Female', 'Other'] as const),
-  bloodGroup: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const).optional(),
+  gender: z.string().min(1, 'Gender is required'), // Dynamic now
+  bloodGroup: z.string().optional(), // Dynamic now
 
   mobileNumber: z.string().regex(/^\d{10}$/, 'Valid 10-digit mobile number is required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
@@ -36,7 +37,7 @@ const studentSchema = z.object({
 
   primaryParent: z.object({
     name: z.string().min(1, 'Parent name is required'),
-    relationship: z.enum(['Father', 'Mother', 'Guardian', 'Other'] as const),
+    relationship: z.string().min(1, 'Relationship is required'), // Dynamic now
     mobileNumber: z.string().regex(/^\d{10}$/, 'Valid 10-digit mobile number is required'),
     email: z.string().email('Invalid email').optional().or(z.literal('')),
     occupation: z.string().optional(),
@@ -52,7 +53,12 @@ export const StudentForm: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(isEditMode);
+  const [initialLoading, setInitialLoading] = useState(true); // Start true to load masters
+
+  // Master Data State
+  const [genders, setGenders] = useState<MasterValue[]>([]);
+  const [bloodGroups, setBloodGroups] = useState<MasterValue[]>([]);
+  const [relations, setRelations] = useState<MasterValue[]>([]);
 
   const {
     register,
@@ -63,27 +69,39 @@ export const StudentForm: React.FC = () => {
   } = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
-      gender: 'Male',
+      gender: '',
       academicYear: '2025-2026', // Default for now
       address: {
         country: 'India',
         state: 'Maharashtra', // Default useful for local context
       },
       primaryParent: {
-        relationship: 'Father',
+        relationship: '',
         isPrimaryContact: true,
       }
     }
   });
 
-  // Fetch student data if in edit mode
+  // Fetch Master Data and Student Data
   useEffect(() => {
-    if (isEditMode && studentID) {
-      const fetchStudent = async () => {
-        try {
+    const loadData = async () => {
+      try {
+        // Parallel fetch for master data
+        const [genderList, bloodGroupList, relationList] = await Promise.all([
+          getMasterValues(DOMAINS.GENDER),
+          getMasterValues(DOMAINS.BLOOD_GROUP),
+          getMasterValues(DOMAINS.RELATION)
+        ]);
+
+        setGenders(genderList);
+        setBloodGroups(bloodGroupList);
+        setRelations(relationList);
+
+        // If edit mode, fetch student
+        if (isEditMode && studentID) {
           const response = await getStudent(studentID);
           const data = response.student;
-          // Map data to form structure
+
           reset({
             name: data.name,
             admissionNumber: data.admissionNumber,
@@ -94,31 +112,30 @@ export const StudentForm: React.FC = () => {
             academicYear: data.academicYear || '2025-2026',
             dateOfBirth: data?.dateOfBirth ? data.dateOfBirth.split('T')[0] : '',
             gender: data.gender,
-            bloodGroup: data.bloodGroup as any, // Cast to avoid enum mismatch with empty string/null
+            bloodGroup: data.bloodGroup || '',
             mobileNumber: data.mobileNumber,
             email: data.email || '',
             address: data.address,
             primaryParent: {
               name: data?.primaryParent?.name || '',
-              relationship: data?.primaryParent?.relationship || 'Father',
+              relationship: data?.primaryParent?.relationship || '',
               mobileNumber: data?.primaryParent?.mobileNumber || '',
               email: data?.primaryParent?.email || '',
               occupation: data?.primaryParent?.occupation || '',
               isPrimaryContact: data?.primaryParent?.isPrimaryContact ?? true,
             } as any
           });
-        } catch (err) {
-          console.error('Failed to fetch student:', err);
-          showToast('Failed to load student details', 'error');
-          navigate('/students');
-        } finally {
-          setInitialLoading(false);
         }
-      };
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        showToast('Failed to load data', 'error');
+      } finally {
+        setInitialLoading(false);
+      }
+    };
 
-      fetchStudent();
-    }
-  }, [isEditMode, studentID, reset, showToast, navigate]);
+    loadData();
+  }, [isEditMode, studentID, reset, showToast]);
 
   const onSubmit = async (data: StudentFormData) => {
     setLoading(true);
@@ -127,7 +144,6 @@ export const StudentForm: React.FC = () => {
         await updateStudent({
           studentID,
           ...data,
-          // Ensure dates are properly formatted if needed by backend, though YYYY-MM-DD usually works
         });
         showToast('Student updated successfully', 'success');
       } else {
@@ -290,12 +306,14 @@ export const StudentForm: React.FC = () => {
                     className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     {...field}
                   >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="">Select Gender</option>
+                    {genders.map((g) => (
+                      <option key={g.code} value={g.code}>{g.label}</option>
+                    ))}
                   </select>
                 )}
               />
+              {errors.gender && <p className="text-sm text-red-500 mt-1">{errors.gender.message}</p>}
             </div>
 
             <div className="space-y-1">
@@ -311,14 +329,9 @@ export const StudentForm: React.FC = () => {
                     {...field}
                   >
                     <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
+                    {bloodGroups.map((bg) => (
+                      <option key={bg.code} value={bg.code}>{bg.label}</option>
+                    ))}
                   </select>
                 )}
               />
@@ -406,13 +419,16 @@ export const StudentForm: React.FC = () => {
                     className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     {...field}
                   >
-                    <option value="Father">Father</option>
-                    <option value="Mother">Mother</option>
-                    <option value="Guardian">Guardian</option>
-                    <option value="Other">Other</option>
+                    <option value="">Select Relationship</option>
+                    {relations.map((r) => (
+                      <option key={r.code} value={r.code}>{r.label}</option>
+                    ))}
                   </select>
                 )}
               />
+              {errors.primaryParent?.relationship && (
+                <p className="text-sm text-red-500 mt-1">{errors.primaryParent.relationship.message}</p>
+              )}
             </div>
 
             <Input
