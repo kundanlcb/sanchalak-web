@@ -107,7 +107,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
 
           {/* Desktop Button */}
           <div className="hidden sm:block">
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={() => setIsModalOpen(true)} data-testid="add-class-btn">
               <Plus className="w-4 h-4 mr-2" />
               Add Class
             </Button>
@@ -124,6 +124,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
+            data-testid="class-search-input"
           />
         </div>
       </div>
@@ -194,7 +195,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredClasses.map((cls) => (
-                  <tr key={cls.classID} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <tr key={cls.classID} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" data-testid="class-row">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {cls.classID}
                     </td>
@@ -220,6 +221,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
                             variant="ghost"
                             onClick={() => handleEdit(cls)}
                             title="Edit"
+                            data-testid="edit-class-btn"
                           >
                             <Edit className="w-4 h-4 text-gray-500 hover:text-blue-600" />
                           </Button>
@@ -230,6 +232,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
                             variant="ghost"
                             onClick={() => setDeleteId(cls.classID)}
                             title="Delete"
+                            data-testid="delete-class-btn"
                           >
                             <Trash2 className="w-4 h-4 text-gray-500 hover:text-red-600" />
                           </Button>
@@ -290,6 +293,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
+              data-testid="submit-class-btn"
             >
               {editingId ? "Save Changes" : "Add Class"}
             </Button>
