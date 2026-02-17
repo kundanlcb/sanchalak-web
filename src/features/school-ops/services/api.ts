@@ -18,13 +18,23 @@ export const schoolOpsApi = {
     return response.data;
   },
 
-  createTeacher: async (data: Partial<Teacher>): Promise<Teacher> => {
-    const response = await client.post<Teacher>('/api/academics/teachers', data);
+  createTeacher: async (data: any): Promise<Teacher> => {
+    // Map specializedSubjects to specializationIds for backend compatibility
+    const payload = {
+      ...data,
+      specializationIds: data.specializedSubjects?.map((id: string) => parseInt(id, 10)).filter((id: number) => !isNaN(id))
+    };
+    const response = await client.post<Teacher>('/api/academics/teachers', payload);
     return response.data;
   },
 
-  updateTeacher: async (id: string, data: Partial<Teacher>): Promise<Teacher> => {
-    const response = await client.put<Teacher>(`/api/academics/teachers/${id}`, data);
+  updateTeacher: async (id: string, data: any): Promise<Teacher> => {
+    // Map specializedSubjects to specializationIds for backend compatibility
+    const payload = {
+      ...data,
+      specializationIds: data.specializedSubjects?.map((id: string) => parseInt(id, 10)).filter((id: number) => !isNaN(id))
+    };
+    const response = await client.put<Teacher>(`/api/academics/teachers/${id}`, payload);
     return response.data;
   },
 
@@ -57,7 +67,7 @@ export const schoolOpsApi = {
   },
 
   createSubject: async (data: any): Promise<any> => {
-    const response = await client.post('/api/academics/subjects', data);
+    const response = await client.post('/api/academic/subjects', data);
     return response.data;
   },
 
@@ -67,7 +77,7 @@ export const schoolOpsApi = {
     if (filters?.classId) params.append('classId', filters.classId);
     if (filters?.teacherId) params.append('teacherId', filters.teacherId);
 
-    const response = await client.get<Routine[]>(`/api/academics/routine?${params.toString()}`);
+    const response = await client.get<Routine[]>(`/api/academic/routine?${params.toString()}`);
     return response.data;
   },
 

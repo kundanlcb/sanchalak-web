@@ -3,7 +3,7 @@
  * Dual authentication: OTP (all users) and Email/Password (Admin only)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/authContext';
 import { Button } from '../../../components/common/Button';
@@ -18,27 +18,34 @@ type LoginMode = 'otp' | 'email';
 export const Login: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { loginWithOTP, verifyOTP, loginWithEmail, isLoading } = useAuth();
+  const { loginWithOTP, verifyOTP, loginWithEmail, isLoading, isAuthenticated } = useAuth();
 
   const [mode, setMode] = useState<LoginMode>('otp');
-  
+
   // OTP flow state
   const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpMessage, setOtpMessage] = useState('');
-  
+
   // Email flow state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   // Error handling
   const [error, setError] = useState('');
+
+  // Navigate to dashboard when authentication succeeds
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!mobileNumber || mobileNumber.length < 10) {
       setError('Please enter a valid mobile number');
       return;
@@ -56,7 +63,7 @@ export const Login: React.FC = () => {
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (otp.length !== 6) {
       setError('Please enter the 6-digit OTP');
       return;
@@ -64,7 +71,7 @@ export const Login: React.FC = () => {
 
     try {
       await verifyOTP(mobileNumber, otp);
-      navigate('/');
+      // Navigation will happen via useEffect when isAuthenticated becomes true
     } catch (err) {
       setError(err instanceof Error ? err.message : 'OTP verification failed');
       setOtp('');
@@ -74,7 +81,7 @@ export const Login: React.FC = () => {
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email || !password) {
       setError('Please enter email and password');
       return;
@@ -82,7 +89,7 @@ export const Login: React.FC = () => {
 
     try {
       await loginWithEmail(email, password);
-      navigate('/');
+      // Navigation will happen via useEffect when isAuthenticated becomes true
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
@@ -186,7 +193,7 @@ export const Login: React.FC = () => {
                   {otpMessage}
                 </div>
               )}
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Enter 6-digit OTP

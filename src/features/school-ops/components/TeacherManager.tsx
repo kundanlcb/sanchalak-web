@@ -43,9 +43,9 @@ export const TeacherManager: React.FC = () => {
   const handleSubjectToggle = (subjectId: string) => {
     const current = selectedSubjects || [];
     if (current.includes(subjectId)) {
-      setValue('specializedSubjects', current.filter(id => id !== subjectId));
+      setValue('specializedSubjects', current.filter(id => id !== subjectId), { shouldValidate: true });
     } else {
-      setValue('specializedSubjects', [...current, subjectId]);
+      setValue('specializedSubjects', [...current, subjectId], { shouldValidate: true });
     }
   };
 
@@ -82,7 +82,7 @@ export const TeacherManager: React.FC = () => {
     }
   };
 
-  const filteredTeachers = teachers.filter(teacher => 
+  const filteredTeachers = teachers.filter(teacher =>
     teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     teacher.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -128,8 +128,8 @@ export const TeacherManager: React.FC = () => {
       {/* Teacher List - Grid View */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredTeachers.map((teacher) => (
-          <div 
-            key={teacher.id} 
+          <div
+            key={teacher.id}
             className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow relative group"
           >
             <div className="flex justify-between items-start mb-4">
@@ -144,29 +144,29 @@ export const TeacherManager: React.FC = () => {
                       Active
                     </span>
                     {teacher.qualification && (
-                        <span>• {teacher.qualification}</span>
+                      <span>• {teacher.qualification}</span>
                     )}
                   </div>
                 </div>
               </div>
               <div className="flex gap-1">
-                  <button 
-                    onClick={() => handleEdit(teacher)}
-                    className="text-gray-400 hover:text-blue-500 p-1 transition-colors"
-                    title="Edit Teacher"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => removeTeacher(teacher.id)}
-                    className="text-gray-400 hover:text-red-500 p-1 transition-colors"
-                    title="Remove Teacher"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <button
+                  onClick={() => handleEdit(teacher)}
+                  className="text-gray-400 hover:text-blue-500 p-1 transition-colors"
+                  title="Edit Teacher"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => removeTeacher(teacher.id)}
+                  className="text-gray-400 hover:text-red-500 p-1 transition-colors"
+                  title="Remove Teacher"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            
+
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 flex-shrink-0" />
@@ -191,7 +191,7 @@ export const TeacherManager: React.FC = () => {
             </div>
           </div>
         ))}
-        
+
         {filteredTeachers.length === 0 && !loading && (
           <div className="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
             No teachers found. Click "Add Teacher" to get started.
@@ -211,7 +211,7 @@ export const TeacherManager: React.FC = () => {
             error={errors.name?.message}
             placeholder="e.g. John Doe"
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Email"
@@ -244,30 +244,30 @@ export const TeacherManager: React.FC = () => {
           </div>
 
           <div>
-             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Specialized Subjects
-             </label>
-             <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-3">
-               {subjects.map(subject => (
-                 <label key={subject.id} className="flex items-center space-x-2 text-sm cursor-pointer">
-                   <input
-                     type="checkbox"
-                     checked={selectedSubjects?.includes(subject.id)}
-                     onChange={() => handleSubjectToggle(subject.id)}
-                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                   />
-                   <span className="text-gray-700 dark:text-gray-300">{subject.name} ({subject.code})</span>
-                 </label>
-               ))}
-               {subjects.length === 0 && (
-                   <p className="col-span-2 text-xs text-gray-500 text-center py-2">
-                       No subjects found. Please add subjects in Academic Setup first.
-                   </p>
-               )}
-             </div>
-             {errors.specializedSubjects && (
-               <p className="mt-1 text-sm text-red-600">{errors.specializedSubjects.message}</p>
-             )}
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Specialized Subjects
+            </label>
+            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-3">
+              {subjects.map(subject => (
+                <label key={subject.id} className="flex items-center space-x-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedSubjects?.includes(String(subject.id))}
+                    onChange={() => handleSubjectToggle(String(subject.id))}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-700 dark:text-gray-300">{subject.name} ({subject.code})</span>
+                </label>
+              ))}
+              {subjects.length === 0 && (
+                <p className="col-span-2 text-xs text-gray-500 text-center py-2">
+                  No subjects found. Please add subjects in Academic Setup first.
+                </p>
+              )}
+            </div>
+            {errors.specializedSubjects && (
+              <p className="mt-1 text-sm text-red-600">{errors.specializedSubjects.message}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 mt-6">
