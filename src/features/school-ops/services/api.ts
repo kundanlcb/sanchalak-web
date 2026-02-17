@@ -20,9 +20,11 @@ export const schoolOpsApi = {
 
   createTeacher: async (data: any): Promise<Teacher> => {
     // Map specializedSubjects to specializationIds for backend compatibility
+    const { specializedSubjects, ...rest } = data;
     const payload = {
-      ...data,
-      specializationIds: data.specializedSubjects?.map((id: string) => parseInt(id, 10)).filter((id: number) => !isNaN(id))
+      ...rest,
+      phone: data.phone || '', // Ensure phone is always present (required by backend)
+      specializationIds: specializedSubjects?.map((id: string) => parseInt(id, 10)).filter((id: number) => !isNaN(id)) || []
     };
     const response = await client.post<Teacher>('/api/academics/teachers', payload);
     return response.data;
@@ -30,9 +32,11 @@ export const schoolOpsApi = {
 
   updateTeacher: async (id: string, data: any): Promise<Teacher> => {
     // Map specializedSubjects to specializationIds for backend compatibility
+    const { specializedSubjects, ...rest } = data;
     const payload = {
-      ...data,
-      specializationIds: data.specializedSubjects?.map((id: string) => parseInt(id, 10)).filter((id: number) => !isNaN(id))
+      ...rest,
+      phone: data.phone || '', // Ensure phone is always present (required by backend)
+      specializationIds: specializedSubjects?.map((id: string) => parseInt(id, 10)).filter((id: number) => !isNaN(id)) || []
     };
     const response = await client.put<Teacher>(`/api/academics/teachers/${id}`, payload);
     return response.data;
