@@ -8,7 +8,7 @@ import type {
 } from '../types/notice.types';
 
 export const getNotices = async (query: NoticeListQuery): Promise<NoticeListResponse> => {
-  const response = await apiClient.get<any>('/notices', { params: query });
+  const response = await apiClient.get<any>('/api/notices', { params: query });
   // The backend returns ApiResult<Map<String, Object>>
   // where data contains { notices: [], unreadCount: X, totalCount: Y }
   if (response.data?.success && response.data?.data) {
@@ -25,7 +25,7 @@ export const getNotices = async (query: NoticeListQuery): Promise<NoticeListResp
 };
 
 export const getNotice = async (id: string): Promise<Notice> => {
-  const response = await apiClient.get<Notice>(`/notices/${id}`);
+  const response = await apiClient.get<Notice>(`/api/notices/${id}`);
   return response.data;
 };
 
@@ -41,27 +41,27 @@ export const createNotice = async (request: CreateNoticeRequest): Promise<Notice
       }
     });
 
-    const response = await apiClient.post<Notice>('/notices', formData, {
+    const response = await apiClient.post<Notice>('/api/notices', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
   }
 
-  const response = await apiClient.post<Notice>('/notices', request);
+  const response = await apiClient.post<Notice>('/api/notices', request);
   return response.data;
 };
 
 export const updateNotice = async (request: UpdateNoticeRequest): Promise<Notice> => {
-  const response = await apiClient.put<Notice>(`/notices/${request.id}`, request);
+  const response = await apiClient.put<Notice>(`/api/notices/${request.id}`, request);
   return response.data;
 };
 
 export const deleteNotice = async (id: string): Promise<{ success: true }> => {
-  await apiClient.delete(`/notices/${id}`);
+  await apiClient.delete(`/api/notices/${id}`);
   return { success: true };
 };
 
 export const markAsRead = async (id: string): Promise<{ success: true }> => {
-  await apiClient.post(`/notices/${id}/read`);
+  await apiClient.post(`/api/notices/${id}/read`);
   return { success: true };
 };

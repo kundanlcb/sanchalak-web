@@ -10,7 +10,7 @@ export default defineConfig({
     host: true, // Listen on all addresses for mobile access
     proxy: {
       '/api': {
-        target: 'http://localhost:8082',
+        target: process.env.VITE_API_BASE_URL || 'http://localhost:8082',
         changeOrigin: true,
         secure: false,
       },

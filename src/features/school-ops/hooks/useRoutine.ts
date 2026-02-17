@@ -20,6 +20,7 @@ export const useRoutine = (initialFilters?: { classId?: string; teacherId?: stri
     queryKey,
     queryFn: () => schoolOpsApi.getRoutines(initialFilters),
     staleTime: 30 * 60 * 1000,
+    enabled: !!initialFilters?.classId,
   });
 
   // --- Mutation: Add routine (optimistic) ---

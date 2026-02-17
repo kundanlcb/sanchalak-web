@@ -3,7 +3,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { academicApi } from '../../../api/instances';
+import type { ExamTermRequest } from '../../../api/models';
 import { type ExamTerm, type CreateExamTermRequest } from '../types';
 
 export const useExamTerms = () => {
@@ -12,8 +13,17 @@ export const useExamTerms = () => {
   const { data: examTerms = [], isLoading, error: queryError, refetch } = useQuery<ExamTerm[]>({
     queryKey: ['examTerms'],
     queryFn: async () => {
-      const response = await axios.get<ExamTerm[]>('/api/academics/exam-terms');
-      return response.data;
+      const response = await academicApi.getAllTerms();
+      // Map API response to local ExamTerm type
+      return response.data.map((term) => ({
+        id: String(term.id),
+        name: term.name || '',
+        startDate: term.startDate || '',
+        endDate: term.endDate || '',
+        isActive: term.isActive || false,
+        academicYear: '', // Not returned by API
+        classes: [],     // Not returned by API
+      }));
     },
     staleTime: 10 * 60 * 1000,
   });
@@ -22,8 +32,24 @@ export const useExamTerms = () => {
   const createMutation = useMutation({
     mutationKey: ['examTerms', 'create'],
     mutationFn: async (data: CreateExamTermRequest) => {
-      const response = await axios.post<ExamTerm>('/api/academics/exam-terms', data);
-      return response.data;
+      // Map local request to API request (omit classes)
+      const request: ExamTermRequest = {
+        name: data.name,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      };
+      const response = await academicApi.createTerm({ examTermRequest: request });
+
+      const term = response.data;
+      return {
+        id: String(term.id),
+        name: term.name || '',
+        startDate: term.startDate || '',
+        endDate: term.endDate || '',
+        isActive: term.isActive || false,
+        academicYear: '',
+        classes: [],
+      };
     },
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ['examTerms'] });

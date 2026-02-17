@@ -3,7 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { apiClient } from '../../../services/api/client';
 import { type Subject, type CreateSubjectRequest } from '../types';
 
 export const useSubjects = () => {
@@ -12,7 +12,7 @@ export const useSubjects = () => {
   const { data: subjects = [], isLoading, error: queryError, refetch } = useQuery<Subject[]>({
     queryKey: ['subjects'],
     queryFn: async () => {
-      const response = await axios.get<Subject[]>('/api/academics/subjects');
+      const response = await apiClient.get<Subject[]>('/api/academic/subjects');
       return response.data;
     },
     staleTime: 30 * 60 * 1000,
@@ -22,7 +22,7 @@ export const useSubjects = () => {
   const createMutation = useMutation({
     mutationKey: ['subjects', 'create'],
     mutationFn: async (data: CreateSubjectRequest) => {
-      const response = await axios.post<Subject>('/api/academics/subjects', data);
+      const response = await apiClient.post<Subject>('/api/academic/subjects', data);
       return response.data;
     },
     onMutate: async (data) => {

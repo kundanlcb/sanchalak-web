@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { apiClient } from '../../../services/api/client';
 import type { FeeCategory, FeeStructure } from '../types';
 import type { FeeCategoryFormData, FeeStructureFormData } from '../types/schema';
 
@@ -15,7 +15,7 @@ export const useFees = () => {
   const categoriesQuery = useQuery<FeeCategory[]>({
     queryKey: ['fees', 'categories'],
     queryFn: async () => {
-      const res = await axios.get('/api/finance/fees/categories');
+      const res = await apiClient.get<FeeCategory[]>('/api/finance/categories');
       return res.data;
     },
     staleTime: 10 * 60 * 1000,
@@ -25,7 +25,7 @@ export const useFees = () => {
   const structuresQuery = useQuery<FeeStructure[]>({
     queryKey: ['fees', 'structures'],
     queryFn: async () => {
-      const res = await axios.get('/api/finance/fees/structures');
+      const res = await apiClient.get<FeeStructure[]>('/api/finance/structures');
       return res.data;
     },
     staleTime: 10 * 60 * 1000,
@@ -36,7 +36,7 @@ export const useFees = () => {
   const createCategoryMutation = useMutation({
     mutationKey: ['fees', 'category', 'create'],
     mutationFn: async (data: FeeCategoryFormData) => {
-      const res = await axios.post('/api/finance/fees/categories', data);
+      const res = await apiClient.post<FeeCategory>('/api/finance/categories', data);
       return res.data;
     },
     onMutate: async (data) => {
@@ -56,7 +56,7 @@ export const useFees = () => {
   const createStructureMutation = useMutation({
     mutationKey: ['fees', 'structure', 'create'],
     mutationFn: async (data: FeeStructureFormData) => {
-      const res = await axios.post('/api/finance/fees/structures', data);
+      const res = await apiClient.post<FeeStructure>('/api/finance/structures', data);
       return res.data;
     },
     onMutate: async (data) => {
@@ -76,7 +76,7 @@ export const useFees = () => {
   const updateCategoryMutation = useMutation({
     mutationKey: ['fees', 'category', 'update'],
     mutationFn: async ({ id, data }: { id: string; data: Partial<FeeCategoryFormData> }) => {
-      const res = await axios.put(`/api/finance/fees/categories/${id}`, data);
+      const res = await apiClient.put<FeeCategory>(`/api/finance/categories/${id}`, data);
       return res.data;
     },
     onMutate: async ({ id, data }) => {
@@ -94,7 +94,7 @@ export const useFees = () => {
   const deleteCategoryMutation = useMutation({
     mutationKey: ['fees', 'category', 'delete'],
     mutationFn: async (id: string) => {
-      await axios.delete(`/api/finance/fees/categories/${id}`);
+      await apiClient.delete(`/api/finance/categories/${id}`);
       return id;
     },
     onMutate: async (id) => {
@@ -112,7 +112,7 @@ export const useFees = () => {
   const updateStructureMutation = useMutation({
     mutationKey: ['fees', 'structure', 'update'],
     mutationFn: async ({ id, data }: { id: string; data: Partial<FeeStructureFormData> }) => {
-      const res = await axios.put(`/api/finance/fees/structures/${id}`, data);
+      const res = await apiClient.put<FeeStructure>(`/api/finance/structures/${id}`, data);
       return res.data;
     },
     onMutate: async ({ id, data }) => {
@@ -130,7 +130,7 @@ export const useFees = () => {
   const deleteStructureMutation = useMutation({
     mutationKey: ['fees', 'structure', 'delete'],
     mutationFn: async (id: string) => {
-      await axios.delete(`/api/finance/fees/structures/${id}`);
+      await apiClient.delete(`/api/finance/structures/${id}`);
       return id;
     },
     onMutate: async (id) => {

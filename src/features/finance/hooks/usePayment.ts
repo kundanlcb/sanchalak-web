@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { apiClient } from '../../../services/api/client';
 import type { PaymentTransaction, StudentFeeRecord } from '../types';
 
 export const usePayment = () => {
@@ -14,7 +14,7 @@ export const usePayment = () => {
   const fetchLedgerMutation = useMutation({
     mutationKey: ['payment', 'fetchLedger'],
     mutationFn: async (studentId: string) => {
-      const res = await axios.get(`/api/finance/ledger/${studentId}`);
+      const res = await apiClient.get<StudentFeeRecord>(`/api/finance/ledger/${studentId}`);
       if (res.data.records && res.data.records.length > 0) {
         return res.data.records[0] as StudentFeeRecord;
       }
@@ -29,7 +29,7 @@ export const usePayment = () => {
   const fetchTransactionsMutation = useMutation({
     mutationKey: ['payment', 'fetchTransactions'],
     mutationFn: async (studentId: string) => {
-      const res = await axios.get(`/api/finance/transactions/${studentId}`);
+      const res = await apiClient.get<PaymentTransaction[]>(`/api/finance/transactions/${studentId}`);
       return res.data as PaymentTransaction[];
     },
     onSuccess: (data) => {
@@ -59,7 +59,7 @@ export const usePayment = () => {
         status: 'Success',
         breakdown: [{ category: 'Tuition', amount }],
       };
-      const res = await axios.post('/api/finance/transactions', payload);
+      const res = await apiClient.post<PaymentTransaction>('/api/finance/transactions', payload);
       return res.data as PaymentTransaction;
     },
     onSuccess: (newTxn) => {

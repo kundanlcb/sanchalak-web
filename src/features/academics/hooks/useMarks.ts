@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { apiClient } from '../../../services/api/client';
 import { type MarkEntry, type UpdateMarkRequest } from '../types';
 
 interface UseMarksFilters {
@@ -36,7 +36,7 @@ export const useMarks = (filters: UseMarksFilters) => {
       if (filters.classId) params.append('classId', filters.classId);
       if (filters.section) params.append('section', filters.section);
       if (filters.studentId) params.append('studentId', filters.studentId);
-      const response = await axios.get<MarkEntry[]>(`/api/academics/marks?${params.toString()}`);
+      const response = await apiClient.get<MarkEntry[]>(`/api/academics/marks?${params.toString()}`);
       return response.data;
     },
     enabled,
@@ -47,7 +47,7 @@ export const useMarks = (filters: UseMarksFilters) => {
   const updateMarkMutation = useMutation({
     mutationKey: ['marks', 'update'],
     mutationFn: async (data: UpdateMarkRequest) => {
-      await axios.post('/api/academics/marks', data);
+      await apiClient.post('/api/academics/marks', data);
       return data;
     },
     onMutate: async (data) => {

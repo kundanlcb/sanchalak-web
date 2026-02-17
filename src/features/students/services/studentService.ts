@@ -3,7 +3,7 @@
  * API client functions for student CRUD operations
  */
 
-import apiClient from '../../../services/api/client';
+import { studentApi } from '../../../api/instances';
 import type {
   StudentListQuery,
   StudentListResponse,
@@ -17,14 +17,17 @@ import type {
   BulkImportStudentResponse,
 } from '../types/student.types';
 
+// Helper to handle casting since generated client might not match Page<T> perfectly
+// or to keep existing service logic intact
+import type { AxiosResponse } from 'axios';
+
 /**
  * Get list of students with filters and pagination
  */
 export async function getStudents(query: StudentListQuery): Promise<StudentListResponse> {
-  // Use 'any' generic because backend returns Page<StudentResponse> structure
-  const response = await apiClient.get<any>('/academics/students', {
-    params: query,
-  });
+  // Pass query params via options.params
+  // Casting to 'any' because the generated client expects Array<StudentResponse> but backend returns Page<StudentResponse>
+  const response = await studentApi.getAllStudents({ params: query }) as AxiosResponse<any>;
 
   // Handle Spring Page response
   if (response.data.content && Array.isArray(response.data.content)) {
@@ -60,7 +63,9 @@ export async function getStudents(query: StudentListQuery): Promise<StudentListR
  * Get single student by ID
  */
 export async function getStudent(studentID: string): Promise<GetStudentResponse> {
-  const response = await apiClient.get<any>(`/academics/students/${studentID}`);
+  // Casting to any because we need to handle wrapped response if present
+  // Fix: Wrap id in object
+  const response = await studentApi.getStudentById({ id: Number(studentID) }) as AxiosResponse<any>;
   // Handle direct StudentResponse or wrapped GetStudentResponse
   const student = response.data.student || response.data;
   return {
@@ -75,7 +80,9 @@ export async function getStudent(studentID: string): Promise<GetStudentResponse>
 export async function createStudent(
   request: CreateStudentRequest
 ): Promise<CreateStudentResponse> {
-  const response = await apiClient.post<any>('/academics/students', request);
+  // Cast request to any to avoid strict type mismatch if generated types differ slightly
+  // Fix: Wrap studentRequest in object
+  const response = await studentApi.createStudent({ studentRequest: request as any }) as AxiosResponse<any>;
   const student = response.data;
   return {
     success: true,
@@ -91,10 +98,9 @@ export async function createStudent(
 export async function updateStudent(
   request: UpdateStudentRequest
 ): Promise<UpdateStudentResponse> {
-  const response = await apiClient.put<any>(
-    `/academics/students/${request.studentID}`,
-    request
-  );
+  const id = Number(request.studentID || (request as any).id);
+  // Fix: Wrap id and studentRequest in object
+  const response = await studentApi.updateStudent({ id: id, studentRequest: request as any }) as AxiosResponse<any>;
   return {
     success: true,
     student: response.data,
@@ -106,8 +112,12 @@ export async function updateStudent(
  * Delete student (soft delete)
  */
 export async function deleteStudent(studentID: string): Promise<DeleteStudentResponse> {
-  const response = await apiClient.delete<DeleteStudentResponse>(`/academics/students/${studentID}`);
-  return response.data;
+  // Fix: Wrap id in object
+  await studentApi.deleteStudent({ id: Number(studentID) });
+  return {
+    success: true,
+    message: 'Student deleted successfully'
+  };
 }
 
 /**
@@ -116,15 +126,12 @@ export async function deleteStudent(studentID: string): Promise<DeleteStudentRes
 export async function bulkImportStudents(
   request: BulkImportStudentRequest
 ): Promise<BulkImportStudentResponse> {
-  const formData = new FormData();
-  if (request.file) {
-    formData.append('file', request.file);
+  if (!request.file) {
+    throw new Error('No file provided');
   }
 
-  const response = await apiClient.post<string>(
-    '/academics/students/bulk-import',
-    formData
-  );
+  // Fix: Wrap file in object
+  const response = await studentApi.bulkImportStudents({ file: request.file });
 
   return {
     success: true,

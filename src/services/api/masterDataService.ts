@@ -23,7 +23,7 @@ export interface MasterValueResponse {
  */
 export async function getMasterValues(domainCode: string): Promise<MasterValue[]> {
     try {
-        const response = await apiClient.get<any>(`/platform/v1/masters/domains/${domainCode}/values`);
+        const response = await apiClient.get<any>(`/api/platform/v1/masters/domains/${domainCode}/values`);
 
         // Handle standard API success response wrapper if present
         const data = response.data;

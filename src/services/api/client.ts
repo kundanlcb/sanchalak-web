@@ -39,7 +39,11 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('user');
-      window.location.href = '/login';
+      
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
 
     // Handle 403 Forbidden - insufficient permissions

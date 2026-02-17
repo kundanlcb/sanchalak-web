@@ -36,7 +36,7 @@ export async function uploadDocument(
   if (request.isPublic !== undefined) formData.append('isPublic', String(request.isPublic));
   if (request.expiryDate) formData.append('expiryDate', request.expiryDate);
 
-  const response = await apiClient.post<UploadDocumentResponse>('/documents', formData, {
+  const response = await apiClient.post<UploadDocumentResponse>('/api/documents', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -48,7 +48,7 @@ export async function uploadDocument(
  * Get documents with filters
  */
 export async function getDocuments(query: GetDocumentsQuery): Promise<GetDocumentsResponse> {
-  const response = await apiClient.get<GetDocumentsResponse>('/documents', {
+  const response = await apiClient.get<GetDocumentsResponse>('/api/documents', {
     params: query,
   });
   return response.data;
@@ -58,7 +58,7 @@ export async function getDocuments(query: GetDocumentsQuery): Promise<GetDocumen
  * Get single document
  */
 export async function getDocument(documentID: string): Promise<GetDocumentResponse> {
-  const response = await apiClient.get<GetDocumentResponse>(`/documents/${documentID}`);
+  const response = await apiClient.get<GetDocumentResponse>(`/api/documents/${documentID}`);
   return response.data;
 }
 
@@ -69,7 +69,7 @@ export async function updateDocument(
   request: UpdateDocumentRequest
 ): Promise<UpdateDocumentResponse> {
   const response = await apiClient.put<UpdateDocumentResponse>(
-    `/documents/${request.documentID}`,
+    `/api/documents/${request.documentID}`,
     request
   );
   return response.data;
@@ -79,7 +79,7 @@ export async function updateDocument(
  * Delete document
  */
 export async function deleteDocument(documentID: string): Promise<DeleteDocumentResponse> {
-  const response = await apiClient.delete<DeleteDocumentResponse>(`/documents/${documentID}`);
+  const response = await apiClient.delete<DeleteDocumentResponse>(`/api/documents/${documentID}`);
   return response.data;
 }
 
@@ -90,7 +90,7 @@ export async function verifyDocument(
   request: VerifyDocumentRequest
 ): Promise<VerifyDocumentResponse> {
   const response = await apiClient.post<VerifyDocumentResponse>(
-    `/documents/${request.documentID}/verify`,
+    `/api/documents/${request.documentID}/verify`,
     request
   );
   return response.data;
@@ -114,7 +114,7 @@ export async function bulkUploadDocuments(
   });
 
   const response = await apiClient.post<BulkUploadDocumentResponse>(
-    '/documents/bulk-upload',
+    '/api/documents/bulk-upload',
     formData,
     {
       headers: {

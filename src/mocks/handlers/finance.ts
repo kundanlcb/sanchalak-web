@@ -17,7 +17,7 @@ export const financeHandlers = [
     return HttpResponse.json(categoryWithId, { status: 201 });
   }),
 
-  http.put('/api/finance/fees/categories/:id', async ({ request, params }) => {
+  http.put('/api/finance/categories/:id', async ({ request, params }) => {
     await delay(500);
     const { id } = params;
     const updates = await request.json() as Partial<FeeCategory>;
@@ -26,7 +26,7 @@ export const financeHandlers = [
     return HttpResponse.json(updated);
   }),
 
-  http.delete('/api/finance/fees/categories/:id', async ({ params }) => {
+  http.delete('/api/finance/categories/:id', async ({ params }) => {
     await delay(300);
     const { id } = params;
     const deleted = deleteItem(db.fees, id as string);
@@ -35,7 +35,7 @@ export const financeHandlers = [
   }),
 
   // Fee Structures
-  http.get('/api/finance/fees/structures', async ({ request }) => {
+  http.get('/api/finance/structures', async ({ request }) => {
     await delay(300);
     const url = new URL(request.url);
     const classId = url.searchParams.get('classId');
@@ -45,7 +45,7 @@ export const financeHandlers = [
     return HttpResponse.json(db.feeStructures);
   }),
 
-  http.post('/api/finance/fees/structures', async ({ request }) => {
+  http.post('/api/finance/structures', async ({ request }) => {
     await delay(500);
     const newStructure = await request.json() as FeeStructure;
     // Ensure ID exists
@@ -54,7 +54,7 @@ export const financeHandlers = [
     return HttpResponse.json(finalStructure, { status: 201 });
   }),
 
-  http.put('/api/finance/fees/structures/:id', async ({ request, params }) => {
+  http.put('/api/finance/structures/:id', async ({ request, params }) => {
     await delay(500);
     const { id } = params;
     const updates = await request.json() as Partial<FeeStructure>;
@@ -66,7 +66,7 @@ export const financeHandlers = [
   http.delete('/api/finance/fees/structures/:id', async ({ params }) => {
     await delay(300);
     const { id } = params;
-    
+
     // Validation: Check if transactions exist for this structure
     // Mock check: 
     // const hasTransactions = db.transactions.some(t => t.feeStructureId === id);
@@ -82,11 +82,11 @@ export const financeHandlers = [
   http.get('/api/finance/ledger/:studentId', async ({ params }) => {
     await delay(300);
     const { studentId } = params;
-    
+
     // In a real app, this would be a complex query. 
     // MOCK: Return a static structure for now or filter transactions
     const studentTransactions = db.transactions.filter(t => t.studentId === studentId);
-    
+
     // Mock ledger record
     const ledger: StudentFeeRecord = {
       id: `SFR-${studentId}`,
@@ -100,10 +100,10 @@ export const financeHandlers = [
       dueDate: '2026-02-10',
       transactions: studentTransactions.map(t => t.id)
     };
-    
+
     ledger.pendingAmount = ledger.totalAmount - ledger.paidAmount;
     if (ledger.pendingAmount > 0) ledger.status = 'Pending';
-    
+
     return HttpResponse.json({
       summary: {
         totalDue: ledger.totalAmount,
@@ -119,37 +119,37 @@ export const financeHandlers = [
     await delay(300);
     return HttpResponse.json(db.transactions);
   }),
-  
+
   // Defaulters list (Aggregated)
   http.get('/api/finance/defaulters', async () => {
     await delay(500);
     // Simple mock calculation: 
     // For every student, check if they have paid "enough".
     // We assume a standard fee of 50000 for calculation if structure missing
-    
+
     const results = db.students.map(student => {
-        const paid = db.transactions
-            .filter(t => t.studentId === student.studentID && t.status === 'Success')
-            .reduce((sum, t) => sum + t.amount, 0);
-            
-        // Use real structure if available, else static
-        // Find structures for this class
-        const classStructures = db.feeStructures.filter(fs => fs.classId === student.classID);
-        const totalFee = classStructures.reduce((sum, fs) => sum + fs.amount, 0) || 50000;
-        
-        const due = totalFee - paid;
-        
-        if (due > 0) {
-            return {
-                id: student.studentID, // Widget expects 'id'
-                studentName: student.name,
-                studentId: student.studentID,
-                grade: student.classID, // Ideally map to Class Name using db.classes
-                amountDue: due,
-                daysOverdue: Math.floor(Math.random() * 60) + 1 // Mock days
-            };
-        }
-        return null;
+      const paid = db.transactions
+        .filter(t => t.studentId === student.studentID && t.status === 'Success')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      // Use real structure if available, else static
+      // Find structures for this class
+      const classStructures = db.feeStructures.filter(fs => fs.classId === student.classID);
+      const totalFee = classStructures.reduce((sum, fs) => sum + fs.amount, 0) || 50000;
+
+      const due = totalFee - paid;
+
+      if (due > 0) {
+        return {
+          id: student.studentID, // Widget expects 'id'
+          studentName: student.name,
+          studentId: student.studentID,
+          grade: student.classID, // Ideally map to Class Name using db.classes
+          amountDue: due,
+          daysOverdue: Math.floor(Math.random() * 60) + 1 // Mock days
+        };
+      }
+      return null;
     }).filter(d => d !== null);
 
     // Sort by highest due
@@ -168,7 +168,7 @@ export const financeHandlers = [
   http.post('/api/finance/transactions', async ({ request }) => {
     await delay(1000); // Simulate gateway delay
     const txn = await request.json() as PaymentTransaction;
-    
+
     const newTxn: PaymentTransaction = {
       ...txn,
       id: `TXN-${Date.now()}`,
@@ -176,7 +176,7 @@ export const financeHandlers = [
       status: 'Success', // Mock gateway always succeeds for now
       receiptId: `RCP-${Date.now()}`
     };
-    
+
     db.transactions.push(newTxn);
     return HttpResponse.json(newTxn, { status: 201 });
   })

@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { apiClient } from '../../../services/api/client';
 import { type Homework, type CreateHomeworkRequest } from '../types';
 
 export const useHomework = (initialClassId?: string) => {
@@ -23,7 +23,7 @@ export const useHomework = (initialClassId?: string) => {
       const url = initialClassId
         ? `/api/homework?classId=${initialClassId}`
         : '/api/homework';
-      const response = await axios.get<Homework[]>(url);
+      const response = await apiClient.get<Homework[]>(url);
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
@@ -41,7 +41,7 @@ export const useHomework = (initialClassId?: string) => {
         dueDate: data.dueDate,
         attachments: data.attachments || [],
       };
-      const response = await axios.post<Homework>('/api/homework', payload);
+      const response = await apiClient.post<Homework>('/api/homework', payload);
       return response.data;
     },
     onMutate: async (data) => {
@@ -76,7 +76,7 @@ export const useHomework = (initialClassId?: string) => {
   const deleteMutation = useMutation({
     mutationKey: ['homework', 'delete'],
     mutationFn: async (id: string) => {
-      await axios.delete(`/api/homework/${id}`);
+      await apiClient.delete(`/api/homework/${id}`);
       return id;
     },
     onMutate: async (id: string) => {

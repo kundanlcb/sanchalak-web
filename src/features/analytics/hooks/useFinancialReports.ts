@@ -3,7 +3,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import { apiClient } from '../../../services/api/client';
 import type { PaymentTransaction } from '../../finance/types';
 
 export interface Defaulter {
@@ -19,7 +19,7 @@ export const useFinancialReports = () => {
     const transactionsQuery = useQuery<PaymentTransaction[]>({
         queryKey: ['finance', 'transactions'],
         queryFn: async () => {
-            const res = await axios.get<PaymentTransaction[]>('/api/finance/transactions');
+            const res = await apiClient.get<PaymentTransaction[]>('/api/finance/transactions');
             return res.data;
         },
         staleTime: 5 * 60 * 1000,
@@ -28,7 +28,7 @@ export const useFinancialReports = () => {
     const defaultersQuery = useQuery<Defaulter[]>({
         queryKey: ['finance', 'defaulters'],
         queryFn: async () => {
-            const res = await axios.get<Defaulter[]>('/api/finance/defaulters');
+            const res = await apiClient.get<Defaulter[]>('/api/finance/defaulters');
             return res.data;
         },
         staleTime: 5 * 60 * 1000,

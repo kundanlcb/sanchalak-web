@@ -23,7 +23,7 @@ import type {
  * Mark attendance for a single student
  */
 export const markAttendance = async (request: MarkAttendanceRequest): Promise<MarkAttendanceResponse> => {
-  const response = await apiClient.post<MarkAttendanceResponse>('/attendance', request);
+  const response = await apiClient.post<MarkAttendanceResponse>('/api/attendance', request);
   return response.data;
 };
 
@@ -31,7 +31,7 @@ export const markAttendance = async (request: MarkAttendanceRequest): Promise<Ma
  * Mark attendance for entire class (bulk operation)
  */
 export const bulkMarkAttendance = async (request: BulkMarkAttendanceRequest): Promise<BulkMarkAttendanceResponse> => {
-  const response = await apiClient.post<BulkMarkAttendanceResponse>('/attendance/bulk', request);
+  const response = await apiClient.post<BulkMarkAttendanceResponse>('/api/attendance/bulk', request);
   return response.data;
 };
 
@@ -39,7 +39,7 @@ export const bulkMarkAttendance = async (request: BulkMarkAttendanceRequest): Pr
  * Get attendance records with filters
  */
 export const getAttendance = async (query: AttendanceQuery): Promise<AttendanceQueryResponse> => {
-  const response = await apiClient.get<AttendanceQueryResponse>('/attendance', { params: query });
+  const response = await apiClient.get<AttendanceQueryResponse>('/api/attendance', { params: query });
   return response.data;
 };
 
@@ -48,7 +48,7 @@ export const getAttendance = async (query: AttendanceQuery): Promise<AttendanceQ
  */
 export const getClassAttendanceSheet = async (request: GetClassAttendanceSheetRequest): Promise<ClassAttendanceSheet> => {
   const response = await apiClient.get<ClassAttendanceSheet>(
-    `/attendance/class/${request.classID}/date/${request.date}`
+    `/api/attendance/class/${request.classID}/date/${request.date}`
   );
   return response.data;
 };
@@ -57,7 +57,7 @@ export const getClassAttendanceSheet = async (request: GetClassAttendanceSheetRe
  * Get attendance summary for a student or class
  */
 export const getAttendanceSummary = async (request: GetAttendanceSummaryRequest): Promise<AttendanceSummary> => {
-  const response = await apiClient.get<AttendanceSummary>('/attendance/summary', { params: request });
+  const response = await apiClient.get<AttendanceSummary>('/api/attendance/summary', { params: request });
   return response.data;
 };
 
@@ -66,7 +66,7 @@ export const getAttendanceSummary = async (request: GetAttendanceSummaryRequest)
  */
 export const modifyAttendance = async (request: ModifyAttendanceRequest): Promise<ModifyAttendanceResponse> => {
   const response = await apiClient.put<ModifyAttendanceResponse>(
-    `/attendance/${request.attendanceID}`,
+    `/api/attendance/${request.attendanceID}`,
     request
   );
   return response.data;
