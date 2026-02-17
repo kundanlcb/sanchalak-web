@@ -58,6 +58,11 @@ export const schoolOpsApi = {
     return response.data;
   },
 
+  updateClass: async (id: string, data: Partial<Class>): Promise<Class> => {
+    const response = await client.put<Class>(`/api/academic/classes/${id}`, data);
+    return response.data;
+  },
+
   deleteClass: async (id: string): Promise<void> => {
     // Assuming backend supports delete
     await client.delete(`/api/academic/classes/${id}`);
@@ -73,6 +78,15 @@ export const schoolOpsApi = {
   createSubject: async (data: any): Promise<any> => {
     const response = await client.post('/api/academic/subjects', data);
     return response.data;
+  },
+
+  updateSubject: async (id: string, data: any): Promise<any> => {
+    const response = await client.put(`/api/academic/subjects/${id}`, data);
+    return response.data;
+  },
+
+  deleteSubject: async (id: string): Promise<void> => {
+    await client.delete(`/api/academic/subjects/${id}`);
   },
 
   // Routines
