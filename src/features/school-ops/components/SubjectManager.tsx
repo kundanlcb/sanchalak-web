@@ -109,7 +109,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
 
           {/* Desktop Button */}
           <div className="hidden sm:block">
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={() => setIsModalOpen(true)} data-testid="add-subject-btn">
               <Plus className="w-4 h-4 mr-2" />
               Add Subject
             </Button>
@@ -193,7 +193,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredSubjects.map((subject) => (
-                  <tr key={subject.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <tr key={subject.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" data-testid="subject-row">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {subject.id}
                     </td>
@@ -207,10 +207,10 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${subject.type === 'Theory'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                          : subject.type === 'Practical'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                            : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                        : subject.type === 'Practical'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                          : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
                         }`}>
                         {subject.type}
                       </span>
@@ -223,6 +223,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
                             variant="ghost"
                             onClick={() => handleEdit(subject)}
                             title="Edit"
+                            data-testid="edit-subject-btn"
                           >
                             <Edit className="w-4 h-4 text-gray-500 hover:text-blue-600" />
                           </Button>
@@ -233,6 +234,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
                             variant="ghost"
                             onClick={() => setDeleteId(String(subject.id))}
                             title="Delete"
+                            data-testid="delete-subject-btn"
                           >
                             <Trash2 className="w-4 h-4 text-gray-500 hover:text-red-600" />
                           </Button>
@@ -287,6 +289,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
+              data-testid="submit-subject-btn"
             >
               {editingId ? "Save Changes" : "Add Subject"}
             </Button>
