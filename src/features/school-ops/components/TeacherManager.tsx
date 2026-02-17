@@ -125,7 +125,7 @@ export const TeacherManager: React.FC = () => {
 
           {/* Desktop Add Button */}
           <div className="hidden sm:flex gap-3">
-            <Button onClick={() => setIsModalOpen(true)}>
+            <Button onClick={() => setIsModalOpen(true)} data-testid="add-teacher-btn">
               <Plus className="w-4 h-4 mr-2" />
               Add Teacher
             </Button>
@@ -144,6 +144,7 @@ export const TeacherManager: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
+                data-testid="teacher-search-input"
               />
             </div>
           </div>
@@ -277,9 +278,10 @@ export const TeacherManager: React.FC = () => {
                   <tr
                     key={teacher.id}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    data-testid="teacher-row"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {teacher.teacherID || teacher.id}
+                      {teacher.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -323,6 +325,7 @@ export const TeacherManager: React.FC = () => {
                           variant="ghost"
                           onClick={() => handleEdit(teacher)}
                           title="Edit"
+                          data-testid="edit-teacher-btn"
                         >
                           <Edit className="w-4 h-4 text-gray-500 hover:text-blue-600" />
                         </Button>
@@ -331,6 +334,7 @@ export const TeacherManager: React.FC = () => {
                           variant="ghost"
                           onClick={() => setDeleteId(teacher.id)}
                           title="Delete"
+                          data-testid="delete-teacher-btn"
                         >
                           <Trash2 className="w-4 h-4 text-gray-500 hover:text-red-600" />
                         </Button>
@@ -457,7 +461,7 @@ export const TeacherManager: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} data-testid="submit-teacher-btn">
               {editingId ? "Save Changes" : "Add Teacher"}
             </Button>
           </div>
