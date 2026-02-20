@@ -13,8 +13,8 @@ export const DashboardHome: React.FC = () => {
     const { user } = useAuth();
     const permissions = user?.permissions || [];
 
-    const hasFinance = permissions.includes('FINANCE') || permissions.includes('FEES');
-    const hasExams = permissions.includes('EXAMS');
+    const hasFinance = user?.role === 'Admin' || permissions.includes('FINANCE') || permissions.includes('FEES');
+    const hasExams = user?.role === 'Admin' || permissions.includes('EXAMS');
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {

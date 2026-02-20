@@ -76,11 +76,13 @@ const Sidebar: React.FC = () => {
 
     // Check Feature Code (Permissions)
     if (item.featureCode) {
-      const userPermissions = user.permissions || [];
-      // Fallback: if permissions are missing (old user/no plan), assume all allowed for now
-      // or strictly hide. Let's strictly hide to enforce subscription.
-      if (!userPermissions.includes(item.featureCode)) {
-        return false;
+      if (user.role !== 'Admin') {
+        const userPermissions = user.permissions || [];
+        // Fallback: if permissions are missing (old user/no plan), assume all allowed for now
+        // or strictly hide. Let's strictly hide to enforce subscription.
+        if (!userPermissions.includes(item.featureCode)) {
+          return false;
+        }
       }
     }
 
