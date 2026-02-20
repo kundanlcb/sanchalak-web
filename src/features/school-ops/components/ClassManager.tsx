@@ -10,14 +10,14 @@ import { Button } from '../../../components/common/Button';
 import { Skeleton } from '../../../components/common/Skeleton';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
 
-const CreateClassSchema = ClassSchema.omit({ classID: true });
+const CreateClassSchema = ClassSchema.omit({ id: true });
 type ClassFormValues = z.infer<typeof CreateClassSchema>;
 
 interface ClassManagerProps {
   classes: Class[];
   addClass: (data: Partial<Class>) => Promise<any>;
-  updateClass?: (id: string, data: Partial<Class>) => Promise<any>;
-  deleteClass?: (id: string) => Promise<void>;
+  updateClass?: (id: number, data: Partial<Class>) => Promise<any>;
+  deleteClass?: (id: number) => Promise<void>;
   loading: boolean;
 }
 
@@ -29,8 +29,8 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
   loading
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<ClassFormValues>({
@@ -38,7 +38,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
   });
 
   const handleEdit = (cls: Class) => {
-    setEditingId(cls.classID);
+    setEditingId(cls.id);
     setValue('grade', cls.grade);
     setValue('section', cls.section);
     setValue('className', cls.className || '');
@@ -195,9 +195,9 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredClasses.map((cls) => (
-                  <tr key={cls.classID} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" data-testid="class-row">
+                  <tr key={cls.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" data-testid="class-row">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {cls.classID}
+                      {cls.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {cls.className || `Grade ${cls.grade}-${cls.section}`}
@@ -230,7 +230,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => setDeleteId(cls.classID)}
+                            onClick={() => setDeleteId(cls.id)}
                             title="Delete"
                             data-testid="delete-class-btn"
                           >

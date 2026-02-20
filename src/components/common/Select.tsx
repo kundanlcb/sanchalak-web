@@ -16,16 +16,22 @@ export interface SelectProps
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, children, label, error, helperText, options, ...props }, ref) => {
+  ({ className, children, label, error, helperText, options, id, ...props }, ref) => {
+    const selectId = id || `select-${label?.toLowerCase().replace(/\s+/g, '-') || Math.random().toString(36).substr(2, 9)}`;
+
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            htmlFor={selectId}
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             {label}
           </label>
         )}
         <div className="relative">
           <select
+            id={selectId}
             className={cn(
               'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
               'pr-10 appearance-none', // Space for icon and remove native arrow

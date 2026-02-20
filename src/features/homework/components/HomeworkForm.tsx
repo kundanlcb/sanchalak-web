@@ -7,6 +7,7 @@ import { Input } from '../../../components/common/Input';
 import { Select } from '../../../components/common/Select';
 import { Modal } from '../../../components/common/Modal';
 import { Upload, X } from 'lucide-react';
+import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructure';
 
 interface HomeworkFormProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export const HomeworkForm: React.FC<HomeworkFormProps> = ({
   onSubmit,
   isLoading = false,
 }) => {
+  const { classes, subjects } = useAcademicStructure();
+
   const {
     register,
     handleSubmit,
@@ -29,27 +32,27 @@ export const HomeworkForm: React.FC<HomeworkFormProps> = ({
   } = useForm<HomeworkFormData>({
     resolver: zodResolver(homeworkSchema),
     defaultValues: {
-        classId: 'class-5', // Default for demo
-        subjectId: 'sub-math',
+      classId: '',
+      subjectId: '',
     }
   });
 
   const [files, setFiles] = useState<File[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) {
-          setFiles(Array.from(e.target.files));
-      }
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
   };
 
   const handleFormSubmit = async (data: HomeworkFormData) => {
     // Transform files to attachment stub objects
     const attachments = files.map((file, index) => ({
-        id: `att-${Date.now()}-${index}`,
-        name: file.name,
-        type: file.type.includes('pdf') ? 'pdf' : 'image',
-        size: file.size,
-        url: URL.createObjectURL(file) // temporary local URL
+      id: `att-${Date.now()}-${index}`,
+      name: file.name,
+      type: file.type.includes('pdf') ? 'pdf' : 'image',
+      size: file.size,
+      url: URL.createObjectURL(file) // temporary local URL
     }));
 
     await onSubmit({ ...data, attachments });
@@ -66,70 +69,74 @@ export const HomeworkForm: React.FC<HomeworkFormProps> = ({
       size="md"
       footer={
         <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isLoading}>
-                Cancel
-            </Button>
-            <Button onClick={handleSubmit(handleFormSubmit)} disabled={isLoading}>
-                {isLoading ? 'Posting...' : 'Post Homework'}
-            </Button>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit(handleFormSubmit)} disabled={isLoading}>
+            {isLoading ? 'Posting...' : 'Post Homework'}
+          </Button>
         </div>
       }
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <Input label="Title" placeholder="Chapter 5 Exercises" error={errors.title?.message} {...register('title')} />
-        
+
         <div>
-           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-           <textarea 
-             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-             rows={3}
-             {...register('description')}
-           />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+          <textarea
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            rows={3}
+            {...register('description')}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-            <Select label="Class" {...register('classId')}>
-               <option value="class-5">Class 5</option>
-               <option value="class-6">Class 6</option>
-               <option value="class-7">Class 7</option>
-            </Select>
-            <Select label="Subject" {...register('subjectId')}>
-               <option value="sub-math">Mathematics</option>
-               <option value="sub-sci">Science</option>
-               <option value="sub-eng">English</option>
-            </Select>
+          <Select label="Class" {...register('classId')} error={errors.classId?.message}>
+            <option value="">Select Class</option>
+            {classes.map((cls) => (
+              <option key={cls.id} value={String(cls.id)}>
+                {cls.className || `Grade ${cls.grade}-${cls.section}`}
+              </option>
+            ))}
+          </Select>
+          <Select label="Subject" {...register('subjectId')} error={errors.subjectId?.message}>
+            <option value="">Select Subject</option>
+            {subjects.map((sub) => (
+              <option key={sub.id} value={String(sub.id)}>{sub.name}</option>
+            ))}
+          </Select>
         </div>
 
         <div>
-            <Input type="date" label="Due Date" error={errors.dueDate?.message} {...register('dueDate')} />
+          <Input type="date" label="Due Date" error={errors.dueDate?.message} {...register('dueDate')} />
         </div>
 
         {/* File Upload Mock */}
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Attachments</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600 dark:text-gray-400">
-                        <label className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                            <span>Upload a file</span>
-                            <input type="file" className="sr-only" multiple onChange={handleFileChange} />
-                        </label>
-                        <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PDF, PNG, JPG up to 10MB</p>
-                </div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Attachments</label>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
+            <div className="space-y-1 text-center">
+              <Upload className="mx-auto h-12 w-12 text-gray-400" />
+              <div className="flex text-sm text-gray-600 dark:text-gray-400">
+                <label className="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                  <span>Upload a file</span>
+                  <input type="file" className="sr-only" multiple onChange={handleFileChange} />
+                </label>
+                <p className="pl-1">or drag and drop</p>
+              </div>
+              <p className="text-xs text-gray-500">PDF, PNG, JPG up to 10MB</p>
             </div>
-            {files.length > 0 && (
-                <div className="mt-2 space-y-2">
-                    {files.map((file, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm">
-                            <span className="truncate max-w-[200px]">{file.name}</span>
-                            <button type="button" onClick={() => setFiles(files.filter((_, idx) => idx !== i))} className="text-red-500"><X className="w-4 h-4" /></button>
-                        </div>
-                    ))}
+          </div>
+          {files.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {files.map((file, i) => (
+                <div key={i} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm">
+                  <span className="truncate max-w-[200px]">{file.name}</span>
+                  <button type="button" onClick={() => setFiles(files.filter((_, idx) => idx !== i))} className="text-red-500"><X className="w-4 h-4" /></button>
                 </div>
-            )}
+              ))}
+            </div>
+          )}
         </div>
       </form>
     </Modal>

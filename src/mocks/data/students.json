@@ -1,6 +1,6 @@
 [
   {
-    "studentID": "STU-2026-00001",
+    "id": 1,
     "name": "Aarav Sharma",
     "dateOfBirth": "2015-03-15",
     "gender": "Male",
@@ -40,14 +40,16 @@
     },
     "previousSchool": "Little Flowers School",
     "medicalConditions": [],
-    "allergies": ["Peanuts"],
+    "allergies": [
+      "Peanuts"
+    ],
     "isActive": true,
     "status": "Active",
     "createdBy": "user-001",
     "createdDate": "2021-04-01T10:00:00Z"
   },
   {
-    "studentID": "STU-2026-00002",
+    "id": 2,
     "name": "Ananya Patel",
     "dateOfBirth": "2015-07-22",
     "gender": "Female",
@@ -83,7 +85,7 @@
     "createdDate": "2021-04-01T10:15:00Z"
   },
   {
-    "studentID": "STU-2026-00003",
+    "id": 3,
     "name": "Rohan Kumar",
     "dateOfBirth": "2015-01-10",
     "gender": "Male",
@@ -111,7 +113,9 @@
       "annualIncome": 2000000,
       "isPrimaryContact": true
     },
-    "medicalConditions": ["Asthma"],
+    "medicalConditions": [
+      "Asthma"
+    ],
     "allergies": [],
     "isActive": true,
     "status": "Active",
@@ -119,7 +123,7 @@
     "createdDate": "2021-04-01T10:30:00Z"
   },
   {
-    "studentID": "STU-2026-00004",
+    "id": 4,
     "name": "Ishita Singh",
     "dateOfBirth": "2015-05-18",
     "gender": "Female",
@@ -155,7 +159,7 @@
     "createdDate": "2021-04-01T11:00:00Z"
   },
   {
-    "studentID": "STU-2026-00005",
+    "id": 5,
     "name": "Arjun Verma",
     "dateOfBirth": "2015-09-30",
     "gender": "Male",
@@ -184,14 +188,16 @@
       "isPrimaryContact": true
     },
     "medicalConditions": [],
-    "allergies": ["Dust"],
+    "allergies": [
+      "Dust"
+    ],
     "isActive": true,
     "status": "Active",
     "createdBy": "user-001",
     "createdDate": "2021-04-01T11:15:00Z"
   },
   {
-    "studentID": "STU-2026-00006",
+    "id": 6,
     "name": "Diya Gupta",
     "dateOfBirth": "2018-02-14",
     "gender": "Female",
@@ -227,7 +233,7 @@
     "createdDate": "2024-04-01T09:00:00Z"
   },
   {
-    "studentID": "STU-2026-00007",
+    "id": 7,
     "name": "Vihaan Mehta",
     "dateOfBirth": "2018-11-05",
     "gender": "Male",
@@ -263,7 +269,7 @@
     "createdDate": "2024-04-01T09:15:00Z"
   },
   {
-    "studentID": "STU-2026-00008",
+    "id": 8,
     "name": "Sara Khan",
     "dateOfBirth": "2012-06-20",
     "gender": "Female",
@@ -299,7 +305,7 @@
     "createdDate": "2018-04-01T10:00:00Z"
   },
   {
-    "studentID": "STU-2026-00009",
+    "id": 9,
     "name": "Aditya Nair",
     "dateOfBirth": "2012-12-08",
     "gender": "Male",
@@ -328,14 +334,16 @@
       "isPrimaryContact": true
     },
     "medicalConditions": [],
-    "allergies": ["Seafood"],
+    "allergies": [
+      "Seafood"
+    ],
     "isActive": true,
     "status": "Active",
     "createdBy": "user-001",
     "createdDate": "2018-04-01T10:30:00Z"
   },
   {
-    "studentID": "STU-2026-00010",
+    "id": 10,
     "name": "Zoya Ahmed",
     "dateOfBirth": "2012-04-25",
     "gender": "Female",

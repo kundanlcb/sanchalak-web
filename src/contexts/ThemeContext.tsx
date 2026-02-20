@@ -26,7 +26,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Calculate effective theme based on user preference and system settings
   useEffect(() => {
     const root = document.documentElement;
-    
+
     const getSystemTheme = (): 'light' | 'dark' => {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     };
@@ -34,22 +34,32 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const updateTheme = () => {
       const resolved = theme === 'system' ? getSystemTheme() : theme;
       setEffectiveTheme(resolved);
-      
+
       if (resolved === 'dark') {
-        root.classList.add('dark');
+        if (!root.classList.contains('dark')) {
+          root.classList.add('dark');
+        }
+        root.style.colorScheme = 'dark';
       } else {
-        root.classList.remove('dark');
+        if (root.classList.contains('dark')) {
+          root.classList.remove('dark');
+        }
+        root.style.colorScheme = 'light';
       }
     };
 
     updateTheme();
 
-    // Listen for system theme changes when in 'system' mode
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', updateTheme);
-      return () => mediaQuery.removeEventListener('change', updateTheme);
-    }
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemChange = () => {
+      if (theme === 'system') {
+        updateTheme();
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemChange);
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {

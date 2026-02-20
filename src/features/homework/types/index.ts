@@ -12,21 +12,22 @@ export interface HomeworkAttachment {
 
 export interface Homework {
   id: string;
-  classId: string;
-  subjectId: string;
+  classId: number;
+  subjectId: number;
   title: string;
   description: string;
   dueDate: string;
   attachments: HomeworkAttachment[];
   createdAt: string;
-  createdBy: string; // Teacher ID
+  createdBy: number; // Teacher ID
 }
 
 export interface CreateHomeworkRequest {
-  classId: string;
-  subjectId: string;
+  classId: number;
+  subjectId: number;
+  teacherId: number;
   title: string;
   description: string;
   dueDate: string;
-  attachments: File[]; // Represented as Files in frontend before upload
+  attachments?: HomeworkAttachment[]; // Matching frontend form structure
 }

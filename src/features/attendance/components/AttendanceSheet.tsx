@@ -10,7 +10,7 @@ import { cn } from '../../../utils/cn';
 
 interface AttendanceSheetProps {
   students: StudentAttendance[];
-  onAttendanceChange: (studentID: string, status: AttendanceStatus, remarks?: string) => void;
+  onAttendanceChange: (studentId: number, status: AttendanceStatus, remarks?: string) => void;
   isSubmitting?: boolean;
   readonly?: boolean;
 }
@@ -21,38 +21,38 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({
   isSubmitting = false,
   readonly = false,
 }) => {
-  const [remarks, setRemarks] = useState<Record<string, string>>({});
+  const [remarks, setRemarks] = useState<Record<number, string>>({});
 
-  const handleStatusChange = (studentID: string, status: AttendanceStatus) => {
+  const handleStatusChange = (studentId: number, status: AttendanceStatus) => {
     if (readonly || isSubmitting) return;
-    onAttendanceChange(studentID, status, remarks[studentID]);
+    onAttendanceChange(studentId, status, remarks[studentId]);
   };
 
-  const handleRemarksChange = (studentID: string, value: string) => {
-    setRemarks(prev => ({ ...prev, [studentID]: value }));
+  const handleRemarksChange = (studentId: number, value: string) => {
+    setRemarks(prev => ({ ...prev, [studentId]: value }));
     // Auto-update if status is already set
-    const student = students.find(s => s.studentID === studentID);
+    const student = students.find(s => s.studentId === studentId);
     if (student && student.status !== 'Present') {
-      onAttendanceChange(studentID, student.status, value);
+      onAttendanceChange(studentId, student.status, value);
     }
   };
 
   const getStatusButton = (student: StudentAttendance, status: AttendanceStatus) => {
     const isActive = student.status === status;
     const baseClass = "flex-1 py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 active:scale-95";
-    
+
     const statusColors = {
-      Present: isActive 
-        ? 'bg-green-500 text-white shadow-md' 
+      Present: isActive
+        ? 'bg-green-500 text-white shadow-md'
         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20',
-      Absent: isActive 
-        ? 'bg-red-500 text-white shadow-md' 
+      Absent: isActive
+        ? 'bg-red-500 text-white shadow-md'
         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20',
-      Late: isActive 
-        ? 'bg-yellow-500 text-white shadow-md' 
+      Late: isActive
+        ? 'bg-yellow-500 text-white shadow-md'
         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20',
-      Excused: isActive 
-        ? 'bg-blue-500 text-white shadow-md' 
+      Excused: isActive
+        ? 'bg-blue-500 text-white shadow-md'
         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20',
       Holiday: 'bg-gray-300 text-gray-700',
     };
@@ -68,7 +68,7 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({
     return (
       <button
         type="button"
-        onClick={() => handleStatusChange(student.studentID, status)}
+        onClick={() => handleStatusChange(student.studentId, status)}
         disabled={readonly || isSubmitting}
         className={cn(baseClass, statusColors[status], readonly && 'cursor-not-allowed opacity-60')}
       >
@@ -84,7 +84,7 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({
     <div className="space-y-2">
       {students.map((student, index) => (
         <div
-          key={student.studentID}
+          key={student.studentId}
           className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 sm:p-4 hover:shadow-soft transition-all duration-200"
           style={{ animationDelay: `${index * 30}ms` }}
         >
@@ -149,8 +149,8 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({
               </label>
               <input
                 type="text"
-                value={remarks[student.studentID] || student.remarks || ''}
-                onChange={(e) => handleRemarksChange(student.studentID, e.target.value)}
+                value={remarks[student.studentId] || student.remarks || ''}
+                onChange={(e) => handleRemarksChange(student.studentId, e.target.value)}
                 placeholder="Add reason or notes..."
                 disabled={readonly || isSubmitting}
                 className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60 disabled:cursor-not-allowed"

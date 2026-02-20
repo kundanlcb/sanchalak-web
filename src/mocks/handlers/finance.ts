@@ -67,11 +67,6 @@ export const financeHandlers = [
     await delay(300);
     const { id } = params;
 
-    // Validation: Check if transactions exist for this structure
-    // Mock check: 
-    // const hasTransactions = db.transactions.some(t => t.feeStructureId === id);
-    // if (hasTransactions) return HttpResponse.json({ message: "Cannot delete structure with active transactions" }, { status: 400 });
-
     const deleted = deleteItem(db.feeStructures, id as string);
     if (!deleted) return new HttpResponse(null, { status: 404 });
     return HttpResponse.json({ success: true, id });
@@ -82,15 +77,16 @@ export const financeHandlers = [
   http.get('/api/finance/ledger/:studentId', async ({ params }) => {
     await delay(300);
     const { studentId } = params;
+    const sid = Number(studentId);
 
     // In a real app, this would be a complex query. 
     // MOCK: Return a static structure for now or filter transactions
-    const studentTransactions = db.transactions.filter(t => t.studentId === studentId);
+    const studentTransactions = db.transactions.filter(t => t.studentId === sid);
 
     // Mock ledger record
     const ledger: StudentFeeRecord = {
-      id: `SFR-${studentId}`,
-      studentId: studentId as string,
+      id: `SFR-${sid}`,
+      studentId: sid,
       feeStructureId: 'FS-2026-G5-001',
       academicYear: '2025-2026',
       totalAmount: 6500,
@@ -129,7 +125,7 @@ export const financeHandlers = [
 
     const results = db.students.map(student => {
       const paid = db.transactions
-        .filter(t => t.studentId === student.studentID && t.status === 'Success')
+        .filter(t => t.studentId === student.id && t.status === 'Success')
         .reduce((sum, t) => sum + t.amount, 0);
 
       // Use real structure if available, else static
@@ -141,9 +137,9 @@ export const financeHandlers = [
 
       if (due > 0) {
         return {
-          id: student.studentID, // Widget expects 'id'
+          id: student.id, // Widget expects 'id'
           studentName: student.name,
-          studentId: student.studentID,
+          studentId: student.id,
           grade: student.classID, // Ideally map to Class Name using db.classes
           amountDue: due,
           daysOverdue: Math.floor(Math.random() * 60) + 1 // Mock days
@@ -162,7 +158,7 @@ export const financeHandlers = [
   http.get('/api/finance/transactions/:studentId', async ({ params }) => {
     await delay(300);
     const { studentId } = params;
-    return HttpResponse.json(db.transactions.filter(t => t.studentId === studentId));
+    return HttpResponse.json(db.transactions.filter(t => t.studentId === Number(studentId)));
   }),
 
   http.post('/api/finance/transactions', async ({ request }) => {

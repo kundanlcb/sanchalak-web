@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const homeworkSchema = z.object({
-  classId: z.string().min(1, 'Class is required'),
-  subjectId: z.string().min(1, 'Subject is required'),
+  classId: z.string().min(1, 'Class is required').regex(/^\d+$/, 'Invalid class ID'),
+  subjectId: z.string().min(1, 'Subject is required').regex(/^\d+$/, 'Invalid subject ID'),
   title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
   description: z.string().optional(),
   dueDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
@@ -12,13 +12,13 @@ export const homeworkSchema = z.object({
   // but if we were validating the array of uploaded file metadata:
   // attachments: z.array(z.any()).optional()
 }).refine((data) => {
-    const due = new Date(data.dueDate);
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    return due >= today;
+  const due = new Date(data.dueDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return due >= today;
 }, {
-    message: 'Due date cannot be in the past',
-    path: ['dueDate']
+  message: 'Due date cannot be in the past',
+  path: ['dueDate']
 });
 
 export type HomeworkFormData = z.infer<typeof homeworkSchema>;

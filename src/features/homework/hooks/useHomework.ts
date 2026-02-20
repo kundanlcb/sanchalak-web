@@ -6,10 +6,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../services/api/client';
 import { type Homework, type CreateHomeworkRequest } from '../types';
+import { useAuth } from '../../auth/services/authContext';
 
-export const useHomework = (initialClassId?: string) => {
+export const useHomework = (filters: { classId?: string, subjectId?: string, date?: string } = {}) => {
   const queryClient = useQueryClient();
-  const queryKey = ['homework', initialClassId ?? 'all'];
+  const { user } = useAuth();
+  const { classId, subjectId, date } = filters;
+  const queryKey = ['homework', classId ?? 'all', subjectId ?? 'all', date ?? 'any'];
 
   // --- Query: Fetch homework list ---
   const {
@@ -20,9 +23,12 @@ export const useHomework = (initialClassId?: string) => {
   } = useQuery<Homework[]>({
     queryKey,
     queryFn: async () => {
-      const url = initialClassId
-        ? `/api/homework?classId=${initialClassId}`
-        : '/api/homework';
+      const params = new URLSearchParams();
+      if (classId) params.append('classId', classId);
+      if (subjectId) params.append('subjectId', subjectId);
+      if (date) params.append('dueDate', date);
+
+      const url = `/api/homework${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await apiClient.get<Homework[]>(url);
       return response.data;
     },
@@ -32,10 +38,11 @@ export const useHomework = (initialClassId?: string) => {
   // --- Mutation: Create homework (optimistic) ---
   const createMutation = useMutation({
     mutationKey: ['homework', 'create'],
-    mutationFn: async (data: CreateHomeworkRequest & { files?: File[] }) => {
+    mutationFn: async (data: any) => {
       const payload: CreateHomeworkRequest = {
-        classId: data.classId,
-        subjectId: data.subjectId,
+        classId: parseInt(String(data.classId), 10),
+        subjectId: parseInt(String(data.subjectId), 10),
+        teacherId: parseInt(user?.userID || '1', 10),
         title: data.title,
         description: data.description,
         dueDate: data.dueDate,

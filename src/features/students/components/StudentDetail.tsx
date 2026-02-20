@@ -19,7 +19,8 @@ import type { Document } from '../types/document.types';
 import type { Attendance } from '../../attendance/types/attendance.types';
 
 export const StudentDetail: React.FC = () => {
-  const { studentID } = useParams<{ studentID: string }>();
+  const { id } = useParams<{ id: string }>();
+  const studentId = Number(id);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -34,10 +35,10 @@ export const StudentDetail: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = async () => {
-    if (!studentID) return;
+    if (!studentId) return;
     setIsDeleting(true);
     try {
-      await deleteStudent(studentID);
+      await deleteStudent(studentId);
       showToast('Student deleted successfully', 'success');
       navigate('/students');
     } catch (err) {
@@ -49,21 +50,21 @@ export const StudentDetail: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!studentID) return;
+      if (!studentId) return;
 
       try {
         setLoading(true);
         setError('');
 
         const [studentResponse, docsResponse, attendanceResponse] = await Promise.all([
-          getStudent(studentID),
-          getStudentDocuments(studentID),
-          getAttendance({ studentID, limit: 100 })
+          getStudent(studentId),
+          getStudentDocuments(studentId),
+          getAttendance({ studentId: studentId, limit: 100 })
         ]);
 
-        setStudent(studentResponse.student);
-        setDocuments(docsResponse.documents);
-        setAttendanceHistory(attendanceResponse.attendances);
+        setStudent(studentResponse?.student);
+        setDocuments(docsResponse?.documents || []);
+        setAttendanceHistory(attendanceResponse?.attendances || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load student details');
       } finally {
@@ -72,7 +73,7 @@ export const StudentDetail: React.FC = () => {
     };
 
     fetchData();
-  }, [studentID]);
+  }, [studentId]);
 
   if (loading) {
     return (
@@ -149,7 +150,7 @@ export const StudentDetail: React.FC = () => {
           Back to Students
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/students/${studentID}/edit`)}>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/students/${studentId}/edit`)}>
             <Edit className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Edit</span>
           </Button>
@@ -192,8 +193,8 @@ export const StudentDetail: React.FC = () => {
                 </h1>
                 <span
                   className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium self-center sm:self-auto ${student.status === 'Active'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                     }`}
                 >
                   {student.status}
@@ -201,7 +202,7 @@ export const StudentDetail: React.FC = () => {
               </div>
 
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
-                {student.studentID} • {student.admissionNumber}
+                {student.id} • {student.admissionNumber}
               </p>
 
               {/* Quick Stats Grid */}
@@ -209,7 +210,7 @@ export const StudentDetail: React.FC = () => {
                 <div className="text-center sm:text-left">
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Class</p>
                   <p className="font-medium text-gray-900 dark:text-white truncate">
-                    Grade {student.classID?.split('-')[2] || student.className || 'N/A'}-{student.section || 'A'}
+                    Grade {student.classId || student.className || 'N/A'}-{student.section || 'A'}
                   </p>
                 </div>
                 <div className="text-center sm:text-left">
@@ -238,8 +239,8 @@ export const StudentDetail: React.FC = () => {
           <button
             onClick={() => setActiveTab('info')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'info'
-                ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
           >
             Information
@@ -247,8 +248,8 @@ export const StudentDetail: React.FC = () => {
           <button
             onClick={() => setActiveTab('documents')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'documents'
-                ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
           >
             Documents ({documents.length})
@@ -256,8 +257,8 @@ export const StudentDetail: React.FC = () => {
           <button
             onClick={() => setActiveTab('attendance')}
             className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'attendance'
-                ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
           >
             Attendance
@@ -389,10 +390,10 @@ export const StudentDetail: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <span
                       className={`px-2 py-1 text-xs font-semibold rounded-full shrink-0 ${doc.verificationStatus === 'Verified'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                          : doc.verificationStatus === 'Pending'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                        : doc.verificationStatus === 'Pending'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                         }`}
                     >
                       {doc.verificationStatus}

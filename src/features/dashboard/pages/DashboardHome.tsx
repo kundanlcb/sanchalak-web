@@ -6,9 +6,15 @@ import { GenderDonutChart } from '../components/GenderDonutChart';
 import { StarStudentTable } from '../components/StarStudentTable';
 import { RecentActivity } from '../components/RecentActivity';
 import { useDashboardStats } from '../hooks/useDashboardStats';
+import { useAuth } from '../../auth/services/authContext';
 
 export const DashboardHome: React.FC = () => {
     const { stats, loading } = useDashboardStats();
+    const { user } = useAuth();
+    const permissions = user?.permissions || [];
+
+    const hasFinance = permissions.includes('FINANCE') || permissions.includes('FEES');
+    const hasExams = permissions.includes('EXAMS');
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
@@ -30,57 +36,59 @@ export const DashboardHome: React.FC = () => {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard 
-                    title="Total Students" 
-                    value={stats ? stats.students.toString() : "..."} 
-                    icon={Users} 
-                    color="blue" 
+                <StatsCard
+                    title="Total Students"
+                    value={stats ? stats.students.toString() : "..."}
+                    icon={Users}
+                    color="blue"
                     trend={stats ? "Active students" : ""}
                     loading={loading}
                 />
-                <StatsCard 
-                    title="Total Teachers" 
-                    value={stats ? stats.teachers.toString() : "..."} 
-                    icon={GraduationCap} 
-                    color="purple" 
+                <StatsCard
+                    title="Total Teachers"
+                    value={stats ? stats.teachers.toString() : "..."}
+                    icon={GraduationCap}
+                    color="purple"
                     trend={stats ? "Active faculty" : ""}
                     loading={loading}
                 />
-                <StatsCard 
-                    title="Total Classes" 
-                    value={stats ? stats.classes.toString() : "..."} 
-                    icon={School} 
-                    color="orange" 
+                <StatsCard
+                    title="Total Classes"
+                    value={stats ? stats.classes.toString() : "..."}
+                    icon={School}
+                    color="orange"
                     loading={loading}
                 />
-                <StatsCard 
-                    title="Monthly Earnings" 
-                    value={stats ? formatCurrency(stats.monthlyEarnings) : "..."} 
-                    icon={IndianRupee} 
-                    color="green" 
-                    trend={stats ? "This month" : ""}
-                    loading={loading}
-                />
+                {hasFinance && (
+                    <StatsCard
+                        title="Monthly Earnings"
+                        value={stats ? formatCurrency(stats.monthlyEarnings) : "..."}
+                        icon={IndianRupee}
+                        color="green"
+                        trend={stats ? "This month" : ""}
+                        loading={loading}
+                    />
+                )}
             </div>
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+                <div className={hasExams ? "lg:col-span-2" : "hidden"}>
                     <ExamResultChart loading={loading} />
                 </div>
-                <div className="lg:col-span-1">
+                <div className={hasExams ? "lg:col-span-1" : "lg:col-span-3"}>
                     <GenderDonutChart loading={loading} />
                 </div>
             </div>
 
             {/* Tables & Activity Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                 <div className="lg:col-span-2">
+                <div className="lg:col-span-2">
                     <StarStudentTable loading={loading} />
-                 </div>
-                 <div className="lg:col-span-1">
+                </div>
+                <div className="lg:col-span-1">
                     <RecentActivity loading={loading} />
-                 </div>
+                </div>
             </div>
         </div>
     );

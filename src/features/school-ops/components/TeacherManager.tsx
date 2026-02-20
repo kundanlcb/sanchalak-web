@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Trash2, Edit, UserCog } from 'lucide-react';
 import Select from 'react-select';
 import { TeacherSchema } from '../types';
@@ -15,18 +16,19 @@ import { ConfirmationDialog } from '../../../components/common/ConfirmationDialo
 
 // Schema for creating a teacher (id is optional/generated)
 const CreateTeacherSchema = TeacherSchema.omit({ id: true, isActive: true }).extend({
-  specializedSubjects: z.array(z.string()).min(1, 'At least one subject is required'),
+  specializedSubjects: z.array(z.coerce.number()).min(1, 'At least one subject is required'),
 });
 
 type CreateTeacherForm = z.infer<typeof CreateTeacherSchema>;
 
 export const TeacherManager: React.FC = () => {
+  const navigate = useNavigate();
   const { teachers, loading, error, addTeacher, updateTeacher, removeTeacher } = useTeachers();
   const { subjects } = useAcademicStructure();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const {
     register,
@@ -89,8 +91,8 @@ export const TeacherManager: React.FC = () => {
     teacher.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getSubjectNames = (subjectIds: string[]) => {
-    return subjectIds.map(id => subjects.find(s => s.id === id)?.name || id).join(', ');
+  const getSubjectNames = (subjectIds: number[]) => {
+    return subjectIds.map(id => subjects.find(s => s.id === Number(id))?.name || id).join(', ');
   };
 
   // Prepare options for react-select
@@ -277,8 +279,9 @@ export const TeacherManager: React.FC = () => {
                 {filteredTeachers.map((teacher) => (
                   <tr
                     key={teacher.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group/row"
                     data-testid="teacher-row"
+                    onClick={() => navigate(`/admin/teachers/${teacher.id}`)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {teacher.id}
@@ -286,14 +289,14 @@ export const TeacherManager: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center group-hover/row:bg-blue-200 dark:group-hover/row:bg-blue-800 transition-colors">
                             <span className="font-medium text-blue-700 dark:text-blue-300">
                               {teacher.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white group-hover/row:text-blue-600 dark:group-hover/row:text-blue-400">
                             {teacher.name}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -319,24 +322,27 @@ export const TeacherManager: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => handleEdit(teacher)}
-                          title="Edit"
+                          className="text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           data-testid="edit-teacher-btn"
                         >
-                          <Edit className="w-4 h-4 text-gray-500 hover:text-blue-600" />
+                          <Edit className="w-3.5 h-3.5 mr-1.5" />
+                          Edit
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => setDeleteId(teacher.id)}
+                          className="text-red-500 border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
                           title="Delete"
                           data-testid="delete-teacher-btn"
                         >
-                          <Trash2 className="w-4 h-4 text-gray-500 hover:text-red-600" />
+                          <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                          Delete
                         </Button>
                       </div>
                     </td>
@@ -404,8 +410,8 @@ export const TeacherManager: React.FC = () => {
                 <Select
                   isMulti
                   options={subjectOptions}
-                  value={subjectOptions.filter(option => field.value?.includes(option.value))}
-                  onChange={(selected) => field.onChange(selected.map(s => s.value))}
+                  value={subjectOptions.filter(option => field.value?.includes(Number(option.value)))}
+                  onChange={(selected) => field.onChange(selected.map(s => Number(s.value)))}
                   className="react-select-container"
                   classNamePrefix="react-select"
                   placeholder="Select subjects..."

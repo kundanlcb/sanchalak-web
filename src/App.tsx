@@ -26,6 +26,7 @@ import { NoticeForm } from './features/notices/components/NoticeForm';
 import { NoticeDetail } from './features/notices/components/NoticeDetail';
 import { AcademicSetupPage } from './features/school-ops/pages/AcademicSetupPage';
 import { TeacherListPage } from './features/school-ops/pages/TeacherListPage';
+import { TeacherDetail } from './features/school-ops/components/TeacherDetail';
 import { RoutineManagementPage } from './features/school-ops/pages/RoutineManagementPage';
 import { ExamConfigPage } from './features/academics/pages/ExamConfigPage';
 import { MarksEntryPage } from './features/academics/pages/MarksEntryPage';
@@ -123,7 +124,7 @@ function App() {
                 }
               />
               <Route
-                path="/students/:studentID/edit"
+                path="/students/:id/edit"
                 element={
                   <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
                     <AuthenticatedLayout>
@@ -133,7 +134,7 @@ function App() {
                 }
               />
               <Route
-                path="/students/:studentID"
+                path="/students/:id"
                 element={
                   <ProtectedRoute allowedRoles={['Admin', 'Teacher', 'Staff']}>
                     <AuthenticatedLayout>
@@ -168,6 +169,16 @@ function App() {
                   <ProtectedRoute allowedRoles={['Admin']}>
                     <AuthenticatedLayout>
                       <TeacherListPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/teachers/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <TeacherDetail />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
                 }

@@ -30,7 +30,7 @@ export const useTeachers = () => {
       await queryClient.cancelQueries({ queryKey: ['teachers'] });
       const previous = queryClient.getQueryData<Teacher[]>(['teachers']);
       const tempTeacher = {
-        id: `temp-${Date.now()}`,
+        id: Date.now(),
         ...data,
       } as Teacher;
       queryClient.setQueryData<Teacher[]>(['teachers'], (old) => [
@@ -50,7 +50,7 @@ export const useTeachers = () => {
   // --- Mutation: Update teacher (optimistic) ---
   const updateMutation = useMutation({
     mutationKey: ['teachers', 'update'],
-    mutationFn: ({ id, data }: { id: string; data: Partial<Teacher> }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<Teacher> }) =>
       schoolOpsApi.updateTeacher(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['teachers'] });
@@ -71,8 +71,8 @@ export const useTeachers = () => {
   // --- Mutation: Delete teacher (optimistic) ---
   const removeMutation = useMutation({
     mutationKey: ['teachers', 'remove'],
-    mutationFn: (id: string) => schoolOpsApi.deleteTeacher(id),
-    onMutate: async (id: string) => {
+    mutationFn: (id: number) => schoolOpsApi.deleteTeacher(id),
+    onMutate: async (id: number) => {
       await queryClient.cancelQueries({ queryKey: ['teachers'] });
       const previous = queryClient.getQueryData<Teacher[]>(['teachers']);
       queryClient.setQueryData<Teacher[]>(['teachers'], (old) =>
@@ -90,9 +90,9 @@ export const useTeachers = () => {
 
   // Keep compatible return interface
   const addTeacher = async (data: Partial<Teacher>) => addMutation.mutateAsync(data);
-  const updateTeacher = async (id: string, data: Partial<Teacher>) =>
+  const updateTeacher = async (id: number, data: Partial<Teacher>) =>
     updateMutation.mutateAsync({ id, data });
-  const removeTeacher = async (id: string) => removeMutation.mutateAsync(id);
+  const removeTeacher = async (id: number) => removeMutation.mutateAsync(id);
 
   const isPending = addMutation.isPending || updateMutation.isPending || removeMutation.isPending;
 

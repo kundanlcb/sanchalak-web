@@ -1,46 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHomework } from '../hooks/useHomework';
 import { HomeworkCard } from '../components/HomeworkCard';
 import { HomeworkForm } from '../components/HomeworkForm';
 import { Button } from '../../../components/common/Button';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import { Skeleton } from '../../../components/common/Skeleton';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
+import { Select } from '../../../components/common/Select';
+import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructure';
+import { useSubjects } from '../../academics/hooks/useSubjects';
 
 export const HomeworkPage: React.FC = () => {
   const { t } = useTranslation();
-  const [selectedClassId, setSelectedClassId] = useState('CLS-2026-00003'); // Default to Class 5
-  
-  const { homeworkList, isLoading, createHomework, deleteHomework } = useHomework(selectedClassId);
-  
+  const { classes, loading: loadingClasses } = useAcademicStructure();
+  const { subjects, isLoading: loadingSubjects } = useSubjects();
+
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+  const [selectedDate, setSelectedDate] = useState<string>('');
+
+  const { homeworkList, isLoading, createHomework, deleteHomework } = useHomework({
+    classId: selectedClassId,
+    subjectId: selectedSubjectId,
+    date: selectedDate
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const classes = [
-      { id: 'CLS-2026-00003', label: 'Class 5-A' },
-      { id: 'CLS-2026-00011', label: 'Class 6-A' },
-      { id: 'CLS-2026-00012', label: 'Class 7-A' } // Assuming mock ID for 7
-  ];
+  // Set default class once loaded
+  useEffect(() => {
+    if (classes.length > 0 && !selectedClassId) {
+      setSelectedClassId(String(classes[0].id));
+    }
+  }, [classes, selectedClassId]);
 
   const handleCreate = async (data: any) => {
-      setIsSubmitting(true);
-      try {
-          await createHomework(data);
-          setIsModalOpen(false);
-      } catch (e) {
-          console.error(e);
-      } finally {
-          setIsSubmitting(false);
-      }
+    setIsSubmitting(true);
+    try {
+      await createHomework(data);
+      setIsModalOpen(false);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleDelete = async () => {
-      if (deleteId) {
-          await deleteHomework(deleteId);
-          setDeleteId(null);
-      }
+    if (deleteId) {
+      await deleteHomework(deleteId);
+      setDeleteId(null);
+    }
   };
 
   return (
@@ -60,46 +73,76 @@ export const HomeworkPage: React.FC = () => {
         </Button>
       </div>
 
-       {/* Filters - Active */}
-       <div className="flex gap-4 overflow-x-auto pb-2">
-           {classes.map(cls => (
-               <button 
-                 key={cls.id} 
-                 onClick={() => setSelectedClassId(cls.id)}
-                 className={`
-                    px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-colors
-                    ${selectedClassId === cls.id 
-                        ? 'bg-blue-600 text-white border-blue-600' 
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}
-                 `}
-               >
-                   {cls.label}
-               </button>
-           ))}
-       </div>
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Class Selection */}
+        <div className="relative">
+          <Select
+            label="Class"
+            value={selectedClassId}
+            onChange={(e) => setSelectedClassId(e.target.value)}
+            disabled={loadingClasses}
+          >
+            <option value="">All Classes</option>
+            {classes.map(cls => (
+              <option key={cls.id} value={String(cls.id)}>
+                Grade {cls.grade}-{cls.section} {cls.className ? `(${cls.className})` : ''}
+              </option>
+            ))}
+          </Select>
+          {loadingClasses && <Loader2 className="absolute right-2 top-8 h-4 w-4 animate-spin text-gray-400" />}
+        </div>
+
+        {/* Subject Selection */}
+        <div className="relative">
+          <Select
+            label="Subject"
+            value={selectedSubjectId}
+            onChange={(e) => setSelectedSubjectId(e.target.value)}
+            disabled={loadingSubjects}
+          >
+            <option value="">All Subjects</option>
+            {subjects.map(sub => (
+              <option key={sub.id} value={String(sub.id)}>{sub.name}</option>
+            ))}
+          </Select>
+          {loadingSubjects && <Loader2 className="absolute right-2 top-8 h-4 w-4 animate-spin text-gray-400" />}
+        </div>
+
+        {/* Date Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:text-gray-100"
+          />
+        </div>
+      </div>
 
       {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[1,2,3].map(i => <Skeleton key={i} className="h-40 w-full" />)}
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 w-full" />)}
+        </div>
       ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {homeworkList.map(hw => (
-                  <HomeworkCard key={hw.id} homework={hw} onDelete={(id) => setDeleteId(id)} />
-              ))}
-              {homeworkList.length === 0 && (
-                  <div className="col-span-full text-center py-12 text-gray-500">
-                      No homework assigned yet.
-                  </div>
-              )}
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {homeworkList.map(hw => (
+            <HomeworkCard key={hw.id} homework={hw} onDelete={(id) => setDeleteId(id)} />
+          ))}
+          {homeworkList.length === 0 && (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              No homework found for the selected filters.
+            </div>
+          )}
+        </div>
       )}
 
-      <HomeworkForm 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSubmit={handleCreate} 
-        isLoading={isSubmitting} 
+      <HomeworkForm
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreate}
+        isLoading={isSubmitting}
       />
 
       <ConfirmationDialog

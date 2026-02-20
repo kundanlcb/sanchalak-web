@@ -19,8 +19,7 @@ export type { StudentProfileDto } from '../../../api/models/student-profile-dto'
 // ============================================================================
 
 export interface Student {
-  id?: number | string;
-  studentID: string;
+  id: number;
   firstName?: string;
   lastName?: string;
   name: string;
@@ -29,7 +28,7 @@ export interface Student {
   bloodGroup?: BloodGroup;
   admissionDate?: string;
   admissionNumber: string;
-  classID: string;
+  classId: number;
   className?: string; // For frontend compatibility
   rollNumber: number;
   section: string;
@@ -101,7 +100,7 @@ export interface CreateStudentRequest {
   gender: Gender;
   bloodGroup?: BloodGroup;
   admissionDate: string;
-  classID: string;
+  classId: number;
   rollNumber: number;
   section: string;
   academicYear: string;
@@ -122,18 +121,18 @@ export interface CreateStudentRequest {
 
 export interface CreateStudentResponse {
   success: boolean;
-  studentID: string;
+  id: number;
   admissionNumber: string;
   message: string;
 }
 
 export interface UpdateStudentRequest {
-  studentID: string;
+  id: number;
   name?: string;
   dateOfBirth?: string;
   gender?: Gender;
   bloodGroup?: BloodGroup;
-  classID?: string;
+  classId?: number;
   rollNumber?: number;
   section?: string;
 
@@ -161,7 +160,7 @@ export interface StudentListQuery {
   page?: number;
   limit?: number;
   search?: string;
-  classID?: string;
+  classId?: number;
   section?: string;
   academicYear?: string;
   status?: StudentStatus;
@@ -180,7 +179,7 @@ export interface StudentListResponse {
 }
 
 export interface GetStudentRequest {
-  studentID: string;
+  id: number;
 }
 
 export interface GetStudentResponse {
@@ -189,7 +188,7 @@ export interface GetStudentResponse {
 }
 
 export interface DeleteStudentRequest {
-  studentID: string;
+  id: number;
   reason?: string;
 }
 

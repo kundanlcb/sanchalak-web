@@ -60,9 +60,12 @@ const Modal: React.FC<ModalProps> = ({
         className="absolute inset-0 bg-black/50 dark:bg-black/70"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
         className={cn(
           'relative w-full mx-4 bg-white dark:bg-gray-900 rounded-lg shadow-xl',
           sizeClasses[size]
@@ -71,7 +74,7 @@ const Modal: React.FC<ModalProps> = ({
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h2 id="modal-title" className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               {title}
             </h2>
             <Button

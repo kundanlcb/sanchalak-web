@@ -11,20 +11,20 @@ interface RoutineGridProps {
   onCellClick?: (day: string, period: string, currentRoutine?: Routine) => void;
 }
 
-export const RoutineGrid: React.FC<RoutineGridProps> = ({ 
-  routines, 
-  subjects, 
-  teachers, 
+export const RoutineGrid: React.FC<RoutineGridProps> = ({
+  routines,
+  subjects,
+  teachers,
   editable = false,
-  onCellClick 
+  onCellClick
 }) => {
-  
+
   const getRoutineForCell = (day: string, period: string) => {
     return routines.find(r => r.day === day && r.period === period);
   };
-  
-  const getSubjectName = (id: string) => subjects.find(s => s.id === id)?.name || id;
-  const getTeacherName = (id: string) => teachers.find(t => t.id === id)?.name || id;
+
+  const getSubjectName = (id: number | string) => subjects.find(s => s.id === id)?.name || String(id);
+  const getTeacherName = (id: number | string) => teachers.find(t => t.id === id)?.name || String(id);
 
   return (
     <div className="overflow-x-auto pb-4">
@@ -50,7 +50,7 @@ export const RoutineGrid: React.FC<RoutineGridProps> = ({
             {GLOBAL_PERIODS.map(period => {
               const routine = getRoutineForCell(day, period);
               const isBreak = period === 'Break';
-              
+
               if (isBreak) {
                 return (
                   <div key={`${day}-${period}`} className="bg-gray-100 dark:bg-gray-900 flex items-center justify-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
@@ -60,7 +60,7 @@ export const RoutineGrid: React.FC<RoutineGridProps> = ({
               }
 
               return (
-                <div 
+                <div
                   key={`${day}-${period}`}
                   onClick={() => !isBreak && onCellClick?.(day, period, routine)}
                   className={cn(
@@ -80,11 +80,11 @@ export const RoutineGrid: React.FC<RoutineGridProps> = ({
                       </span>
                     </div>
                   ) : (
-                     editable && (
-                       <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-blue-400 font-medium text-xs">
-                         + Assign
-                       </div>
-                     )
+                    editable && (
+                      <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-blue-400 font-medium text-xs">
+                        + Assign
+                      </div>
+                    )
                   )}
                 </div>
               );

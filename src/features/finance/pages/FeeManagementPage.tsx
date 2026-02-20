@@ -13,18 +13,18 @@ import type { FeeStructure } from '../types';
 
 export const FeeManagementPage: React.FC = () => {
   const { showToast } = useToast();
-  const { 
-    structures, categories, isLoading, error, 
+  const {
+    structures, categories, isLoading, error,
     fetchStructures, fetchCategories, createCategory, createStructure,
     updateStructure, deleteStructure
   } = useFees();
 
   const { classes: opsClasses, refresh: fetchClasses } = useAcademicStructure();
-  
+
   const [activeTab, setActiveTab] = useState<'structures' | 'categories'>('structures');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
-  
+
   const [editingStructure, setEditingStructure] = useState<FeeStructure | null>(null);
   const [deleteStructureId, setDeleteStructureId] = useState<string | null>(null);
 
@@ -35,7 +35,7 @@ export const FeeManagementPage: React.FC = () => {
   }, [fetchCategories, fetchStructures, fetchClasses]);
 
   const classes = opsClasses.map(c => ({
-    id: c.classID,
+    id: c.id,
     name: c.className || `Grade ${c.grade}-${c.section}`
   }));
 
@@ -84,8 +84,8 @@ export const FeeManagementPage: React.FC = () => {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Fee Management</h1>
-        <Button 
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Fee Management</h1>
+        <Button
           onClick={() => activeTab === 'categories' ? setIsCategoryModalOpen(true) : setIsStructureModalOpen(true)}
           className="w-full sm:w-auto"
         >
@@ -94,32 +94,32 @@ export const FeeManagementPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 overflow-x-auto">
+      <div className="border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
         <nav className="-mb-px flex space-x-8 min-w-max">
           <button
             onClick={() => setActiveTab('structures')}
-            className={`${activeTab === 'structures' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+            className={`${activeTab === 'structures' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
           >
             Fee Structures
           </button>
           <button
             onClick={() => setActiveTab('categories')}
-            className={`${activeTab === 'categories' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+            className={`${activeTab === 'categories' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
           >
             Fee Categories
           </button>
         </nav>
       </div>
 
-      {error && <div className="p-4 bg-red-50 text-red-700 rounded mb-4">{error}</div>}
-      
+      {error && <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 rounded mb-4">{error}</div>}
+
       {isLoading && structures.length === 0 && categories.length === 0 && (
-        <div className="text-gray-500 py-8 text-center">Loading...</div>
+        <div className="text-gray-500 dark:text-gray-400 py-8 text-center font-medium">Loading...</div>
       )}
 
       {activeTab === 'structures' && (
-        <FeeStructureList 
-          structures={structures} 
+        <FeeStructureList
+          structures={structures}
           categories={categories}
           onEdit={openEditStructure}
           onDelete={setDeleteStructureId}
@@ -127,62 +127,62 @@ export const FeeManagementPage: React.FC = () => {
       )}
 
       {activeTab === 'categories' && (
-        <div className="bg-white rounded shadow overflow-hidden border border-gray-200">
-           <div className="overflow-x-auto">
-             <table className="min-w-full divide-y divide-gray-200">
-               <thead className="bg-gray-50">
-                 <tr>
-                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frequency</th>
-                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mandatory</th>
-                 </tr>
-               </thead>
-               <tbody className="bg-white divide-y divide-gray-200">
-                 {categories.map((cat) => (
-                   <tr key={cat.id}>
-                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{cat.name}</td>
-                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{cat.type}</td>
-                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{cat.frequency}</td>
-                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${cat.isMandatory ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                         {cat.isMandatory ? 'Yes' : 'No'}
-                       </span>
-                     </td>
-                   </tr>
-                 ))}
-                 {categories.length === 0 && !isLoading && (
-                   <tr>
-                     <td colSpan={4} className="px-6 py-4 text-center text-gray-500">No categories found. Create a new one.</td>
-                   </tr>
-                 )}
-               </tbody>
-             </table>
-           </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Frequency</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mandatory</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {categories.map((cat) => (
+                  <tr key={cat.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{cat.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{cat.type}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{cat.frequency}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${cat.isMandatory ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
+                        {cat.isMandatory ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {categories.length === 0 && !isLoading && (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400 italic">No categories found. Create a new one.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      <Modal 
-        isOpen={isCategoryModalOpen} 
-        onClose={() => setIsCategoryModalOpen(false)} 
+      <Modal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
         title="New Fee Category"
       >
-        <FeeCategoryForm 
-          onSubmit={handleCreateCategory} 
+        <FeeCategoryForm
+          onSubmit={handleCreateCategory}
           onCancel={() => setIsCategoryModalOpen(false)}
           isLoading={isLoading}
         />
       </Modal>
 
-      <Modal 
-        isOpen={isStructureModalOpen} 
-        onClose={closeStructureModal} 
+      <Modal
+        isOpen={isStructureModalOpen}
+        onClose={closeStructureModal}
         title={editingStructure ? "Edit Fee Structure" : "New Fee Structure"}
       >
-        <FeeStructureForm 
+        <FeeStructureForm
           categories={categories}
           classes={classes}
-          onSubmit={handleCreateOrUpdateStructure} 
+          onSubmit={handleCreateOrUpdateStructure}
           onCancel={closeStructureModal}
           isLoading={isLoading}
           initialData={editingStructure ? {

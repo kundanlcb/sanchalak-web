@@ -25,10 +25,10 @@ import { db, persistAttendance } from '../db';
 import type { Student } from '../../features/students/types/student.types';
 
 // ID generator
-const generateAttendanceID = (): string => {
-  const ids = db.attendance.map(a => parseInt(a.attendanceID.split('-')[2] || '0'));
-  const maxId = ids.length > 0 ? Math.max(...ids) : 0;
-  return `ATT-2026-${String(maxId + 1).padStart(5, '0')}`;
+const generateAttendanceID = (): number => {
+  const ids = db.attendance.map(a => a.id);
+  const maxId = ids.length > 0 ? Math.max(...ids) : 1000;
+  return maxId + 1;
 };
 
 // Simulate parent notification (Log only)
@@ -44,7 +44,7 @@ const simulateParentNotification = (student: Student, date: string, status: Atte
 📱 Mobile: ${student.primaryParent?.mobileNumber || 'N/A'}
 📧 Email: ${student.primaryParent?.email || 'N/A'}
 
-👤 Student: ${student.name} (${student.studentID})
+👤 Student: ${student.name} (ID: ${student.id})
 📅 Date: ${date}
 ⚠️  Status: ${status}
 📚 Class: ${student.classID}
@@ -64,14 +64,14 @@ export const handleMarkAttendance = async (request: MarkAttendanceRequest): Prom
   await new Promise(resolve => setTimeout(resolve, 200));
 
   // Validate student exists
-  const student = db.students.find(s => s.studentID === request.studentID);
+  const student = db.students.find(s => s.id === request.studentId);
   if (!student) {
-    throw new Error(`Student ${request.studentID} not found`);
+    throw new Error(`Student ${request.studentId} not found`);
   }
 
   // Check if attendance already exists for this date
   const existingIndex = db.attendance.findIndex(
-    a => a.studentID === request.studentID && a.classID === request.classID && a.date === request.date
+    a => a.studentId === request.studentId && a.classId === request.classId && a.date === request.date
   );
 
   if (existingIndex !== -1) {
@@ -79,10 +79,11 @@ export const handleMarkAttendance = async (request: MarkAttendanceRequest): Prom
   }
 
   // Create attendance record
+  const id = generateAttendanceID();
   const attendance: Attendance = {
-    attendanceID: generateAttendanceID(),
-    studentID: request.studentID,
-    classID: request.classID,
+    id,
+    studentId: request.studentId,
+    classId: request.classId,
     date: request.date,
     status: request.status,
     markedBy: 'user-002', // Current user (teacher)
@@ -103,7 +104,7 @@ export const handleMarkAttendance = async (request: MarkAttendanceRequest): Prom
 
   return {
     success: true,
-    attendanceID: attendance.attendanceID,
+    id,
     message: `Attendance marked for ${student.name}`,
     notifications: notifications.length > 0 ? notifications : undefined,
   };
@@ -114,34 +115,31 @@ export const handleBulkMarkAttendance = async (request: BulkMarkAttendanceReques
   await new Promise(resolve => setTimeout(resolve, 500));
 
   let marked = 0;
-  const errors: Array<{ studentID: string; error: string }> = [];
+  const errors: Array<{ studentId: number; error: string }> = [];
 
   for (const item of request.attendances) {
     try {
       // Check if already exists
       const existing = db.attendance.find(
-        a => a.studentID === item.studentID && a.classID === request.classID && a.date === request.date
+        a => a.studentId === item.studentId && a.classId === request.classId && a.date === request.date
       );
 
       if (existing) {
-        // If it exists, update it instead of erroring in bulk mode?
-        // Spec says "Mark All Present" often used as default. 
-        // Logic: If already marked, skip or update. Let's skip to be safe as per previous logic.
-        errors.push({ studentID: item.studentID, error: 'Already marked' });
+        errors.push({ studentId: item.studentId, error: 'Already marked' });
         continue;
       }
 
-      const student = db.students.find(s => s.studentID === item.studentID);
+      const student = db.students.find(s => s.id === item.studentId);
       if (!student) {
-        errors.push({ studentID: item.studentID, error: 'Student not found' });
+        errors.push({ studentId: item.studentId, error: 'Student not found' });
         continue;
       }
 
       // Create record
       const attendance: Attendance = {
-        attendanceID: generateAttendanceID(),
-        studentID: item.studentID,
-        classID: request.classID,
+        id: generateAttendanceID(),
+        studentId: item.studentId,
+        classId: request.classId,
         date: request.date,
         status: item.status,
         markedBy: request.markedBy,
@@ -158,7 +156,7 @@ export const handleBulkMarkAttendance = async (request: BulkMarkAttendanceReques
         simulateParentNotification(student, request.date, item.status);
       }
     } catch (err) {
-      errors.push({ studentID: item.studentID, error: err instanceof Error ? err.message : 'Unknown error' });
+      errors.push({ studentId: item.studentId, error: err instanceof Error ? err.message : 'Unknown error' });
     }
   }
 
@@ -182,12 +180,12 @@ export const handleGetAttendance = async (query: AttendanceQuery): Promise<Atten
   let filtered = [...db.attendance];
 
   // Apply filters
-  if (query.studentID) {
-    filtered = filtered.filter(a => a.studentID === query.studentID);
+  if (query.id) {
+    filtered = filtered.filter(a => a.id === Number(query.id));
   }
 
-  if (query.classID) {
-    filtered = filtered.filter(a => a.classID === query.classID);
+  if (query.classId) {
+    filtered = filtered.filter(a => a.classId === Number(query.classId));
   }
 
   if (query.startDate) {
@@ -225,24 +223,23 @@ export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceS
   await new Promise(resolve => setTimeout(resolve, 250));
 
   // Get all students in class
-  // Note: classID is strict match. Students have classID like "CL-...", request is strict.
-  const classStudents = db.students.filter(s => s.classID === request.classID);
+  const classStudents = db.students.filter(s => s.classID === String(request.classId));
 
   if (classStudents.length === 0) {
-    throw new Error(`No students found in class ${request.classID}`);
+    throw new Error(`No students found in class ${request.classId}`);
   }
 
   // Get attendance for this date
   const dateAttendances = db.attendance.filter(
-    a => a.classID === request.classID && a.date === request.date
+    a => a.classId === Number(request.classId) && a.date === request.date
   );
 
   // Build student attendance list
   const studentAttendances: StudentAttendance[] = classStudents.map(student => {
-    const attendance = dateAttendances.find(a => a.studentID === student.studentID);
+    const attendance = dateAttendances.find(a => a.studentId === student.id);
 
     return {
-      studentID: student.studentID,
+      studentId: student.id,
       name: student.name,
       rollNumber: student.rollNumber,
       status: attendance?.status || 'Present', // Default to Present if not marked
@@ -264,13 +261,13 @@ export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceS
   const firstRecord = dateAttendances[0];
 
   // Find class detail
-  const classObj = db.classes.find(c => c.classID === request.classID);
+  const classObj = db.classes.find(c => c.classID === String(request.classId));
   const className = classObj
     ? (classObj.className || `Class ${classObj.grade}-${classObj.section}`)
-    : request.classID;
+    : String(request.classId);
 
   return {
-    classID: request.classID,
+    classID: String(request.classId),
     className,
     date: request.date,
     totalStudents,
@@ -290,14 +287,14 @@ export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceS
 export const handleGetAttendanceSummary = async (request: GetAttendanceSummaryRequest): Promise<AttendanceSummary> => {
   await new Promise(resolve => setTimeout(resolve, 300));
 
-  if (!request.studentID) {
+  if (!request.studentId) {
     throw new Error('Student ID is required');
   }
 
   // Get attendance records for date range
   const records = db.attendance.filter(
     a =>
-      a.studentID === request.studentID &&
+      a.studentId === Number(request.studentId) &&
       a.date >= request.startDate &&
       a.date <= request.endDate
   );
@@ -313,7 +310,7 @@ export const handleGetAttendanceSummary = async (request: GetAttendanceSummaryRe
   const attendancePercentage = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
 
   return {
-    studentID: request.studentID,
+    studentId: Number(request.studentId),
     startDate: request.startDate,
     endDate: request.endDate,
     totalDays,
@@ -331,7 +328,7 @@ export const handleGetAttendanceSummary = async (request: GetAttendanceSummaryRe
 export const handleModifyAttendance = async (request: ModifyAttendanceRequest): Promise<ModifyAttendanceResponse> => {
   await new Promise(resolve => setTimeout(resolve, 250));
 
-  const attendance = db.attendance.find(a => a.attendanceID === request.attendanceID);
+  const attendance = db.attendance.find(a => a.id === request.id);
 
   if (!attendance) {
     throw new Error('Attendance record not found');
@@ -367,7 +364,7 @@ export const handleModifyAttendance = async (request: ModifyAttendanceRequest): 
     console.log(`
 ⚠️  ATTENDANCE CORRECTION REQUEST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 Attendance ID: ${attendance.attendanceID}
+📋 Attendance ID: ${attendance.id}
 📅 Original Date: ${attendance.date}
 ⏰ Marked: ${hoursDiff.toFixed(1)} hours ago
 👤 Requested by: ${request.modifiedBy}

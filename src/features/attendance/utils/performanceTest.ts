@@ -7,24 +7,22 @@ import type { BulkMarkAttendanceRequest, AttendanceStatus } from '../types/atten
  */
 export const runConcurrencyTest = async (requestCount: number = 500) => {
   console.log(`🚀 Starting Concurrency Test: ${requestCount} teachers submitting simultaneously...`);
-  
+
   const startTime = performance.now();
   const requests: Promise<any>[] = [];
-  
+
   // Generate requests
   for (let i = 0; i < requestCount; i++) {
     const classID = `CLS-2026-${String(i % 20).padStart(5, '0')}`; // Distribute across 20 classes
     const studentCount = 30; // 30 students per class
-    
+
     const attendances = Array.from({ length: studentCount }, (_, j) => ({
-      studentID: `STU-2026-${String((i * 100) + j).padStart(5, '0')}`,
-      classID,
-      date: new Date().toISOString().split('T')[0],
+      studentId: (i * 100) + j,
       status: 'Present' as AttendanceStatus,
     }));
 
     const payload: BulkMarkAttendanceRequest = {
-      classID,
+      classId: Number(classID.split('-')[2]),
       date: new Date().toISOString().split('T')[0],
       attendances,
       markedBy: `teacher-${i}`,
@@ -35,13 +33,13 @@ export const runConcurrencyTest = async (requestCount: number = 500) => {
 
   // Execute all
   const results = await Promise.all(requests);
-  
+
   const endTime = performance.now();
   const duration = endTime - startTime;
-  
+
   const successes = results.filter(r => r.success).length;
   const failures = results.filter(r => !r.success).length; // Note: Mock might throw or return success:false
-  
+
   console.log(`
 📊 CONCURRENCY TEST RESULTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━

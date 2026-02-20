@@ -5,11 +5,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  Users, 
-  Calendar, 
-  Bell, 
+import {
+  Home,
+  Users,
+  Calendar,
+  Bell,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -35,24 +35,25 @@ interface NavItem {
   path: string;
   icon: React.ElementType;
   roles?: string[]; // Optional: if defined, restricts to these roles
+  featureCode?: string; // NEW: The feature required to see this tab
 }
 
 const navItems: NavItem[] = [
   { name: 'Dashboard', path: '/', icon: Home },
-  { name: 'Academic Setup', path: '/admin/academics/setup', icon: School, roles: ['Admin'] },
-  { name: 'Teachers', path: '/admin/teachers', icon: UserCog, roles: ['Admin'] },
-  { name: 'Timetable', path: '/admin/academics/routine', icon: CalendarClock, roles: ['Admin'] },
-  { name: 'Students', path: '/students', icon: Users, roles: ['Admin', 'Teacher', 'Staff'] },
-  { name: 'Attendance', path: '/attendance', icon: Calendar },
-  { name: 'Exams', path: '/admin/academics/exams', icon: GraduationCap, roles: ['Admin'] },
-  { name: 'Marks', path: '/teacher/marks', icon: ClipboardCheck, roles: ['Admin', 'Teacher'] },
-  { name: 'Reports', path: '/admin/academics/reports', icon: BarChart, roles: ['Admin'] },
-  { name: 'Homework', path: '/homework', icon: BookOpen },
-  { name: 'Fees', path: '/admin/finance/fees', icon: Wallet, roles: ['Admin'] },
-  { name: 'Pay Fees', path: '/finance/pay', icon: CreditCard, roles: ['Student', 'Parent'] },
-  { name: 'Payroll', path: '/admin/finance/payroll', icon: Banknote, roles: ['Admin'] },
-  { name: 'Finance', path: '/admin/finance/reports', icon: TrendingUp, roles: ['Admin'] },
-  { name: 'Notices', path: '/notices', icon: Bell },
+  { name: 'Academic Setup', path: '/admin/academics/setup', icon: School, roles: ['Admin'], featureCode: 'ACADEMICS' },
+  { name: 'Teachers', path: '/admin/teachers', icon: UserCog, roles: ['Admin'], featureCode: 'TEACHERS' },
+  { name: 'Timetable', path: '/admin/academics/routine', icon: CalendarClock, roles: ['Admin'], featureCode: 'TIMETABLE' },
+  { name: 'Students', path: '/students', icon: Users, roles: ['Admin', 'Teacher', 'Staff'], featureCode: 'STUDENT_MGMT' },
+  { name: 'Attendance', path: '/attendance', icon: Calendar, featureCode: 'ATTENDANCE' },
+  { name: 'Exams', path: '/admin/academics/exams', icon: GraduationCap, roles: ['Admin'], featureCode: 'EXAMS' },
+  { name: 'Marks', path: '/teacher/marks', icon: ClipboardCheck, roles: ['Admin', 'Teacher'], featureCode: 'MARKS' },
+  { name: 'Reports', path: '/admin/academics/reports', icon: BarChart, roles: ['Admin'], featureCode: 'REPORTS' },
+  { name: 'Homework', path: '/homework', icon: BookOpen, featureCode: 'HOMEWORK' },
+  { name: 'Fees', path: '/admin/finance/fees', icon: Wallet, roles: ['Admin'], featureCode: 'FEES' },
+  { name: 'Pay Fees', path: '/finance/pay', icon: CreditCard, roles: ['Student', 'Parent'], featureCode: 'FEES' },
+  { name: 'Payroll', path: '/admin/finance/payroll', icon: Banknote, roles: ['Admin'], featureCode: 'PAYROLL' },
+  { name: 'Finance', path: '/admin/finance/reports', icon: TrendingUp, roles: ['Admin'], featureCode: 'FINANCE' },
+  { name: 'Notices', path: '/notices', icon: Bell, featureCode: 'NOTICES' },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 
@@ -63,12 +64,27 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
 
   console.log('[Sidebar] Render state:', { isSidebarOpen, isCollapsed });
-  
-  // Filter nav items based on role
+
+  // Filter nav items based on role and active features
   const filteredNavItems = navItems.filter(item => {
-    if (!item.roles) return true; // Public/Shared
     if (!user) return false;
-    return item.roles.includes(user.role);
+
+    // Check Role
+    if (item.roles && !item.roles.includes(user.role)) {
+      return false;
+    }
+
+    // Check Feature Code (Permissions)
+    if (item.featureCode) {
+      const userPermissions = user.permissions || [];
+      // Fallback: if permissions are missing (old user/no plan), assume all allowed for now
+      // or strictly hide. Let's strictly hide to enforce subscription.
+      if (!userPermissions.includes(item.featureCode)) {
+        return false;
+      }
+    }
+
+    return true;
   });
 
   // Close sidebar on mobile when route changes
@@ -96,7 +112,7 @@ const Sidebar: React.FC = () => {
           // Desktop: always visible (if screen >= lg)
           'lg:top-16 lg:h-[calc(100vh-4rem)] lg:translate-x-0',
           isCollapsed ? 'lg:w-16' : 'lg:w-64',
-          
+
           // Mobile:
           'top-0 h-full w-64',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -125,38 +141,38 @@ const Sidebar: React.FC = () => {
 
         {/* Navigation */}
         <nav className="p-4 space-y-1 mt-12 lg:mt-0">
-        {filteredNavItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group relative',
-                'hover:bg-gray-100 dark:hover:bg-gray-800',
-                isActive && 'bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-900/10 text-blue-600 dark:text-blue-400 shadow-sm',
-                !isActive && 'text-gray-700 dark:text-gray-300',
-                isCollapsed && 'justify-center'
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && !isCollapsed && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 dark:bg-blue-400 rounded-r-full" />
-                )}
-                <item.icon className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110",
-                  isCollapsed && "ml-0"
-                )} />
-                {!isCollapsed && (
-                  <span className="text-sm font-medium">{item.name}</span>
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+          {filteredNavItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group relative',
+                  'hover:bg-gray-100 dark:hover:bg-gray-800',
+                  isActive && 'bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-900/10 text-blue-600 dark:text-blue-400 shadow-sm',
+                  !isActive && 'text-gray-700 dark:text-gray-300',
+                  isCollapsed && 'justify-center'
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && !isCollapsed && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 dark:bg-blue-400 rounded-r-full" />
+                  )}
+                  <item.icon className={cn(
+                    "w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110",
+                    isCollapsed && "ml-0"
+                  )} />
+                  {!isCollapsed && (
+                    <span className="text-sm font-medium">{item.name}</span>
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
     </>
   );
 };

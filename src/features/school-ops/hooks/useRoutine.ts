@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Routine } from '../types';
 import { schoolOpsApi } from '../services/api';
 
-export const useRoutine = (initialFilters?: { classId?: string; teacherId?: string }) => {
+export const useRoutine = (initialFilters?: { classId?: number; teacherId?: number }) => {
   const queryClient = useQueryClient();
   const queryKey = ['routines', initialFilters ?? {}];
 
@@ -30,7 +30,7 @@ export const useRoutine = (initialFilters?: { classId?: string; teacherId?: stri
     onMutate: async (entry) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<Routine[]>(queryKey);
-      const temp = { ...entry, id: entry.id || `temp-${Date.now()}` } as Routine;
+      const temp = { ...entry, id: entry.id || Date.now() } as Routine;
       queryClient.setQueryData<Routine[]>(queryKey, (old) => [
         ...(old ?? []),
         temp,
@@ -44,7 +44,7 @@ export const useRoutine = (initialFilters?: { classId?: string; teacherId?: stri
   // --- Mutation: Remove routine (optimistic) ---
   const removeMutation = useMutation({
     mutationKey: ['routines', 'remove'],
-    mutationFn: (id: string) => schoolOpsApi.deleteRoutine(id),
+    mutationFn: (id: number) => schoolOpsApi.deleteRoutine(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey });
       const prev = queryClient.getQueryData<Routine[]>(queryKey);

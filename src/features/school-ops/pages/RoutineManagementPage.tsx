@@ -11,7 +11,7 @@ import { type Routine } from '../types';
 export const RoutineManagementPage: React.FC = () => {
     const { classes, subjects, loading: academicLoading } = useAcademicStructure();
     const { teachers, loading: teachersLoading } = useTeachers();
-    const [selectedClassId, setSelectedClassId] = useState<string>('');
+    const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
     // Derived state for the modal
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +25,7 @@ export const RoutineManagementPage: React.FC = () => {
     // TanStack Query auto-refetches when selectedClassId changes via queryKey
 
     const handleClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedClassId(e.target.value);
+        setSelectedClassId(e.target.value ? Number(e.target.value) : null);
     };
 
     const handleCellClick = (day: string, period: string, currentRoutine?: Routine) => {
@@ -33,7 +33,7 @@ export const RoutineManagementPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleSaveAssignment = async (data: { subjectId: string; teacherId: string }) => {
+    const handleSaveAssignment = async (data: { subjectId: number; teacherId: number }) => {
         if (!selectedClassId || !editingCell) return;
 
         // If updating existing, likely we delete old and create new (simplest for now)
@@ -71,10 +71,10 @@ export const RoutineManagementPage: React.FC = () => {
         }
     };
 
-    const selectedClass = classes.find(c => c.classID === selectedClassId);
+    const selectedClass = classes.find(c => c.id === selectedClassId);
 
     const classOptions = classes.map(c => ({
-        value: c.classID,
+        value: String(c.id),
         label: `${c.className || `Grade ${c.grade}-${c.section}`}`
     }));
 
@@ -95,7 +95,7 @@ export const RoutineManagementPage: React.FC = () => {
 
                 <div className="w-full md:w-64">
                     <Select
-                        value={selectedClassId}
+                        value={selectedClassId ?? ''}
                         onChange={handleClassChange}
                         options={[{ value: '', label: 'Select Class' }, ...classOptions]}
                         disabled={isLoading}
@@ -144,7 +144,7 @@ export const RoutineManagementPage: React.FC = () => {
                     onClose={() => setIsModalOpen(false)}
                     day={editingCell.day}
                     period={editingCell.period}
-                    classNameStr={selectedClass?.className || 'Selected Class'}
+                    classNameStr={selectedClass?.className || (selectedClass ? `Grade ${selectedClass.grade}-${selectedClass.section}` : 'Selected Class')}
                     currentRoutine={editingCell.routine}
                     subjects={subjects}
                     teachers={teachers}

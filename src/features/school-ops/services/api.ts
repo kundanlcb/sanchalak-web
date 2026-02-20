@@ -13,7 +13,7 @@ export const schoolOpsApi = {
     return response.data;
   },
 
-  getTeacherById: async (id: string): Promise<Teacher> => {
+  getTeacherById: async (id: number): Promise<Teacher> => {
     const response = await client.get<Teacher>(`/api/academics/teachers/${id}`);
     return response.data;
   },
@@ -30,7 +30,7 @@ export const schoolOpsApi = {
     return response.data;
   },
 
-  updateTeacher: async (id: string, data: any): Promise<Teacher> => {
+  updateTeacher: async (id: number, data: any): Promise<Teacher> => {
     // Map specializedSubjects to specializationIds for backend compatibility
     const { specializedSubjects, ...rest } = data;
     const payload = {
@@ -42,7 +42,7 @@ export const schoolOpsApi = {
     return response.data;
   },
 
-  deleteTeacher: async (id: string): Promise<void> => {
+  deleteTeacher: async (id: number): Promise<void> => {
     await client.delete(`/api/academics/teachers/${id}`);
   },
 
@@ -58,12 +58,12 @@ export const schoolOpsApi = {
     return response.data;
   },
 
-  updateClass: async (id: string, data: Partial<Class>): Promise<Class> => {
+  updateClass: async (id: number, data: Partial<Class>): Promise<Class> => {
     const response = await client.put<Class>(`/api/academic/classes/${id}`, data);
     return response.data;
   },
 
-  deleteClass: async (id: string): Promise<void> => {
+  deleteClass: async (id: number): Promise<void> => {
     // Assuming backend supports delete
     await client.delete(`/api/academic/classes/${id}`);
   },
@@ -80,20 +80,20 @@ export const schoolOpsApi = {
     return response.data;
   },
 
-  updateSubject: async (id: string, data: any): Promise<any> => {
+  updateSubject: async (id: number, data: any): Promise<any> => {
     const response = await client.put(`/api/academic/subjects/${id}`, data);
     return response.data;
   },
 
-  deleteSubject: async (id: string): Promise<void> => {
+  deleteSubject: async (id: number): Promise<void> => {
     await client.delete(`/api/academic/subjects/${id}`);
   },
 
   // Routines
-  getRoutines: async (filters?: { classId?: string; teacherId?: string }): Promise<Routine[]> => {
+  getRoutines: async (filters?: { classId?: number; teacherId?: number }): Promise<Routine[]> => {
     const params = new URLSearchParams();
-    if (filters?.classId) params.append('classId', filters.classId);
-    if (filters?.teacherId) params.append('teacherId', filters.teacherId);
+    if (filters?.classId) params.append('classId', String(filters.classId));
+    if (filters?.teacherId) params.append('teacherId', String(filters.teacherId));
 
     const response = await client.get<Routine[]>(`/api/academic/routine?${params.toString()}`);
     return response.data;
@@ -104,7 +104,7 @@ export const schoolOpsApi = {
     return response.data;
   },
 
-  deleteRoutine: async (id: string): Promise<void> => {
+  deleteRoutine: async (id: number): Promise<void> => {
     await client.delete(`/api/academics/routine/${id}`);
   }
 };

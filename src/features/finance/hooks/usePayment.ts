@@ -5,7 +5,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../services/api/client';
-import type { PaymentTransaction, StudentFeeRecord } from '../types';
+import type { PaymentTransaction, StudentFeeRecord, StudentLedgerResponse } from '../types';
 
 export const usePayment = () => {
   const queryClient = useQueryClient();
@@ -13,10 +13,10 @@ export const usePayment = () => {
   // --- Fetch ledger for a student ---
   const fetchLedgerMutation = useMutation({
     mutationKey: ['payment', 'fetchLedger'],
-    mutationFn: async (studentId: string) => {
-      const res = await apiClient.get<StudentFeeRecord>(`/api/finance/ledger/${studentId}`);
+    mutationFn: async (studentId: number | string) => {
+      const res = await apiClient.get<StudentLedgerResponse>(`/api/finance/ledger/${studentId}`);
       if (res.data.records && res.data.records.length > 0) {
-        return res.data.records[0] as StudentFeeRecord;
+        return res.data.records[0];
       }
       return null;
     },
@@ -28,9 +28,9 @@ export const usePayment = () => {
   // --- Fetch transactions for a student ---
   const fetchTransactionsMutation = useMutation({
     mutationKey: ['payment', 'fetchTransactions'],
-    mutationFn: async (studentId: string) => {
+    mutationFn: async (studentId: number | string) => {
       const res = await apiClient.get<PaymentTransaction[]>(`/api/finance/transactions/${studentId}`);
-      return res.data as PaymentTransaction[];
+      return res.data;
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['payment', 'transactions'], data);
@@ -46,13 +46,13 @@ export const usePayment = () => {
       method,
       mockTxnId,
     }: {
-      studentId: string;
+      studentId: number | string;
       amount: number;
       method: 'UPI' | 'Card';
       mockTxnId?: string;
     }) => {
       const payload: Partial<PaymentTransaction> = {
-        studentId,
+        studentId: Number(studentId),
         amount,
         paymentMethod: method,
         paymentGatewayRefId: mockTxnId || `ref_${Date.now()}`,
@@ -60,7 +60,7 @@ export const usePayment = () => {
         breakdown: [{ category: 'Tuition', amount }],
       };
       const res = await apiClient.post<PaymentTransaction>('/api/finance/transactions', payload);
-      return res.data as PaymentTransaction;
+      return res.data;
     },
     onSuccess: (newTxn) => {
       queryClient.setQueryData<PaymentTransaction[]>(['payment', 'transactions'], (old) =>
@@ -80,7 +80,7 @@ export const usePayment = () => {
     error: fetchLedgerMutation.error?.message ?? paymentMutation.error?.message ?? null,
     fetchLedger: fetchLedgerMutation.mutateAsync,
     fetchTransactions: fetchTransactionsMutation.mutateAsync,
-    initiatePayment: (studentId: string, amount: number, method: 'UPI' | 'Card', mockTxnId?: string) =>
+    initiatePayment: (studentId: number | string, amount: number, method: 'UPI' | 'Card', mockTxnId?: string) =>
       paymentMutation.mutateAsync({ studentId, amount, method, mockTxnId }),
     checkPaymentStatus,
   };

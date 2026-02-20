@@ -61,8 +61,8 @@ export const PayrollPage: React.FC = () => {
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Staff Payroll</h1>
-          <p className="mt-1 text-sm text-gray-500">Manage salaries, payslips, and compensation structures.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Staff Payroll</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage salaries, payslips, and compensation structures.</p>
         </div>
         <Button
           variant="outline"
@@ -78,9 +78,9 @@ export const PayrollPage: React.FC = () => {
 
       <PayrollGenerator onGenerate={handleGenerate} isGenerating={isGenerating} />
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-4 py-4 sm:px-6 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Payroll History</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div className="px-4 py-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Payroll History</h2>
         </div>
         <div className="overflow-x-auto">
           <PayrollTable
@@ -116,28 +116,28 @@ export const PayrollPage: React.FC = () => {
       >
         {selectedRecord && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center bg-gray-50 p-4 rounded">
+            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-4 rounded border border-gray-100 dark:border-gray-700">
               <div>
-                <h3 className="font-bold text-lg">{selectedRecord.staffName}</h3>
-                <p className="text-sm text-gray-500">{selectedRecord.month}</p>
+                <h3 className="font-bold text-lg dark:text-white">{selectedRecord.staffName}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{selectedRecord.month}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-500">Net Pay</p>
-                <p className="font-bold text-xl text-green-600">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(selectedRecord.netPayable)}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Net Pay</p>
+                <p className="font-bold text-xl text-green-600 dark:text-green-400">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(selectedRecord.netPayable)}</p>
               </div>
             </div>
 
-            <div className="border rounded-md p-4 bg-white/50">
-              <h4 className="font-medium mb-2 border-b pb-2">Breakdown</h4>
+            <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-white/50 dark:bg-gray-800/50">
+              <h4 className="font-medium mb-2 border-b border-gray-200 dark:border-gray-700 pb-2 dark:text-white">Breakdown</h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-semibold text-gray-600 mb-1">Earnings</p>
-                  <div className="flex justify-between"><span>Basic</span> <span>{selectedRecord.basicPay}</span></div>
-                  <div className="flex justify-between"><span>Allowances</span> <span>{selectedRecord.totalAllowances}</span></div>
+                  <p className="font-semibold text-gray-600 dark:text-gray-400 mb-1">Earnings</p>
+                  <div className="flex justify-between dark:text-gray-300"><span>Basic</span> <span>{selectedRecord.basicPay}</span></div>
+                  <div className="flex justify-between dark:text-gray-300"><span>Allowances</span> <span>{selectedRecord.totalAllowances}</span></div>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-600 mb-1">Deductions</p>
-                  <div className="flex justify-between"><span>Total Deductions</span> <span>{selectedRecord.totalDeductions}</span></div>
+                  <p className="font-semibold text-gray-600 dark:text-gray-400 mb-1">Deductions</p>
+                  <div className="flex justify-between dark:text-gray-300"><span>Total Deductions</span> <span>{selectedRecord.totalDeductions}</span></div>
                 </div>
               </div>
             </div>

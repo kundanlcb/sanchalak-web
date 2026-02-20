@@ -8,6 +8,7 @@ import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { useToast } from '../../../components/common/ToastContext';
 import { createStudent, updateStudent, getStudent } from '../services/studentService';
+import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructure';
 import { DOMAINS, getMasterValues, type MasterValue } from '../../../services/api/masterDataService';
 
 // Validation Schema
@@ -16,7 +17,7 @@ const studentSchema = z.object({
   admissionNumber: z.string().min(1, 'Admission number is required'),
   admissionDate: z.string().min(1, 'Admission date is required'),
   rollNumber: z.coerce.number().min(1, 'Roll number is required'),
-  classID: z.string().min(1, 'Class is required'),
+  classId: z.coerce.number().min(1, 'Class is required'),
   section: z.string().min(1, 'Section is required'),
   academicYear: z.string().min(1, 'Academic year is required'),
 
@@ -48,14 +49,15 @@ const studentSchema = z.object({
 type StudentFormData = z.infer<typeof studentSchema>;
 
 export const StudentForm: React.FC = () => {
-  const { studentID } = useParams<{ studentID: string }>();
-  const isEditMode = !!studentID;
+  const { id } = useParams<{ id: string }>();
+  const studentId = id ? Number(id) : undefined;
+  const isEditMode = !!studentId;
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true); // Start true to load masters
-
-  // Master Data State
+  const { classes, loading: classesLoading } = useAcademicStructure();
+  const isAppLoading = loading || initialLoading || classesLoading;
   const [genders, setGenders] = useState<MasterValue[]>([]);
   const [bloodGroups, setBloodGroups] = useState<MasterValue[]>([]);
   const [relations, setRelations] = useState<MasterValue[]>([]);
@@ -98,8 +100,8 @@ export const StudentForm: React.FC = () => {
         setRelations(relationList);
 
         // If edit mode, fetch student
-        if (isEditMode && studentID) {
-          const response = await getStudent(studentID);
+        if (isEditMode && studentId) {
+          const response = await getStudent(studentId);
           const data = response.student;
 
           reset({
@@ -107,7 +109,7 @@ export const StudentForm: React.FC = () => {
             admissionNumber: data.admissionNumber,
             admissionDate: data?.admissionDate ? data.admissionDate.split('T')[0] : '',
             rollNumber: data.rollNumber,
-            classID: data.classID,
+            classId: data.classId,
             section: data.section,
             academicYear: data.academicYear || '2025-2026',
             dateOfBirth: data?.dateOfBirth ? data.dateOfBirth.split('T')[0] : '',
@@ -135,19 +137,23 @@ export const StudentForm: React.FC = () => {
     };
 
     loadData();
-  }, [isEditMode, studentID, reset, showToast]);
+  }, [isEditMode, studentId, reset, showToast]);
 
   const onSubmit = async (data: StudentFormData) => {
     setLoading(true);
     try {
-      if (isEditMode && studentID) {
+      if (isEditMode && studentId) {
         await updateStudent({
-          studentID,
+          id: studentId,
           ...data,
+          classId: Number(data.classId)
         });
         showToast('Student updated successfully', 'success');
       } else {
-        await createStudent(data);
+        await createStudent({
+          ...data,
+          classId: Number(data.classId)
+        });
         showToast('Student created successfully', 'success');
       }
       navigate('/students');
@@ -217,24 +223,25 @@ export const StudentForm: React.FC = () => {
                 Class <span className="text-red-500">*</span>
               </label>
               <Controller
-                name="classID"
+                name="classId"
                 control={control}
                 render={({ field }) => (
                   <select
                     className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     {...field}
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : '')}
                   >
                     <option value="">Select Class</option>
-                    <option value="CLS-2026-00001">Class 1</option>
-                    <option value="CLS-2026-00002">Class 2</option>
-                    <option value="CLS-2026-00003">Class 3</option>
-                    <option value="CLS-2026-00004">Class 4</option>
-                    <option value="CLS-2026-00005">Class 5</option>
-                    <option value="CLS-2026-00010">Class 10</option>
+                    {classes.map((cls) => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.className || `Grade ${cls.grade}-${cls.section}`}
+                      </option>
+                    ))}
                   </select>
                 )}
               />
-              {errors.classID && <p className="text-sm text-red-500 mt-1">{errors.classID.message}</p>}
+              {errors.classId && <p className="text-sm text-red-500 mt-1">{errors.classId.message}</p>}
             </div>
 
             <div className="space-y-1">

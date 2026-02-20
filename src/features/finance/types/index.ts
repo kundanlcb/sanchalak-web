@@ -4,7 +4,7 @@ export type FeeType = 'Tuition' | 'Transport' | 'Exam' | 'Lab' | 'Library' | 'Ac
 
 export interface FeeCategory {
   id: string; // F-CAT-001
-  name: string; 
+  name: string;
   description?: string;
   type: FeeType;
   frequency: FeeFrequency;
@@ -16,7 +16,7 @@ export interface FeeCategory {
 export interface FeeStructure {
   id: string; // FS-2026-G5-001
   academicYear: string; // "2025-2026"
-  classId: string; // CLS-2026-005 (Grade 5)
+  classId: number | string; // Numeric ID or Legacy String
   categoryId: string; // F-CAT-001
   amount: number;
   dueDateDay: number; // 10th of applicable month
@@ -30,7 +30,7 @@ export interface FeeStructure {
 // Student Individual Fee Record
 export interface StudentFeeRecord {
   id: string; // SFR-STU-001
-  studentId: string; // STU-2026-001
+  studentId: number;
   feeStructureId: string; // FS-2026-G5-001
   academicYear: string;
   totalAmount: number; // Base + Late - Discounts
@@ -63,7 +63,7 @@ export type PaymentStatus = 'Pending' | 'Success' | 'Failed' | 'Refunded';
 
 export interface PaymentTransaction {
   id: string; // TXN-2026-001
-  studentId: string; // STU-2026-001
+  studentId: number;
   amount: number;
   paymentMethod: PaymentMethod;
   paymentGatewayRefId?: string; // raz_pay_123
@@ -81,7 +81,7 @@ export interface Receipt {
   transactionId: string; // TXN-2026-001
   receiptNumber: string; // Human Readable: REC-001
   studentName: string;
-  classId: string;
+  classId: number | string;
   amountPaid: number;
   issuedDate: string;
   paymentMode: PaymentMethod;
@@ -92,7 +92,7 @@ export interface Receipt {
 // Payment Gateway Mock
 export interface PaymentIntent {
   amount: number;
-  studentId: string;
+  studentId: number;
   feeIds: string[]; // List of FeeStructure IDs being paid for
 }
 

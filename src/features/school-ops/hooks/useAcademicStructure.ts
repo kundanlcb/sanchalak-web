@@ -31,7 +31,7 @@ export const useAcademicStructure = () => {
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ['academic', 'classes'] });
       const previous = queryClient.getQueryData<Class[]>(['academic', 'classes']);
-      const temp = { id: `temp-${Date.now()}`, ...data } as Class;
+      const temp = { id: Date.now(), ...data } as Class;
       queryClient.setQueryData<Class[]>(['academic', 'classes'], (old) => [
         ...(old ?? []),
         temp,
@@ -49,7 +49,7 @@ export const useAcademicStructure = () => {
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ['academic', 'subjects'] });
       const previous = queryClient.getQueryData<Subject[]>(['academic', 'subjects']);
-      const temp = { id: `temp-${Date.now()}`, ...data } as Subject;
+      const temp = { id: Date.now(), ...data } as Subject;
       queryClient.setQueryData<Subject[]>(['academic', 'subjects'], (old) => [
         ...(old ?? []),
         temp,
@@ -63,19 +63,19 @@ export const useAcademicStructure = () => {
   // --- Mutation: Update class ---
   const updateClassMutation = useMutation({
     mutationKey: ['academic', 'class', 'update'],
-    mutationFn: ({ id, data }: { id: string; data: Partial<Class> }) => schoolOpsApi.updateClass(id, data),
+    mutationFn: ({ id, data }: { id: number; data: Partial<Class> }) => schoolOpsApi.updateClass(id, data),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['academic', 'classes'] }),
   });
 
   // --- Mutation: Delete class ---
   const deleteClassMutation = useMutation({
     mutationKey: ['academic', 'class', 'delete'],
-    mutationFn: (id: string) => schoolOpsApi.deleteClass(id),
+    mutationFn: (id: number) => schoolOpsApi.deleteClass(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['academic', 'classes'] });
       const previous = queryClient.getQueryData<Class[]>(['academic', 'classes']);
       queryClient.setQueryData<Class[]>(['academic', 'classes'], (old) =>
-        (old ?? []).filter((c) => c.classID !== id)
+        (old ?? []).filter((c) => c.id !== id)
       );
       return { previous };
     },
@@ -86,19 +86,19 @@ export const useAcademicStructure = () => {
   // --- Mutation: Update subject ---
   const updateSubjectMutation = useMutation({
     mutationKey: ['academic', 'subject', 'update'],
-    mutationFn: ({ id, data }: { id: string; data: Partial<Subject> }) => schoolOpsApi.updateSubject(id, data),
+    mutationFn: ({ id, data }: { id: number; data: Partial<Subject> }) => schoolOpsApi.updateSubject(id, data),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['academic', 'subjects'] }),
   });
 
   // --- Mutation: Delete subject ---
   const deleteSubjectMutation = useMutation({
     mutationKey: ['academic', 'subject', 'delete'],
-    mutationFn: (id: string) => schoolOpsApi.deleteSubject(id),
+    mutationFn: (id: number) => schoolOpsApi.deleteSubject(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['academic', 'subjects'] });
       const previous = queryClient.getQueryData<Subject[]>(['academic', 'subjects']);
       queryClient.setQueryData<Subject[]>(['academic', 'subjects'], (old) =>
-        (old ?? []).filter((s) => String(s.id) !== id)
+        (old ?? []).filter((s) => s.id !== id)
       );
       return { previous };
     },
@@ -117,9 +117,9 @@ export const useAcademicStructure = () => {
     },
     addClass: addClassMutation.mutateAsync,
     addSubject: addSubjectMutation.mutateAsync,
-    updateClass: (id: string, data: Partial<Class>) => updateClassMutation.mutateAsync({ id, data }),
+    updateClass: (id: number, data: Partial<Class>) => updateClassMutation.mutateAsync({ id, data }),
     deleteClass: deleteClassMutation.mutateAsync,
-    updateSubject: (id: string, data: Partial<Subject>) => updateSubjectMutation.mutateAsync({ id, data }),
+    updateSubject: (id: number, data: Partial<Subject>) => updateSubjectMutation.mutateAsync({ id, data }),
     deleteSubject: deleteSubjectMutation.mutateAsync,
   };
 };

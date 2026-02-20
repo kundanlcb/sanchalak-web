@@ -9,17 +9,17 @@ export const GLOBAL_PERIODS = ['Period 1', 'Period 2', 'Period 3', 'Break', 'Per
 // --- Zod Schemas ---
 
 export const SubjectSchema = z.object({
-  id: z.string(), // e.g., "SBJ-MATH-005"
+  id: z.coerce.number(), // backend uses BIGINT
   name: z.string().min(2, "Subject name is required"),
   code: z.string().min(2, "Subject code is required"),
   type: z.enum(SUBJECT_TYPES).optional().default('Theory'),
-  classId: z.string().optional(), // Link to class if specific
+  classId: z.coerce.number().optional(), // Link to class if specific
   maxMarks: z.number().optional(),
   passingMarks: z.number().optional(),
 });
 
 export const ClassSchema = z.object({
-  classID: z.string(), // e.g., "CLS-2026-00001"
+  id: z.coerce.number(), // backend uses BIGINT
   grade: z.coerce.number().min(1, "Grade is required"), // e.g., 1, 10
   section: z.string().min(1, "Section is required"), // e.g., "A"
   className: z.string().optional(), // "Grade 1-A"
@@ -29,23 +29,23 @@ export const ClassSchema = z.object({
 });
 
 export const TeacherSchema = z.object({
-  id: z.string(), // e.g., "TCH-001"
+  id: z.coerce.number(), // backend uses BIGINT
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
   joiningDate: z.string(), // ISO string YYYY-MM-DD
-  specializedSubjects: z.array(z.string()), // Array of Subject IDs
+  specializedSubjects: z.array(z.coerce.number()), // Array of Subject IDs
   qualification: z.string().optional(),
   isActive: z.boolean().default(true),
 });
 
 export const RoutineSchema = z.object({
-  id: z.string(),
-  classId: z.string(), // FK to Class.classID
+  id: z.coerce.number(),
+  classId: z.coerce.number(), // FK to Class.id
   day: z.enum(DAYS_OF_WEEK),
   period: z.enum(GLOBAL_PERIODS),
-  subjectId: z.string(), // FK to Subject.id
-  teacherId: z.string(), // FK to Teacher.id
+  subjectId: z.coerce.number(), // FK to Subject.id
+  teacherId: z.coerce.number(), // FK to Teacher.id
 });
 
 // --- TypeScript Interfaces ---

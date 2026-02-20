@@ -39,8 +39,21 @@ export const bulkMarkAttendance = async (request: BulkMarkAttendanceRequest): Pr
  * Get attendance records with filters
  */
 export const getAttendance = async (query: AttendanceQuery): Promise<AttendanceQueryResponse> => {
-  const response = await apiClient.get<AttendanceQueryResponse>('/api/attendance', { params: query });
-  return response.data;
+  const response = await apiClient.get<any>('/api/attendance', { params: query });
+  const data = response.data;
+
+  // Map direct list from backend to AttendanceQueryResponse
+  if (Array.isArray(data)) {
+    return {
+      attendances: data,
+      total: data.length,
+      page: 1,
+      limit: data.length,
+      totalPages: 1,
+    };
+  }
+
+  return data;
 };
 
 /**
@@ -48,7 +61,8 @@ export const getAttendance = async (query: AttendanceQuery): Promise<AttendanceQ
  */
 export const getClassAttendanceSheet = async (request: GetClassAttendanceSheetRequest): Promise<ClassAttendanceSheet> => {
   const response = await apiClient.get<ClassAttendanceSheet>(
-    `/api/attendance/class/${request.classID}/date/${request.date}`
+    `/api/attendance/sheet/${request.classId}`,
+    { params: { date: request.date } }
   );
   return response.data;
 };
@@ -66,7 +80,7 @@ export const getAttendanceSummary = async (request: GetAttendanceSummaryRequest)
  */
 export const modifyAttendance = async (request: ModifyAttendanceRequest): Promise<ModifyAttendanceResponse> => {
   const response = await apiClient.put<ModifyAttendanceResponse>(
-    `/api/attendance/${request.attendanceID}`,
+    `/api/attendance/${request.id}`,
     request
   );
   return response.data;
@@ -75,18 +89,18 @@ export const modifyAttendance = async (request: ModifyAttendanceRequest): Promis
 /**
  * Get today's attendance sheet (convenience function)
  */
-export const getTodayAttendanceSheet = async (classID: string): Promise<ClassAttendanceSheet> => {
+export const getTodayAttendanceSheet = async (classId: number | string): Promise<ClassAttendanceSheet> => {
   const today = new Date().toISOString().split('T')[0];
-  return getClassAttendanceSheet({ classID, date: today });
+  return getClassAttendanceSheet({ classId, date: today });
 };
 
 /**
  * Get student attendance for current month (convenience function)
  */
-export const getCurrentMonthAttendance = async (studentID: string): Promise<AttendanceSummary> => {
+export const getCurrentMonthAttendance = async (studentId: number): Promise<AttendanceSummary> => {
   const now = new Date();
   const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
   const endDate = now.toISOString().split('T')[0];
 
-  return getAttendanceSummary({ studentID, startDate, endDate });
+  return getAttendanceSummary({ studentId, startDate, endDate });
 };

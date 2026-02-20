@@ -7,6 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, BookOpen, Save, RefreshCw, AlertCircle, Zap } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { Skeleton } from '../../../components/common/Skeleton';
+import { Select } from '../../../components/common/Select';
+import { Input } from '../../../components/common/Input';
 import { AttendanceSheet } from '../components/AttendanceSheet';
 import { AttendanceStats } from '../components/AttendanceStats';
 import { AttendanceHistory } from '../components/AttendanceHistory';
@@ -28,7 +30,7 @@ export const AttendancePage: React.FC = () => {
     new Date().toISOString().split('T')[0]
   );
   const [attendanceSheet, setAttendanceSheet] = useState<AttendanceSheetType | null>(null);
-  const [localAttendance, setLocalAttendance] = useState<Record<string, { status: AttendanceStatus; remarks?: string }>>({});
+  const [localAttendance, setLocalAttendance] = useState<Record<number, { status: AttendanceStatus; remarks?: string }>>({});
 
   // Student/Parent State
   const [myAttendanceSummary, setMyAttendanceSummary] = useState<AttendanceSummary | null>(null);
@@ -53,20 +55,20 @@ export const AttendancePage: React.FC = () => {
     setError(null);
     try {
       // Use logged-in user's ID
-      const studentID = user?.userID || 'STU-2026-00001'; 
+      const studentId = Number(user?.userID) || 1;
       const now = new Date();
       const startDate = new Date(now.getFullYear(), 0, 1).toISOString(); // Jan 1st
       const endDate = new Date(now.getFullYear(), 11, 31).toISOString(); // Dec 31st
-      
+
       const [summary, historyResponse] = await Promise.all([
-        attendanceService.getAttendanceSummary({ 
-          studentID,
+        attendanceService.getAttendanceSummary({
+          studentId,
           startDate,
           endDate
         }),
-        attendanceService.getAttendance({ studentID, limit: 100 })
+        attendanceService.getAttendance({ studentId, limit: 100 })
       ]);
-      
+
       setMyAttendanceSummary(summary);
       setMyAttendanceHistory(historyResponse.attendances);
     } catch (err) {
@@ -89,15 +91,15 @@ export const AttendancePage: React.FC = () => {
 
     try {
       const sheet = await attendanceService.getClassAttendanceSheet({
-        classID: selectedClass,
+        classId: selectedClass,
         date: selectedDate,
       });
       setAttendanceSheet(sheet);
-      
+
       // Initialize local attendance state with existing data
-      const initial: Record<string, { status: AttendanceStatus; remarks?: string }> = {};
+      const initial: Record<number, { status: AttendanceStatus; remarks?: string }> = {};
       sheet.students.forEach(student => {
-        initial[student.studentID] = {
+        initial[student.studentId] = {
           status: student.status,
           remarks: student.remarks,
         };
@@ -132,10 +134,10 @@ export const AttendancePage: React.FC = () => {
   };
 
   // Handle attendance change from AttendanceSheet component
-  const handleAttendanceChange = (studentID: string, status: AttendanceStatus, remarks?: string) => {
+  const handleAttendanceChange = (studentId: number, status: AttendanceStatus, remarks?: string) => {
     setLocalAttendance(prev => ({
       ...prev,
-      [studentID]: { status, remarks },
+      [studentId]: { status, remarks },
     }));
   };
 
@@ -149,24 +151,23 @@ export const AttendancePage: React.FC = () => {
 
     try {
       const attendanceRecords = attendanceSheet.students.map(student => ({
-        studentID: student.studentID,
-        classID: selectedClass,
+        studentId: student.studentId,
+        classId: selectedClass,
         date: selectedDate,
-        status: localAttendance[student.studentID]?.status || 'Present',
-        remarks: localAttendance[student.studentID]?.remarks,
+        status: localAttendance[student.studentId]?.status || 'Present',
+        remarks: localAttendance[student.studentId]?.remarks,
       }));
 
       const response = await attendanceService.bulkMarkAttendance({
-        classID: selectedClass,
+        classId: Number(selectedClass),
         date: selectedDate,
         attendances: attendanceRecords,
-        markedBy: user?.userID || 'unknown',
+        markedBy: String(user?.userID) || 'unknown',
       });
 
       if (response.success) {
         setSuccessMessage(
-          `Attendance marked successfully! ${response.marked} students marked.${
-            response.failed > 0 ? ` ${response.failed} failed.` : ''
+          `Attendance marked successfully! ${response.marked} students marked.${response.failed > 0 ? ` ${response.failed} failed.` : ''
           }`
         );
         // Reload sheet to show updated data
@@ -196,17 +197,17 @@ export const AttendancePage: React.FC = () => {
     attendancePercentage: Math.round(
       (Object.values(localAttendance).filter(a => a.status === 'Present').length /
         attendanceSheet.totalStudents) *
-        100
+      100
     ),
   } : null;
 
   // Prepare updated student data with local changes
   const updatedStudents: StudentAttendance[] = attendanceSheet
     ? attendanceSheet.students.map(student => ({
-        ...student,
-        status: localAttendance[student.studentID]?.status || student.status,
-        remarks: localAttendance[student.studentID]?.remarks || student.remarks,
-      }))
+      ...student,
+      status: localAttendance[student.studentId]?.status || student.status,
+      remarks: localAttendance[student.studentId]?.remarks || student.remarks,
+    }))
     : [];
 
   // RENDER: Parent/Student View
@@ -215,16 +216,16 @@ export const AttendancePage: React.FC = () => {
       return (
         <div className="space-y-6 animate-in">
           <div className="flex items-center gap-3">
-             <Skeleton className="w-12 h-12 rounded-xl" />
-             <div className="space-y-2">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-32" />
-             </div>
+            <Skeleton className="w-12 h-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-             {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-2xl" />
-             ))}
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-32 rounded-2xl" />
+            ))}
           </div>
           <Skeleton className="h-96 rounded-2xl" />
         </div>
@@ -287,16 +288,16 @@ export const AttendancePage: React.FC = () => {
             </p>
           </div>
         </div>
-        
+
         {/* Admin Tools */}
         {isAdmin && (
-           <button 
-             onClick={handleRunLoadTest}
-             className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 font-medium px-3 py-1.5 border border-amber-200 dark:border-amber-800 rounded-md bg-amber-50 dark:bg-amber-900/10"
-           >
-             <Zap className="w-3 h-3" />
-             Test Load (500/s)
-           </button>
+          <button
+            onClick={handleRunLoadTest}
+            className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 font-medium px-3 py-1.5 border border-amber-200 dark:border-amber-800 rounded-md bg-amber-50 dark:bg-amber-900/10"
+          >
+            <Zap className="w-3 h-3" />
+            Test Load (500/s)
+          </button>
         )}
       </div>
 
@@ -304,39 +305,27 @@ export const AttendancePage: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 shadow-soft">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 md:items-end">
           {/* Class Selector */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <BookOpen className="w-4 h-4 inline mr-1" />
-              Select Class
-            </label>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full px-4 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:0.7em_0.7em] bg-[right_1rem_center] bg-no-repeat"
-            >
-              <option value="">Choose a class...</option>
-              {availableClasses.map((cls) => (
-                <option key={cls.classID} value={cls.classID}>
-                  {cls.className || `Grade ${cls.grade}-${cls.section}`}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Select Class"
+            value={selectedClass}
+            onChange={(e) => setSelectedClass(e.target.value)}
+          >
+            <option value="">Choose a class...</option>
+            {availableClasses.map((cls) => (
+              <option key={cls.id} value={String(cls.id)}>
+                {cls.className || `Grade ${cls.grade}-${cls.section}`}
+              </option>
+            ))}
+          </Select>
 
           {/* Date Selector */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <Calendar className="w-4 h-4 inline mr-1" />
-              Select Date
-            </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              max={new Date().toISOString().split('T')[0]}
-              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+          <Input
+            type="date"
+            label="Select Date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            max={new Date().toISOString().split('T')[0]}
+          />
 
           {/* Load Button */}
           <div className="flex items-end">
@@ -396,7 +385,7 @@ export const AttendancePage: React.FC = () => {
           )}
 
           {/* Attendance Sheet */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 shadow-soft">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 shadow-soft">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
@@ -463,18 +452,18 @@ export const AttendancePage: React.FC = () => {
             ))}
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-6">
-             <div className="flex justify-between items-center">
-                <div className="space-y-2">
-                   <Skeleton className="h-6 w-48" />
-                   <Skeleton className="h-4 w-32" />
-                </div>
-                <Skeleton className="h-10 w-32 rounded-lg" />
-             </div>
-             <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                   <Skeleton key={i} className="h-20 rounded-xl" />
-                ))}
-             </div>
+            <div className="flex justify-between items-center">
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-xl" />
+              ))}
+            </div>
           </div>
         </div>
       )}

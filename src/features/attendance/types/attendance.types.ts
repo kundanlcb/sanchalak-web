@@ -31,9 +31,9 @@ export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'Excused' | 'Holi
  * Individual attendance record
  */
 export interface Attendance {
-  attendanceID: string;
-  studentID: string;
-  classID: string;
+  id: number;
+  studentId: number;
+  classId: number;
   date: string;
   status: AttendanceStatus;
   markedBy: string;
@@ -49,7 +49,7 @@ export interface Attendance {
  * Class attendance sheet for a specific date
  */
 export interface ClassAttendanceSheet {
-  classID: string;
+  classId: number | string;
   className: string;
   date: string;
   totalStudents: number;
@@ -68,7 +68,7 @@ export interface ClassAttendanceSheet {
  * Student attendance info for sheet display
  */
 export interface StudentAttendance {
-  studentID: string;
+  studentId: number;
   name: string;
   rollNumber: number;
   status: AttendanceStatus;
@@ -80,7 +80,7 @@ export interface StudentAttendance {
  * Attendance summary for a student over a period
  */
 export interface AttendanceSummary {
-  studentID: string;
+  studentId: number;
   startDate: string;
   endDate: string;
   totalDays: number;
@@ -97,14 +97,14 @@ export interface AttendanceSummary {
  * Class-wise attendance summary
  */
 export interface ClassAttendanceSummary {
-  classID: string;
+  classId: number | string;
   className: string;
   startDate: string;
   endDate: string;
   totalDays: number;
   averageAttendance: number;
   studentsWithLowAttendance: Array<{
-    studentID: string;
+    studentId: number;
     name: string;
     attendancePercentage: number;
   }>;
@@ -121,8 +121,8 @@ export interface ClassAttendanceSummary {
 // ============================================================================
 
 export interface MarkAttendanceRequest {
-  studentID: string;
-  classID: string;
+  studentId: number;
+  classId: number;
   date: string;
   status: AttendanceStatus;
   remarks?: string;
@@ -130,16 +130,16 @@ export interface MarkAttendanceRequest {
 
 export interface MarkAttendanceResponse {
   success: boolean;
-  attendanceID: string;
+  id: number;
   message: string;
   notifications?: string[];
 }
 
 export interface BulkMarkAttendanceRequest {
-  classID: string;
+  classId: number;
   date: string;
   attendances: Array<{
-    studentID: string;
+    studentId: number;
     status: AttendanceStatus;
     remarks?: string;
   }>;
@@ -151,15 +151,16 @@ export interface BulkMarkAttendanceResponse {
   marked: number;
   failed: number;
   errors?: Array<{
-    studentID: string;
+    studentId: number;
     error: string;
   }>;
   message: string;
 }
 
 export interface AttendanceQuery {
-  studentID?: string;
-  classID?: string;
+  id?: number | string;
+  studentId?: number;
+  classId?: number | string;
   startDate?: string;
   endDate?: string;
   status?: AttendanceStatus;
@@ -176,19 +177,19 @@ export interface AttendanceQueryResponse {
 }
 
 export interface GetClassAttendanceSheetRequest {
-  classID: string;
+  classId: number | string;
   date: string;
 }
 
 export interface GetAttendanceSummaryRequest {
-  studentID?: string;
-  classID?: string;
+  studentId?: number | string;
+  classId?: number | string;
   startDate: string;
   endDate: string;
 }
 
 export interface ModifyAttendanceRequest {
-  attendanceID: string;
+  id: number;
   status: AttendanceStatus;
   remarks?: string;
   modifiedBy: string;
@@ -201,14 +202,14 @@ export interface ModifyAttendanceResponse {
 }
 
 export interface AttendanceCorrectionRequest {
-  attendanceID: string;
+  id: number;
   newStatus: AttendanceStatus;
   reason: string;
   requestedBy: string;
 }
 
 export interface AttendanceCorrectionApproval {
-  correctionID: string;
+  id: number;
   approved: boolean;
   approvedBy: string;
   approvalDate: string;
@@ -222,7 +223,7 @@ export interface AttendanceCorrectionApproval {
 export interface AbsenceNotification {
   notificationID: string;
   parentID: string;
-  studentID: string;
+  studentId: number;
   studentName: string;
   date: string;
   status: AttendanceStatus;
@@ -244,7 +245,7 @@ export interface AttendanceCalendarDay {
 }
 
 export interface AttendanceCalendar {
-  studentID: string;
+  studentId: number;
   month: number;
   year: number;
   days: AttendanceCalendarDay[];

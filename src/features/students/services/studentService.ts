@@ -62,10 +62,10 @@ export async function getStudents(query: StudentListQuery): Promise<StudentListR
 /**
  * Get single student by ID
  */
-export async function getStudent(studentID: string): Promise<GetStudentResponse> {
+export async function getStudent(id: number): Promise<GetStudentResponse> {
   // Casting to any because we need to handle wrapped response if present
   // Fix: Wrap id in object
-  const response = await studentApi.getStudentById({ id: Number(studentID) }) as AxiosResponse<any>;
+  const response = await studentApi.getStudentById({ id: id }) as AxiosResponse<any>;
   // Handle direct StudentResponse or wrapped GetStudentResponse
   const student = response.data.student || response.data;
   return {
@@ -86,7 +86,7 @@ export async function createStudent(
   const student = response.data;
   return {
     success: true,
-    studentID: student.studentID || String(student.id),
+    id: student.id,
     admissionNumber: student.admissionNumber || '',
     message: 'Student created successfully',
   };
@@ -98,7 +98,7 @@ export async function createStudent(
 export async function updateStudent(
   request: UpdateStudentRequest
 ): Promise<UpdateStudentResponse> {
-  const id = Number(request.studentID || (request as any).id);
+  const id = request.id;
   // Fix: Wrap id and studentRequest in object
   const response = await studentApi.updateStudent({ id: id, studentRequest: request as any }) as AxiosResponse<any>;
   return {
@@ -111,9 +111,9 @@ export async function updateStudent(
 /**
  * Delete student (soft delete)
  */
-export async function deleteStudent(studentID: string): Promise<DeleteStudentResponse> {
+export async function deleteStudent(id: number): Promise<DeleteStudentResponse> {
   // Fix: Wrap id in object
-  await studentApi.deleteStudent({ id: Number(studentID) });
+  await studentApi.deleteStudent({ id: id });
   return {
     success: true,
     message: 'Student deleted successfully'

@@ -74,6 +74,7 @@ export async function verifyOTP(
         email: data.user?.email || '',
         mobileNumber: data.user?.mobileNumber || '',
         role: mapBackendRoleToFrontend(data.user?.role as string),
+        permissions: data.user?.permissions || [],
         themePreference: 'system',
         isActive: true, // Backend doesn't return this yet
         createdDate: new Date().toISOString()
@@ -117,6 +118,7 @@ export async function loginWithEmail(
         email: data.user?.email,
         mobileNumber: data.user?.mobileNumber,
         role: mapBackendRoleToFrontend(data.user?.role as string),
+        permissions: data.user?.permissions || [],
         themePreference: 'system',
         isActive: true,
         createdDate: new Date().toISOString()

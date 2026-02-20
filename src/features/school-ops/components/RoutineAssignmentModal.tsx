@@ -11,8 +11,8 @@ import { Button } from '../../../components/common/Button';
 // Schema for the form inside the modal
 // We only need subjectId and teacherId, as day/period/classId are fixed context
 const AssignmentSchema = z.object({
-  subjectId: z.string().min(1, "Subject is required"),
-  teacherId: z.string().min(1, "Teacher is required"),
+  subjectId: z.coerce.number().min(1, "Subject is required"),
+  teacherId: z.coerce.number().min(1, "Teacher is required"),
 });
 
 type AssignmentFormValues = z.infer<typeof AssignmentSchema>;
@@ -53,7 +53,8 @@ export const RoutineAssignmentModal: React.FC<RoutineAssignmentModalProps> = ({
         setValue('subjectId', currentRoutine.subjectId);
         setValue('teacherId', currentRoutine.teacherId);
       } else {
-        reset({ subjectId: '', teacherId: '' });
+        setValue('subjectId', 0); // Or use custom empty value if needed, but 0 aligns with coerce.number
+        setValue('teacherId', 0);
       }
     }
   }, [isOpen, currentRoutine, reset, setValue]);
@@ -70,8 +71,8 @@ export const RoutineAssignmentModal: React.FC<RoutineAssignmentModalProps> = ({
     }
   };
 
-  const subjectOptions = subjects.map(s => ({ value: s.id, label: `${s.name} (${s.code})` }));
-  const teacherOptions = teachers.map(t => ({ value: t.id, label: t.name }));
+  const subjectOptions = subjects.map(s => ({ value: String(s.id), label: `${s.name} (${s.code})` }));
+  const teacherOptions = teachers.map(t => ({ value: String(t.id), label: t.name }));
 
   return (
     <Modal
@@ -80,7 +81,7 @@ export const RoutineAssignmentModal: React.FC<RoutineAssignmentModalProps> = ({
       title={`${classNameStr} - ${day}, ${period}`}
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        
+
         <Select
           label="Subject"
           {...register('subjectId')}

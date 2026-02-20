@@ -128,9 +128,17 @@ export async function bulkUploadDocuments(
 /**
  * Get documents for specific student
  */
-export async function getStudentDocuments(studentID: string): Promise<GetDocumentsResponse> {
-  return getDocuments({
-    entityType: 'Student',
-    entityID: studentID,
-  });
+export async function getStudentDocuments(studentId: number | string): Promise<GetDocumentsResponse> {
+  const response = await apiClient.get<any>(`/api/documents/student/${studentId}`);
+  const result = response.data;
+
+  // Map ApiResult<List> to GetDocumentsResponse
+  return {
+    success: result.success,
+    documents: result.data || [],
+    total: result.data?.length || 0,
+    page: 1,
+    limit: result.data?.length || 0,
+    totalPages: 1
+  };
 }

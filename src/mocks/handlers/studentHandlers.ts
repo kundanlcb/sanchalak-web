@@ -25,20 +25,11 @@ import type {
 // Simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Generate unique student ID
-function generateStudentID(): string {
-  const year = new Date().getFullYear();
-  const existingIDs = db.students.map(s => s.studentID);
-  let counter = 1;
-
-  while (true) {
-    const paddedCounter = counter.toString().padStart(5, '0');
-    const newID = `STU-${year}-${paddedCounter}`;
-    if (!existingIDs.includes(newID)) {
-      return newID;
-    }
-    counter++;
-  }
+// Generate unique numeric ID
+function generateNumericID(): number {
+  const existingIDs = db.students.map(s => s.id);
+  const maxID = existingIDs.length > 0 ? Math.max(...existingIDs) : 1000;
+  return maxID + 1;
 }
 
 // Generate unique admission number
@@ -80,12 +71,12 @@ export async function handleGetStudents(
 
   // Filter students
   let filtered = db.students.filter(student => {
-    // Search filter (name, studentID, admissionNumber)
+    // Search filter (name, id, admissionNumber)
     if (search) {
       const searchLower = search.toLowerCase();
       const matchesSearch =
         student.name.toLowerCase().includes(searchLower) ||
-        student.studentID.toLowerCase().includes(searchLower) ||
+        student.id.toString().includes(searchLower) ||
         student.admissionNumber.toLowerCase().includes(searchLower);
 
       if (!matchesSearch) return false;
@@ -119,7 +110,7 @@ export async function handleGetStudents(
         aValue = a.name.toLowerCase();
         bValue = b.name.toLowerCase();
         break;
-      case 'rollNumber':
+      case 'rollNo':
         aValue = a.rollNumber;
         bValue = b.rollNumber;
         break;
@@ -168,10 +159,10 @@ export async function handleGetStudent(
 ): Promise<GetStudentResponse> {
   await delay(200);
 
-  const student = db.students.find(s => s.studentID === request.studentID);
+  const student = db.students.find(s => s.id === request.id);
 
   if (!student) {
-    throw new Error(`Student with ID ${request.studentID} not found`);
+    throw new Error(`Student with ID ${request.id} not found`);
   }
 
   return {
@@ -217,12 +208,12 @@ export async function handleCreateStudent(
   }
 
   // Generate IDs
-  const studentID = generateStudentID();
+  const id = generateNumericID();
   const admissionNumber = generateAdmissionNumber();
 
   // Create new student
   const newStudent: Student = {
-    studentID,
+    id,
     admissionNumber,
     name: request.name,
     dateOfBirth: request.dateOfBirth,
@@ -253,9 +244,9 @@ export async function handleCreateStudent(
 
   return {
     success: true,
-    studentID,
+    id,
     admissionNumber,
-    message: `Student ${request.name} created successfully with ID ${studentID}`,
+    message: `Student ${request.name} created successfully with ID ${id}`,
   };
 }
 
@@ -267,10 +258,10 @@ export async function handleUpdateStudent(
 ): Promise<UpdateStudentResponse> {
   await delay(350);
 
-  const studentIndex = db.students.findIndex(s => s.studentID === request.studentID);
+  const studentIndex = db.students.findIndex(s => s.id === request.id);
 
   if (studentIndex === -1) {
-    throw new Error(`Student with ID ${request.studentID} not found`);
+    throw new Error(`Student with ID ${request.id} not found`);
   }
 
   const existingStudent = db.students[studentIndex];
@@ -335,10 +326,10 @@ export async function handleDeleteStudent(
 ): Promise<DeleteStudentResponse> {
   await delay(250);
 
-  const studentIndex = db.students.findIndex(s => s.studentID === request.studentID);
+  const studentIndex = db.students.findIndex(s => s.id === request.id);
 
   if (studentIndex === -1) {
-    throw new Error(`Student with ID ${request.studentID} not found`);
+    throw new Error(`Student with ID ${request.id} not found`);
   }
 
   // Soft delete - mark as inactive

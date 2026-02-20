@@ -12,10 +12,10 @@ interface SalaryConfigFormProps {
   isLoading?: boolean;
 }
 
-export const SalaryConfigForm: React.FC<SalaryConfigFormProps> = ({ 
-  initialData, 
-  onSubmit, 
-  isLoading 
+export const SalaryConfigForm: React.FC<SalaryConfigFormProps> = ({
+  initialData,
+  onSubmit,
+  isLoading
 }) => {
   const { register, handleSubmit, formState: { errors } } = useForm<SalaryStructureFormData>({
     resolver: zodResolver(SalaryStructureSchema),
@@ -31,63 +31,63 @@ export const SalaryConfigForm: React.FC<SalaryConfigFormProps> = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Select 
-          label="Academic Year" 
-          {...register('academicYear')} 
+        <Select
+          label="Academic Year"
+          {...register('academicYear')}
           error={errors.academicYear?.message}
           options={['2025-2026', '2026-2027'].map(v => ({ value: v, label: v }))}
         />
-        <Select 
-          label="Frequency" 
-          {...register('paymentFrequency')} 
+        <Select
+          label="Frequency"
+          {...register('paymentFrequency')}
           error={errors.paymentFrequency?.message}
           options={[{ value: 'Monthly', label: 'Monthly' }]}
         />
       </div>
 
-      <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-        <h3 className="font-semibold text-blue-900 mb-3">Earnings</h3>
+      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+        <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-3">Earnings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input 
-            type="number" 
-            label="Base Salary (₹)" 
-            {...register('baseSalary', { valueAsNumber: true })} 
+          <Input
+            type="number"
+            label="Base Salary (₹)"
+            {...register('baseSalary', { valueAsNumber: true })}
             error={errors.baseSalary?.message}
           />
-          <Input 
-            type="number" 
-            label="HRA (₹)" 
-            {...register('allowances.hra', { valueAsNumber: true })} 
+          <Input
+            type="number"
+            label="HRA (₹)"
+            {...register('allowances.hra', { valueAsNumber: true })}
             error={errors.allowances?.hra?.message}
           />
-          <Input 
-            type="number" 
-            label="DA (₹)" 
-            {...register('allowances.da', { valueAsNumber: true })} 
+          <Input
+            type="number"
+            label="DA (₹)"
+            {...register('allowances.da', { valueAsNumber: true })}
             error={errors.allowances?.da?.message}
           />
-          <Input 
-            type="number" 
-            label="TA (₹)" 
-            {...register('allowances.ta', { valueAsNumber: true })} 
+          <Input
+            type="number"
+            label="TA (₹)"
+            {...register('allowances.ta', { valueAsNumber: true })}
             error={errors.allowances?.ta?.message}
           />
         </div>
       </div>
 
-      <div className="p-4 bg-red-50 rounded-lg border border-red-100">
-        <h3 className="font-semibold text-red-900 mb-3">Deductions</h3>
+      <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-800">
+        <h3 className="font-semibold text-red-900 dark:text-red-300 mb-3">Deductions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input 
-            type="number" 
-            label="PF (₹)" 
-            {...register('deductions.pf', { valueAsNumber: true })} 
+          <Input
+            type="number"
+            label="PF (₹)"
+            {...register('deductions.pf', { valueAsNumber: true })}
             error={errors.deductions?.pf?.message}
           />
-          <Input 
-            type="number" 
-            label="TDS (₹)" 
-            {...register('deductions.tds', { valueAsNumber: true })} 
+          <Input
+            type="number"
+            label="TDS (₹)"
+            {...register('deductions.tds', { valueAsNumber: true })}
             error={errors.deductions?.tds?.message}
           />
         </div>

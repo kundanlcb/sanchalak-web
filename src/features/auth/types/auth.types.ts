@@ -34,6 +34,7 @@ export interface User {
   profilePhoto?: string;
   themePreference: ThemePreference;
   isActive: boolean;
+  permissions?: string[];
   createdDate: string;
   lastLoginDate?: string;
 }

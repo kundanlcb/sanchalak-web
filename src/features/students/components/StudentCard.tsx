@@ -40,9 +40,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) =>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
             {student.name}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {student.studentID} • {student.admissionNumber}
-          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Class: {student.classId} • {student.admissionNumber}</p>
           <div className="mt-1">
             <span
               className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'Active'
@@ -60,7 +58,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) =>
       <div className="mt-4 space-y-2">
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <span className="font-medium">Class:</span>
-          <span>Grade {student.classID.split('-')[2]}-{student.section}</span>
+          <span>Grade {student.classId}-{student.section}</span>
           <span className="text-gray-400">•</span>
           <span>Roll {student.rollNumber}</span>
         </div>

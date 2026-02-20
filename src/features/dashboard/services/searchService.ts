@@ -45,11 +45,11 @@ export const searchService = {
       // Assuming getStudents supports pagination, we ask for small limit
       const studentResponse = await getStudents({ search: query, limit: 5 });
       const studentResults: SearchResult[] = studentResponse.students.map(s => ({
-        id: s.studentID,
+        id: String(s.id),
         type: 'student',
         title: s.name,
-        subtitle: `Class: ${s.classID} | ID: ${s.studentID}`, // We might want to resolve Class Name if possible, but ID is ok for now
-        link: `/students/${s.studentID}`
+        subtitle: `Class: ${s.classId} | ID: ${s.id}`,
+        link: `/students/${s.id}`
       }));
 
       // 3. Search Teachers
@@ -59,11 +59,11 @@ export const searchService = {
         .filter(t => t.name.toLowerCase().includes(lowerQuery) || t.email.toLowerCase().includes(lowerQuery))
         .slice(0, 5)
         .map(t => ({
-            id: t.id,
-            type: 'teacher',
-            title: t.name,
-            subtitle: t.email,
-            link: `/school-ops/teachers/${t.id}` // Assuming route
+          id: String(t.id),
+          type: 'teacher',
+          title: t.name,
+          subtitle: t.email,
+          link: `/admin/teachers/${t.id}`
         }));
 
       return [...pageResults, ...studentResults, ...teacherResults];

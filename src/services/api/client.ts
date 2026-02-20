@@ -37,12 +37,17 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     // Handle 401 Unauthorized - token expired
     if (error.response?.status === 401) {
-      sessionStorage.removeItem('authToken');
-      sessionStorage.removeItem('user');
-      
-      // Only redirect if not already on login page
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      // Skip logout for non-critical master data fetches to avoid session termination
+      const isMasterData = error.config?.url?.includes('/api/platform/v1/masters');
+
+      if (!isMasterData) {
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('user');
+
+        // Only redirect if not already on login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
 

@@ -17,8 +17,8 @@ type SubjectFormValues = z.input<typeof CreateSubjectSchema>;
 interface SubjectManagerProps {
   subjects: Subject[];
   addSubject: (data: Partial<Subject>) => Promise<any>;
-  updateSubject?: (id: string, data: Partial<Subject>) => Promise<any>;
-  deleteSubject?: (id: string) => Promise<void>;
+  updateSubject?: (id: number, data: Partial<Subject>) => Promise<any>;
+  deleteSubject?: (id: number) => Promise<void>;
   loading: boolean;
 }
 
@@ -30,8 +30,8 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
   loading
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<SubjectFormValues>({
@@ -42,7 +42,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
   });
 
   const handleEdit = (subject: Subject) => {
-    setEditingId(String(subject.id));
+    setEditingId(subject.id);
     setValue('name', subject.name);
     setValue('code', subject.code);
     setValue('type', subject.type);
@@ -232,7 +232,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => setDeleteId(String(subject.id))}
+                            onClick={() => setDeleteId(subject.id)}
                             title="Delete"
                             data-testid="delete-subject-btn"
                           >
