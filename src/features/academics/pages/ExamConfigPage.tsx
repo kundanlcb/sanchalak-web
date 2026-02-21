@@ -7,6 +7,7 @@ import { Button } from '../../../components/common/Button';
 import { Plus } from 'lucide-react';
 import { type CreateExamTermRequest, type ExamTerm } from '../types';
 import { SubjectConfig } from '../components/SubjectConfig';
+import { ExamScheduleConfig } from '../components/ExamScheduleConfig';
 import { useTranslation } from 'react-i18next';
 
 export const ExamConfigPage: React.FC = () => {
@@ -14,7 +15,7 @@ export const ExamConfigPage: React.FC = () => {
   const { examTerms, isLoading, createExamTerm, updateExamTerm } = useExamTerms();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'exams' | 'subjects'>('exams');
+  const [activeTab, setActiveTab] = useState<'exams' | 'subjects' | 'schedules'>('exams');
   const [selectedTerm, setSelectedTerm] = useState<ExamTerm | null>(null);
 
   const handleCreateOrUpdateTerm = async (data: ExamTermFormData) => {
@@ -79,6 +80,17 @@ export const ExamConfigPage: React.FC = () => {
           >
             {t('academics.exams.tabSubjects')}
           </button>
+          <button
+            onClick={() => setActiveTab('schedules')}
+            className={`
+              whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm
+              ${activeTab === 'schedules'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'}
+            `}
+          >
+            Schedules
+          </button>
         </nav>
       </div>
 
@@ -120,6 +132,7 @@ export const ExamConfigPage: React.FC = () => {
       )}
 
       {activeTab === 'subjects' && <SubjectConfig />}
+      {activeTab === 'schedules' && <ExamScheduleConfig />}
     </div>
   );
 };

@@ -10,6 +10,23 @@ export interface ExamTerm {
   classes: string[]; // List of Class IDs
 }
 
+export interface ExamSchedule {
+  id: string;
+  examTermId: string;
+  classId: string;
+  subjectId: string;
+  examDate: string;
+  maxMarks: number;
+}
+
+export interface CreateExamScheduleRequest {
+  examTermId: string;
+  classId: string;
+  subjectId: string;
+  examDate: string;
+  maxMarks: number;
+}
+
 export interface Subject {
   id: string;
   name: string;
