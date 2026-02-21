@@ -36,7 +36,7 @@ export const useMarks = (filters: UseMarksFilters) => {
       if (filters.classId) params.append('classId', filters.classId);
       if (filters.section) params.append('section', filters.section);
       if (filters.studentId) params.append('studentId', filters.studentId);
-      const response = await apiClient.get<MarkEntry[]>(`/api/academics/marks?${params.toString()}`);
+      const response = await apiClient.get<MarkEntry[]>(`/api/academic/marks?${params.toString()}`);
       return response.data;
     },
     enabled,

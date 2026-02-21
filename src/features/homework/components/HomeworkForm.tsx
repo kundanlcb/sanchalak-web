@@ -8,6 +8,8 @@ import { Select } from '../../../components/common/Select';
 import { Modal } from '../../../components/common/Modal';
 import { Upload, X } from 'lucide-react';
 import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructure';
+import { useTeachers } from '../../school-ops/hooks/useTeachers';
+import { cn } from '../../../utils/cn';
 
 interface HomeworkFormProps {
   isOpen: boolean;
@@ -23,6 +25,7 @@ export const HomeworkForm: React.FC<HomeworkFormProps> = ({
   isLoading = false,
 }) => {
   const { classes, subjects } = useAcademicStructure();
+  const { teachers } = useTeachers();
 
   const {
     register,
@@ -34,6 +37,7 @@ export const HomeworkForm: React.FC<HomeworkFormProps> = ({
     defaultValues: {
       classId: '',
       subjectId: '',
+      teacherId: '',
     }
   });
 
@@ -84,10 +88,21 @@ export const HomeworkForm: React.FC<HomeworkFormProps> = ({
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
           <textarea
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className={cn(
+              "flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm",
+              "placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              "dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500",
+              errors.description && "border-red-500 focus:ring-red-500"
+            )}
             rows={3}
             {...register('description')}
           />
+          {errors.description && (
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+              {errors.description.message}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -107,7 +122,13 @@ export const HomeworkForm: React.FC<HomeworkFormProps> = ({
           </Select>
         </div>
 
-        <div>
+        <div className="grid grid-cols-2 gap-4">
+          <Select label="Teacher" {...register('teacherId')} error={errors.teacherId?.message}>
+            <option value="">Select Teacher</option>
+            {teachers.map((teacher) => (
+              <option key={teacher.id} value={String(teacher.id)}>{teacher.name}</option>
+            ))}
+          </Select>
           <Input type="date" label="Due Date" error={errors.dueDate?.message} {...register('dueDate')} />
         </div>
 

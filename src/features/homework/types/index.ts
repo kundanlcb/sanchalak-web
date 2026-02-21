@@ -11,15 +11,19 @@ export interface HomeworkAttachment {
 }
 
 export interface Homework {
-  id: string;
-  classId: number;
-  subjectId: number;
+  id: string | number;
+  classId?: number; // Legacy/frontend mock
+  subjectId?: number | string; // Legacy/frontend mock
+  studentClass?: { id: number; className?: string; grade?: number; section?: string };
+  subject?: { id: number; name: string; code?: string };
+  teacher?: { id: number; name: string };
   title: string;
   description: string;
   dueDate: string;
-  attachments: HomeworkAttachment[];
-  createdAt: string;
-  createdBy: number; // Teacher ID
+  attachments?: HomeworkAttachment[];
+  attachmentUrl?: string | null;
+  createdAt?: string;
+  createdBy?: number; // Teacher ID
 }
 
 export interface CreateHomeworkRequest {

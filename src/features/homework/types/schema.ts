@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const homeworkSchema = z.object({
   classId: z.string().min(1, 'Class is required').regex(/^\d+$/, 'Invalid class ID'),
   subjectId: z.string().min(1, 'Subject is required').regex(/^\d+$/, 'Invalid subject ID'),
+  teacherId: z.string().min(1, 'Teacher is required').regex(/^\d+$/, 'Invalid teacher ID'),
   title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
   description: z.string().optional(),
   dueDate: z.string().refine((date) => !isNaN(Date.parse(date)), {

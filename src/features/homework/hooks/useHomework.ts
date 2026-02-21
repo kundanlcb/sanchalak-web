@@ -42,7 +42,7 @@ export const useHomework = (filters: { classId?: string, subjectId?: string, dat
       const payload: CreateHomeworkRequest = {
         classId: parseInt(String(data.classId), 10),
         subjectId: parseInt(String(data.subjectId), 10),
-        teacherId: parseInt(user?.userID || '1', 10),
+        teacherId: data.teacherId ? parseInt(String(data.teacherId), 10) : parseInt(user?.userID || '1', 10),
         title: data.title,
         description: data.description,
         dueDate: data.dueDate,

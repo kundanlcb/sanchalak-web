@@ -95,13 +95,50 @@ export const schoolOpsApi = {
     if (filters?.classId) params.append('classId', String(filters.classId));
     if (filters?.teacherId) params.append('teacherId', String(filters.teacherId));
 
-    const response = await client.get<Routine[]>(`/api/academic/routine?${params.toString()}`);
-    return response.data;
+    const response = await client.get<any[]>(`/api/academic/routine?${params.toString()}`);
+
+    // Map backend response (dayOfWeek: 'MONDAY', period: 1) to frontend format (day: 'Monday', period: 'Period 1')
+    return response.data.map(item => ({
+      ...item,
+      day: item.dayOfWeek.charAt(0).toUpperCase() + item.dayOfWeek.slice(1).toLowerCase(),
+      // Assuming periods 1-8 and 'Break'. If period is 4, frontend might expect 'Break' or 'Period 4'. 
+      // The frontend GLOBAL_PERIODS are ['Period 1', 'Period 2', 'Period 3', 'Break', 'Period 4', 'Period 5', 'Period 6', 'Period 7', 'Period 8']
+      // Let's standardise on Period X
+      period: `Period ${item.period}`
+    })) as Routine[];
   },
 
   createRoutine: async (data: Routine): Promise<Routine> => {
-    const response = await client.post<Routine>('/api/academics/routine', data);
-    return response.data;
+    // Map frontend format (day: 'Monday', period: 'Period 1') to backend format (dayOfWeek: 'MONDAY', period: 1)
+
+    // Extract period number from string like 'Period 1' -> 1, 'Break' -> might be 4 depending on logic
+    let periodNum = 1;
+    if (data.period === 'Break') {
+      periodNum = 4; // Assuming break is period 4 based on standard Indian school timetables, adapt if needed
+    } else {
+      const match = data.period.match(/\d+/);
+      if (match) {
+        periodNum = parseInt(match[0], 10);
+      }
+    }
+
+    const payload = {
+      classId: data.classId,
+      subjectId: data.subjectId,
+      teacherId: data.teacherId,
+      dayOfWeek: data.day.toUpperCase(),
+      period: periodNum
+    };
+
+    const response = await client.post<any>('/api/academics/routine', payload);
+
+    // Map response back
+    const item = response.data;
+    return {
+      ...item,
+      day: item.dayOfWeek ? item.dayOfWeek.charAt(0).toUpperCase() + item.dayOfWeek.slice(1).toLowerCase() : data.day,
+      period: item.period ? `Period ${item.period}` : data.period
+    } as Routine;
   },
 
   deleteRoutine: async (id: number): Promise<void> => {
