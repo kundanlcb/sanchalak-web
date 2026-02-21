@@ -24,7 +24,8 @@ import {
   TrendingUp,
   School,
   UserCog,
-  CalendarClock
+  CalendarClock,
+  ShieldCheck
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useSidebar } from './SidebarContext';
@@ -55,6 +56,7 @@ const navItems: NavItem[] = [
   { name: 'Finance', path: '/admin/finance/reports', icon: TrendingUp, roles: ['Admin'], featureCode: 'FINANCE' },
   { name: 'Notices', path: '/notices', icon: Bell, featureCode: 'NOTICES' },
   { name: 'Settings', path: '/settings', icon: Settings },
+  { name: 'Access Control', path: '/admin/permissions', icon: ShieldCheck, roles: ['Admin'] },
 ];
 
 const Sidebar: React.FC = () => {

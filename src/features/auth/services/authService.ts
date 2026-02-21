@@ -39,6 +39,7 @@ export async function loginWithOTP(mobileNumber: string): Promise<LoginOTPRespon
 const mapBackendRoleToFrontend = (backendRole: string): 'Admin' | 'Teacher' | 'Staff' | 'Parent' | 'Student' => {
   switch (backendRole) {
     case 'ROLE_ADMIN':
+    case 'ROLE_SCHOOL_ADMIN':
       return 'Admin';
     case 'ROLE_TEACHER':
       return 'Teacher';

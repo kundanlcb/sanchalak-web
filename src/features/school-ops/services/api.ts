@@ -106,5 +106,15 @@ export const schoolOpsApi = {
 
   deleteRoutine: async (id: number): Promise<void> => {
     await client.delete(`/api/academics/routine/${id}`);
+  },
+
+  // Permissions
+  getSchoolPermissions: async (): Promise<any[]> => {
+    const response = await client.get('/api/school/permissions');
+    return response.data;
+  },
+
+  updateRolePermissions: async (roleName: string, featureCodes: string[]): Promise<void> => {
+    await client.post(`/api/school/permissions/${roleName}`, featureCodes);
   }
 };

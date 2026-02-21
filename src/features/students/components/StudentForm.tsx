@@ -142,18 +142,26 @@ export const StudentForm: React.FC = () => {
   const onSubmit = async (data: StudentFormData) => {
     setLoading(true);
     try {
+      const nameParts = data.name.trim().split(/\s+/);
+      const firstName = nameParts[0];
+      const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+
+      const payload = {
+        ...data,
+        firstName,
+        lastName,
+        rollNo: data.rollNumber,
+        classId: Number(data.classId)
+      };
+
       if (isEditMode && studentId) {
         await updateStudent({
           id: studentId,
-          ...data,
-          classId: Number(data.classId)
-        });
+          ...payload
+        } as any);
         showToast('Student updated successfully', 'success');
       } else {
-        await createStudent({
-          ...data,
-          classId: Number(data.classId)
-        });
+        await createStudent(payload as any);
         showToast('Student created successfully', 'success');
       }
       navigate('/students');

@@ -62,3 +62,9 @@ export interface RoutineCell {
   day: typeof DAYS_OF_WEEK[number];
   entry?: Routine; // If undefined, cell is empty/free
 }
+export interface SchoolRolePermission {
+  id: string;
+  schoolId: string;
+  roleName: 'ROLE_ADMIN' | 'ROLE_TEACHER' | 'ROLE_STAFF' | 'ROLE_STUDENT' | 'ROLE_PARENT';
+  featureCode: string;
+}

@@ -100,6 +100,9 @@ export interface CreateStudentRequest {
   gender: Gender;
   bloodGroup?: BloodGroup;
   admissionDate: string;
+  firstName?: string;
+  lastName?: string;
+  rollNo?: number;
   classId: number;
   rollNumber: number;
   section: string;

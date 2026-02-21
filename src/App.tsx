@@ -28,6 +28,7 @@ import { AcademicSetupPage } from './features/school-ops/pages/AcademicSetupPage
 import { TeacherListPage } from './features/school-ops/pages/TeacherListPage';
 import { TeacherDetail } from './features/school-ops/components/TeacherDetail';
 import { RoutineManagementPage } from './features/school-ops/pages/RoutineManagementPage';
+import RoleManagementPage from './features/school-ops/pages/RoleManagementPage';
 import { ExamConfigPage } from './features/academics/pages/ExamConfigPage';
 import { MarksEntryPage } from './features/academics/pages/MarksEntryPage';
 import { ReportGenerationPage } from './features/academics/pages/ReportGenerationPage';
@@ -189,6 +190,16 @@ function App() {
                   <ProtectedRoute allowedRoles={['Admin']}>
                     <AuthenticatedLayout>
                       <RoutineManagementPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/permissions"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <RoleManagementPage />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
                 }
