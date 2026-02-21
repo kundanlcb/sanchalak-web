@@ -26,6 +26,13 @@ export const useExamSchedules = (filters: UseExamSchedulesFilters) => {
                 subjectId: String(item.subject?.id),
                 examDate: item.examDate,
                 maxMarks: item.maxMarks,
+                passingMarks: item.passingMarks,
+                startTime: item.startTime,
+                endTime: item.endTime,
+                durationMinutes: item.durationMinutes,
+                examTerm: item.examTerm,
+                studentClass: item.studentClass,
+                subject: item.subject,
             }));
         },
         enabled: !!filters.examTermId && !!filters.classId,

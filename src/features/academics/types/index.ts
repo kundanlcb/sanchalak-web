@@ -17,6 +17,14 @@ export interface ExamSchedule {
   subjectId: string;
   examDate: string;
   maxMarks: number;
+  passingMarks?: number;
+  startTime?: string;
+  endTime?: string;
+  durationMinutes?: number;
+  // Populated from backend relations
+  examTerm?: { id: number; name: string };
+  studentClass?: { id: number; name?: string; className?: string };
+  subject?: { id: number; name: string; code: string };
 }
 
 export interface CreateExamScheduleRequest {
@@ -25,6 +33,25 @@ export interface CreateExamScheduleRequest {
   subjectId: string;
   examDate: string;
   maxMarks: number;
+  passingMarks?: number;
+  startTime?: string;
+  endTime?: string;
+  durationMinutes?: number;
+}
+
+export interface ExamQuestion {
+  id: string;
+  examScheduleId: string;
+  marks: number;
+  sequenceOrder: number;
+  question: {
+    id: number;
+    chapterId: number;
+    questionText: string;
+    questionType: string;
+    marks: number;
+    options?: { id: number; optionText: string; isCorrect: boolean }[];
+  };
 }
 
 export interface Subject {
