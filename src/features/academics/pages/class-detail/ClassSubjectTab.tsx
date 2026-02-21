@@ -17,7 +17,7 @@ export const ClassSubjectTab: React.FC<ClassSubjectTabProps> = ({ classId }) => 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const form = useForm({
-        defaultValues: { name: '', code: '', maxMarks: '100', passingMarks: '35' }
+        defaultValues: { name: '', code: '' }
     });
 
     if (isLoading) {
@@ -27,14 +27,12 @@ export const ClassSubjectTab: React.FC<ClassSubjectTabProps> = ({ classId }) => 
     // Filter subjects strictly assigned to this class or globally 'all'
     const classSubjects = subjects.filter(s => String(s.classId) === classId || s.classId === 'all');
 
-    const onSubmit = async (data: { name: string; code: string; maxMarks: string; passingMarks: string }) => {
+    const onSubmit = async (data: { name: string; code: string }) => {
         try {
             await createSubject({
                 name: data.name,
                 code: data.code,
                 classId: classId,
-                maxMarks: Number(data.maxMarks),
-                passingMarks: Number(data.passingMarks),
             });
             setIsModalOpen(false);
             form.reset();
@@ -91,20 +89,6 @@ export const ClassSubjectTab: React.FC<ClassSubjectTabProps> = ({ classId }) => 
                         placeholder="e.g. MATH"
                         {...form.register('code', { required: true })}
                     />
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input
-                            label="Max Marks"
-                            type="number"
-                            placeholder="100"
-                            {...form.register('maxMarks', { required: true })}
-                        />
-                        <Input
-                            label="Passing Marks"
-                            type="number"
-                            placeholder="35"
-                            {...form.register('passingMarks', { required: true })}
-                        />
-                    </div>
                     <div className="flex justify-end gap-3 mt-6">
                         <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
                         <Button type="submit">Create Subject</Button>

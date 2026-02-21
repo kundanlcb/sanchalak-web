@@ -22,13 +22,6 @@ export const subjectSchema = z.object({
   name: z.string().min(1, 'Subject name is required'),
   code: z.string().min(1, 'Subject code is required'),
   classId: z.string().min(1, 'Class is required'),
-  maxMarks: z.number().min(1, 'Max marks must be greater than 0'),
-  passingMarks: z.number().min(0, 'Passing marks cannot be negative'),
-}).refine((data) => {
-  return data.passingMarks <= data.maxMarks;
-}, {
-  message: 'Passing marks cannot exceed max marks',
-  path: ['passingMarks'],
 });
 
 export type ExamTermFormData = z.infer<typeof examTermSchema>;

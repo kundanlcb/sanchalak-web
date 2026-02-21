@@ -32,8 +32,6 @@ export interface Subject {
   name: string;
   code: string;
   classId: string;
-  maxMarks: number;
-  passingMarks: number;
 }
 
 export interface CreateExamTermRequest {
@@ -47,8 +45,6 @@ export interface CreateSubjectRequest {
   name: string;
   code: string;
   classId: string;
-  maxMarks: number;
-  passingMarks: number;
 }
 
 export interface MarkEntry {
