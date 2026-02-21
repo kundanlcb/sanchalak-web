@@ -130,7 +130,7 @@ export const financeHandlers = [
 
       // Use real structure if available, else static
       // Find structures for this class
-      const classStructures = db.feeStructures.filter(fs => fs.classId === student.classID);
+      const classStructures = db.feeStructures.filter(fs => fs.classId === student.classId);
       const totalFee = classStructures.reduce((sum, fs) => sum + fs.amount, 0) || 50000;
 
       const due = totalFee - paid;
@@ -140,7 +140,7 @@ export const financeHandlers = [
           id: student.id, // Widget expects 'id'
           studentName: student.name,
           studentId: student.id,
-          grade: student.classID, // Ideally map to Class Name using db.classes
+          grade: student.classId, // Ideally map to Class Name using db.classes
           amountDue: due,
           daysOverdue: Math.floor(Math.random() * 60) + 1 // Mock days
         };

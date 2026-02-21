@@ -8,7 +8,6 @@ import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructur
 import { MarksGrid } from '../components/MarksGrid';
 import { Loader2 } from 'lucide-react';
 import { Select } from '../../../components/common/Select';
-import { type UpdateMarkRequest } from '../types';
 
 export const MarksEntryPage: React.FC = () => {
   const { t } = useTranslation();

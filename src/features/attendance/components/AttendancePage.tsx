@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, BookOpen, Save, RefreshCw, AlertCircle, Zap } from 'lucide-react';
+import { BookOpen, Save, RefreshCw, AlertCircle, Zap } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 import { Skeleton } from '../../../components/common/Skeleton';
 import { Select } from '../../../components/common/Select';

@@ -32,6 +32,10 @@ import RoleManagementPage from './features/school-ops/pages/RoleManagementPage';
 import { ExamConfigPage } from './features/academics/pages/ExamConfigPage';
 import { MarksEntryPage } from './features/academics/pages/MarksEntryPage';
 import { ReportGenerationPage } from './features/academics/pages/ReportGenerationPage';
+import { ClassDetailRouter } from './features/academics/pages/class-detail/ClassDetailRouter';
+import { SubjectDetailRouter } from './features/academics/pages/subject-detail/SubjectDetailRouter';
+import { ChapterDetailRouter } from './features/academics/pages/chapter-detail/ChapterDetailRouter';
+import { CurriculumManagerPage } from './features/academics/pages/CurriculumManagerPage';
 import { HomeworkPage } from './features/homework/pages/HomeworkPage';
 import { FeeManagementPage } from './features/finance/pages/FeeManagementPage';
 import { FeePaymentPage } from './features/finance/pages/FeePaymentPage';
@@ -160,6 +164,46 @@ function App() {
                   <ProtectedRoute allowedRoles={['Admin']}>
                     <AuthenticatedLayout>
                       <AcademicSetupPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/curriculum"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher']}>
+                    <AuthenticatedLayout>
+                      <CurriculumManagerPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/academics/classes/:classId"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher']}>
+                    <AuthenticatedLayout>
+                      <ClassDetailRouter />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/academics/classes/:classId/subjects/:subjectId"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher']}>
+                    <AuthenticatedLayout>
+                      <SubjectDetailRouter />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/academics/classes/:classId/subjects/:subjectId/chapters/:chapterId"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Teacher']}>
+                    <AuthenticatedLayout>
+                      <ChapterDetailRouter />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
                 }

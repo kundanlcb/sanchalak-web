@@ -223,7 +223,7 @@ export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceS
   await new Promise(resolve => setTimeout(resolve, 250));
 
   // Get all students in class
-  const classStudents = db.students.filter(s => s.classID === String(request.classId));
+  const classStudents = db.students.filter(s => s.classId === Number(request.classId));
 
   if (classStudents.length === 0) {
     throw new Error(`No students found in class ${request.classId}`);

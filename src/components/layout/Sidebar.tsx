@@ -41,7 +41,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'Dashboard', path: '/', icon: Home },
-  { name: 'Academic Setup', path: '/admin/academics/setup', icon: School, roles: ['Admin'], featureCode: 'ACADEMICS' },
+  { name: 'Classes', path: '/admin/academics/setup', icon: School, roles: ['Admin'], featureCode: 'ACADEMICS' },
+  { name: 'Curriculum', path: '/admin/curriculum', icon: BookOpen, roles: ['Admin', 'Teacher'], featureCode: 'ACADEMICS' },
   { name: 'Teachers', path: '/admin/teachers', icon: UserCog, roles: ['Admin'], featureCode: 'TEACHERS' },
   { name: 'Timetable', path: '/admin/academics/routine', icon: CalendarClock, roles: ['Admin'], featureCode: 'TIMETABLE' },
   { name: 'Students', path: '/students', icon: Users, roles: ['Admin', 'Teacher', 'Staff'], featureCode: 'STUDENT_MGMT' },

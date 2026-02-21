@@ -16,12 +16,12 @@ export const homeworkHandlers = [
 
     if (classId && subjectId) {
       return HttpResponse.json(
-        homeworkList.filter((h) => h.classId === classId && h.subjectId === subjectId)
+        homeworkList.filter((h) => String(h.classId) === classId && String(h.subjectId) === subjectId)
       );
     }
-    
+
     if (classId) {
-      return HttpResponse.json(homeworkList.filter((h) => h.classId === classId));
+      return HttpResponse.json(homeworkList.filter((h) => String(h.classId) === classId));
     }
 
     return HttpResponse.json(homeworkList);
@@ -42,14 +42,14 @@ export const homeworkHandlers = [
   http.post('/api/homework', async ({ request }) => {
     await delay(500);
     const data = await request.json() as Partial<Homework>;
-    
+
     const newHomework: Homework = {
       ...data,
       id: `hw_${Date.now()}`,
       createdAt: new Date().toISOString(),
       attachments: [] // Attachments logic often handled via separate upload mock
     } as Homework;
-    
+
     homeworkList.push(newHomework);
     return HttpResponse.json(newHomework, { status: 201 });
   }),

@@ -56,8 +56,7 @@ export const StudentForm: React.FC = () => {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true); // Start true to load masters
-  const { classes, loading: classesLoading } = useAcademicStructure();
-  const isAppLoading = loading || initialLoading || classesLoading;
+  const { classes } = useAcademicStructure();
   const [genders, setGenders] = useState<MasterValue[]>([]);
   const [bloodGroups, setBloodGroups] = useState<MasterValue[]>([]);
   const [relations, setRelations] = useState<MasterValue[]>([]);

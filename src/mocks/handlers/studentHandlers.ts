@@ -60,7 +60,7 @@ export async function handleGetStudents(
     page = 1,
     limit = 50,
     search = '',
-    classID,
+    classId,
     section,
     academicYear,
     status,
@@ -83,7 +83,7 @@ export async function handleGetStudents(
     }
 
     // Class filter
-    if (classID && student.classID !== classID) return false;
+    if (classId && student.classId !== classId) return false;
 
     // Section filter
     if (section && student.section !== section) return false;
@@ -188,14 +188,14 @@ export async function handleCreateStudent(
     throw new Error('Invalid mobile number format. Use +91XXXXXXXXXX');
   }
 
-  if (!request.classID) {
+  if (!request.classId) {
     throw new Error('Class ID is required');
   }
 
   // Check if roll number already exists in class/section
   const existingRollNumber = db.students.find(
     s =>
-      s.classID === request.classID &&
+      s.classId === request.classId &&
       s.section === request.section &&
       s.rollNumber === request.rollNumber &&
       s.academicYear === request.academicYear
@@ -220,7 +220,7 @@ export async function handleCreateStudent(
     gender: request.gender,
     bloodGroup: request.bloodGroup,
     admissionDate: request.admissionDate,
-    classID: request.classID,
+    classId: request.classId,
     rollNumber: request.rollNumber,
     section: request.section,
     academicYear: request.academicYear,
@@ -273,7 +273,7 @@ export async function handleUpdateStudent(
     ...(request.dateOfBirth && { dateOfBirth: request.dateOfBirth }),
     ...(request.gender && { gender: request.gender }),
     ...(request.bloodGroup && { bloodGroup: request.bloodGroup }),
-    ...(request.classID && { classID: request.classID }),
+    ...(request.classId && { classId: request.classId }),
     ...(request.rollNumber && { rollNumber: request.rollNumber }),
     ...(request.section && { section: request.section }),
     ...(request.mobileNumber && { mobileNumber: request.mobileNumber }),

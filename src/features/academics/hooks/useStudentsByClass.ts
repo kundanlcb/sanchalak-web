@@ -13,7 +13,7 @@ export const useStudentsByClass = (classId: string, section: string) => {
     queryKey: ['students', 'byClass', classId, section],
     queryFn: async () => {
       const response = await getStudents({
-        classID: classId === 'all' ? undefined : classId,
+        classId: classId === 'all' ? undefined : Number(classId),
         section: section === 'all' ? undefined : section,
         limit: 100,
       });
