@@ -27,25 +27,41 @@ export const MarksEntryPage: React.FC = () => {
   const { students, isLoading: loadingStudents } = useStudentsByClass(selectedClassId, selectedSection);
 
   // Marks
-  const { marks, isLoading: loadingMarks, updateMark, pendingUpdates } = useMarks({
+  const { marks, isLoading: loadingMarks, bulkSaveMarks, isSavingBulk } = useMarks({
     examTermId: selectedExamTermId,
     subjectId: selectedSubjectId,
     classId: selectedClassId,
     section: selectedSection
   });
 
+  const [localMarks, setLocalMarks] = useState<Record<string, number>>({});
   const selectedSubject = subjects.find(s => s.id === selectedSubjectId);
 
-  const handleUpdateMark = async (studentId: string, marksObtained: number) => {
-    if (!selectedExamTermId || !selectedSubjectId) return;
+  const handleUpdateMark = (studentId: string, marksObtained: number) => {
+    setLocalMarks(prev => ({ ...prev, [studentId]: marksObtained }));
+  };
 
-    const request: UpdateMarkRequest = {
-      studentId,
-      examTermId: selectedExamTermId,
-      subjectId: selectedSubjectId,
-      marksObtained
-    };
-    await updateMark(request);
+  const handleSaveAll = async () => {
+    if (!selectedExamTermId || !selectedSubjectId || !selectedClassId) return;
+
+    const marksPayload = Object.entries(localMarks).map(([studentId, marksObtained]) => ({
+      studentId: Number(studentId),
+      marksObtained,
+    }));
+
+    if (marksPayload.length === 0) return;
+
+    try {
+      await bulkSaveMarks({
+        examTermId: selectedExamTermId,
+        classId: selectedClassId,
+        subjectId: selectedSubjectId,
+        marks: marksPayload,
+      });
+      setLocalMarks({});
+    } catch (e) {
+      console.error("Failed to save marks", e);
+    }
   };
 
   const isLoadingInitial = loadingTerms || loadingSubjects;
@@ -134,15 +150,27 @@ export const MarksEntryPage: React.FC = () => {
       {isLoadingInitial ? (
         <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
       ) : (
-        <MarksGrid
-          students={students}
-          marks={marks}
-          subject={selectedSubject}
-          examTermId={selectedExamTermId}
-          isLoading={loadingStudents || loadingMarks}
-          onUpdateMark={handleUpdateMark}
-          pendingUpdates={pendingUpdates}
-        />
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={handleSaveAll}
+              disabled={isSavingBulk || Object.keys(localMarks).length === 0}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              {isSavingBulk && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSavingBulk ? 'Saving...' : 'Save All Marks'}
+            </button>
+          </div>
+          <MarksGrid
+            students={students}
+            marks={marks}
+            localMarks={localMarks}
+            subject={selectedSubject}
+            examTermId={selectedExamTermId}
+            isLoading={loadingStudents || loadingMarks}
+            onUpdateMark={handleUpdateMark}
+          />
+        </div>
       )}
     </div>
   );

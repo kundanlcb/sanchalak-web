@@ -5,35 +5,53 @@ import { ExamTermForm } from '../components/ExamTermForm';
 import { type ExamTermFormData } from '../types/schema';
 import { Button } from '../../../components/common/Button';
 import { Plus } from 'lucide-react';
-import { type CreateExamTermRequest } from '../types';
+import { type CreateExamTermRequest, type ExamTerm } from '../types';
 import { SubjectConfig } from '../components/SubjectConfig';
 import { useTranslation } from 'react-i18next';
 
 export const ExamConfigPage: React.FC = () => {
   const { t } = useTranslation();
-  const { examTerms, isLoading, createExamTerm } = useExamTerms();
+  const { examTerms, isLoading, createExamTerm, updateExamTerm } = useExamTerms();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'exams' | 'subjects'>('exams');
+  const [selectedTerm, setSelectedTerm] = useState<ExamTerm | null>(null);
 
-  const handleCreateTerm = async (data: ExamTermFormData) => {
+  const handleCreateOrUpdateTerm = async (data: ExamTermFormData) => {
     setIsSubmitting(true);
     try {
-      // Map form data to API request
-      const request: CreateExamTermRequest = {
-        name: data.name,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        classes: data.classes,
-      };
-      await createExamTerm(request);
+      if (selectedTerm) {
+        await updateExamTerm({
+          id: selectedTerm.id,
+          data: {
+            name: data.name,
+            startDate: data.startDate,
+            endDate: data.endDate,
+          }
+        });
+      } else {
+        const request: CreateExamTermRequest = {
+          name: data.name,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          classes: data.classes,
+        };
+        await createExamTerm(request);
+      }
       setIsModalOpen(false);
+      setSelectedTerm(null);
     } catch (error) {
-      console.error("Failed to create exam term", error);
+      console.error("Failed to save exam term", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const openForm = (term?: ExamTerm) => {
+    setSelectedTerm(term || null);
+    setIsModalOpen(true);
+  };
+
 
   return (
     <div className="space-y-6">
@@ -75,19 +93,28 @@ export const ExamConfigPage: React.FC = () => {
                 {t('academics.exams.subtitle')}
               </p>
             </div>
-            <Button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
+            <Button onClick={() => openForm()} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               {t('academics.exams.newTerm')}
             </Button>
           </div>
 
-          <ExamTermList examTerms={examTerms} isLoading={isLoading} />
+          <ExamTermList examTerms={examTerms} isLoading={isLoading} onEdit={openForm} />
 
           <ExamTermForm
             isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSubmit={handleCreateTerm}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedTerm(null);
+            }}
+            onSubmit={handleCreateOrUpdateTerm}
             isLoading={isSubmitting}
+            initialData={selectedTerm ? {
+              name: selectedTerm.name,
+              startDate: selectedTerm.startDate,
+              endDate: selectedTerm.endDate,
+              classes: ['all']
+            } : undefined}
           />
         </div>
       )}

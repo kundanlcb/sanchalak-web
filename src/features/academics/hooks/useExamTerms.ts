@@ -65,11 +65,42 @@ export const useExamTerms = () => {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['examTerms'] }),
   });
 
+  // --- Mutation: Update exam term ---
+  const updateMutation = useMutation({
+    mutationKey: ['examTerms', 'update'],
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateExamTermRequest> }) => {
+      const request: ExamTermRequest = {
+        name: data.name,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      };
+      const response = await academicApi.updateTerm(Number(id), { examTermRequest: request });
+      return response.data;
+    },
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['examTerms'] });
+      const previous = queryClient.getQueryData<ExamTerm[]>(['examTerms']);
+
+      queryClient.setQueryData<ExamTerm[]>(['examTerms'], (old) => {
+        return (old ?? []).map((term) => {
+          if (term.id === id) {
+            return { ...term, ...data };
+          }
+          return term;
+        });
+      });
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['examTerms'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['examTerms'] }),
+  });
+
   return {
     examTerms,
-    isLoading: isLoading || createMutation.isPending,
-    error: queryError?.message ?? createMutation.error?.message ?? null,
+    isLoading: isLoading || createMutation.isPending || updateMutation.isPending,
+    error: queryError?.message ?? createMutation.error?.message ?? updateMutation.error?.message ?? null,
     createExamTerm: createMutation.mutateAsync,
+    updateExamTerm: updateMutation.mutateAsync,
     refetch,
   };
 };

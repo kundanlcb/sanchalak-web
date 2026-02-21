@@ -9,20 +9,20 @@ import type { Student } from '../../students/types/student.types';
 interface MarksGridProps {
   students: Student[];
   marks: MarkEntry[];
+  localMarks: Record<string, number>;
   subject?: Subject;
   examTermId: string;
   isLoading: boolean;
-  onUpdateMark: (studentId: string, marksObtained: number) => Promise<void>;
-  pendingUpdates: Set<string>;
+  onUpdateMark: (studentId: string, marksObtained: number) => void;
 }
 
 export const MarksGrid: React.FC<MarksGridProps> = ({
   students,
   marks,
+  localMarks,
   subject,
   isLoading,
   onUpdateMark,
-  pendingUpdates,
 }) => {
   const { t } = useTranslation();
   const tableRef = useRef<HTMLTableElement>(null);
@@ -63,17 +63,18 @@ export const MarksGrid: React.FC<MarksGridProps> = ({
         </thead>
         <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
           {students.map((student) => {
-            const studentMark = marks.find(m => m.studentId === student.studentID);
-            const isUpdating = pendingUpdates.has(`${student.studentID}-${subject.id}`);
-            
+            const studentIdStr = String(student.id);
+            const studentMark = marks.find(m => m.studentId === studentIdStr);
+            const displayMark = localMarks[studentIdStr] ?? studentMark?.marksObtained;
+
             return (
               <MarksGridRow
-                key={student.studentID}
-                student={student}
-                marksObtained={studentMark?.marksObtained}
+                key={studentIdStr}
+                student={{ ...student, studentID: String(student.id) }}
+                marksObtained={displayMark}
                 maxMarks={subject.maxMarks}
-                isUpdating={isUpdating}
-                onUpdate={(val) => onUpdateMark(student.studentID, val)}
+                isUpdating={false}
+                onUpdate={(val) => onUpdateMark(studentIdStr, val)}
               />
             );
           })}

@@ -16,6 +16,13 @@ interface UseMarksFilters {
   studentId?: string;
 }
 
+export interface BulkMarkRequest {
+  examTermId: string;
+  classId: string;
+  subjectId: string;
+  marks: { studentId: number; marksObtained: number; remarks?: string }[];
+}
+
 export const useMarks = (filters: UseMarksFilters) => {
   const queryClient = useQueryClient();
   const [pendingUpdates, setPendingUpdates] = useState<Set<string>>(new Set());
@@ -36,8 +43,15 @@ export const useMarks = (filters: UseMarksFilters) => {
       if (filters.classId) params.append('classId', filters.classId);
       if (filters.section) params.append('section', filters.section);
       if (filters.studentId) params.append('studentId', filters.studentId);
-      const response = await apiClient.get<MarkEntry[]>(`/api/academic/marks?${params.toString()}`);
-      return response.data;
+      const response = await apiClient.get<any[]>(`/api/academic/marks?${params.toString()}`);
+      return response.data.map((item: any) => ({
+        id: String(item.id),
+        studentId: String(item.student?.id),
+        examTermId: String(item.examSchedule?.examTerm?.id),
+        subjectId: String(item.examSchedule?.subject?.id),
+        marksObtained: item.marksObtained,
+        lastUpdated: item.updatedAt || new Date().toISOString(),
+      }));
     },
     enabled,
     staleTime: 1 * 60 * 1000, // 1 min — marks change during entry
@@ -47,7 +61,7 @@ export const useMarks = (filters: UseMarksFilters) => {
   const updateMarkMutation = useMutation({
     mutationKey: ['marks', 'update'],
     mutationFn: async (data: UpdateMarkRequest) => {
-      await apiClient.post('/api/academics/marks', data);
+      await apiClient.post('/api/academic/marks', data);
       return data;
     },
     onMutate: async (data) => {
@@ -101,11 +115,24 @@ export const useMarks = (filters: UseMarksFilters) => {
     },
   });
 
+  const bulkSaveMarksMutation = useMutation({
+    mutationKey: ['marks', 'bulk-save'],
+    mutationFn: async (data: BulkMarkRequest) => {
+      const response = await apiClient.post('/api/academic/marks/bulk', data);
+      return response.data;
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
   return {
     marks,
     isLoading,
-    error: queryError?.message ?? updateMarkMutation.error?.message ?? null,
+    error: queryError?.message ?? updateMarkMutation.error?.message ?? bulkSaveMarksMutation.error?.message ?? null,
     updateMark: updateMarkMutation.mutateAsync,
+    bulkSaveMarks: bulkSaveMarksMutation.mutateAsync,
+    isSavingBulk: bulkSaveMarksMutation.isPending,
     pendingUpdates,
     refetch,
   };

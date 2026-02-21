@@ -23,7 +23,11 @@ import type {
  * Mark attendance for a single student
  */
 export const markAttendance = async (request: MarkAttendanceRequest): Promise<MarkAttendanceResponse> => {
-  const response = await apiClient.post<MarkAttendanceResponse>('/api/attendance', request);
+  const apiRequest = {
+    ...request,
+    status: request.status.toUpperCase()
+  };
+  const response = await apiClient.post<MarkAttendanceResponse>('/api/attendance', apiRequest);
   return response.data;
 };
 
@@ -31,7 +35,14 @@ export const markAttendance = async (request: MarkAttendanceRequest): Promise<Ma
  * Mark attendance for entire class (bulk operation)
  */
 export const bulkMarkAttendance = async (request: BulkMarkAttendanceRequest): Promise<BulkMarkAttendanceResponse> => {
-  const response = await apiClient.post<BulkMarkAttendanceResponse>('/api/attendance/bulk', request);
+  const apiRequest = {
+    ...request,
+    attendances: request.attendances.map(a => ({
+      ...a,
+      status: a.status.toUpperCase()
+    }))
+  };
+  const response = await apiClient.post<BulkMarkAttendanceResponse>('/api/attendance/bulk', apiRequest);
   return response.data;
 };
 
@@ -64,6 +75,14 @@ export const getClassAttendanceSheet = async (request: GetClassAttendanceSheetRe
     `/api/attendance/sheet/${request.classId}`,
     { params: { date: request.date } }
   );
+
+  if (response.data && response.data.students) {
+    response.data.students = response.data.students.map((s: any) => ({
+      ...s,
+      status: s.status ? s.status.charAt(0).toUpperCase() + s.status.slice(1).toLowerCase() : 'Present'
+    }));
+  }
+
   return response.data;
 };
 
@@ -79,9 +98,13 @@ export const getAttendanceSummary = async (request: GetAttendanceSummaryRequest)
  * Modify existing attendance record
  */
 export const modifyAttendance = async (request: ModifyAttendanceRequest): Promise<ModifyAttendanceResponse> => {
+  const apiRequest = {
+    ...request,
+    status: request.status.toUpperCase()
+  };
   const response = await apiClient.put<ModifyAttendanceResponse>(
     `/api/attendance/${request.id}`,
-    request
+    apiRequest
   );
   return response.data;
 };

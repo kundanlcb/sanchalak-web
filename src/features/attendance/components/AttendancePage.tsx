@@ -210,6 +210,9 @@ export const AttendancePage: React.FC = () => {
     }))
     : [];
 
+  const isPastDate = new Date(selectedDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+  const isReadonly = attendanceSheet?.isMarked || isPastDate;
+
   // RENDER: Parent/Student View
   if (isStudentOrParent) {
     if (isLoading) {
@@ -394,8 +397,13 @@ export const AttendancePage: React.FC = () => {
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {attendanceSheet.className} • {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
+                {isPastDate && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-medium">
+                    ⚠️ Past date records cannot be modified.
+                  </p>
+                )}
               </div>
-              {!attendanceSheet.isMarked && (
+              {!attendanceSheet.isMarked && !isPastDate && (
                 <button
                   onClick={handleSubmitAttendance}
                   disabled={isSubmitting}
@@ -417,7 +425,7 @@ export const AttendancePage: React.FC = () => {
               students={updatedStudents}
               onAttendanceChange={handleAttendanceChange}
               isSubmitting={isSubmitting}
-              readonly={attendanceSheet.isMarked}
+              readonly={isReadonly}
             />
 
             {attendanceSheet.isMarked && (

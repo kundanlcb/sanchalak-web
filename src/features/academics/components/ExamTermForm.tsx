@@ -11,6 +11,7 @@ interface ExamTermFormProps {
   onClose: () => void;
   onSubmit: (data: ExamTermFormData) => Promise<void>;
   isLoading?: boolean;
+  initialData?: ExamTermFormData;
 }
 
 export const ExamTermForm: React.FC<ExamTermFormProps> = ({
@@ -18,6 +19,7 @@ export const ExamTermForm: React.FC<ExamTermFormProps> = ({
   onClose,
   onSubmit,
   isLoading = false,
+  initialData,
 }) => {
   const {
     register,
@@ -26,7 +28,7 @@ export const ExamTermForm: React.FC<ExamTermFormProps> = ({
     reset,
   } = useForm<ExamTermFormData>({
     resolver: zodResolver(examTermSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       name: '',
       startDate: '',
       endDate: '',
@@ -34,9 +36,20 @@ export const ExamTermForm: React.FC<ExamTermFormProps> = ({
     },
   });
 
+  // Reset form when modal opens with new initialData
+  React.useEffect(() => {
+    if (isOpen) {
+      reset(initialData || {
+        name: '',
+        startDate: '',
+        endDate: '',
+        classes: ['all'],
+      });
+    }
+  }, [isOpen, initialData, reset]);
+
   const handleFormSubmit = async (data: ExamTermFormData) => {
     await onSubmit(data);
-    reset();
     onClose();
   };
 
@@ -44,16 +57,16 @@ export const ExamTermForm: React.FC<ExamTermFormProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Create Exam Term"
+      title={initialData ? "Edit Exam Term" : "Create Exam Term"}
       size="md"
       footer={
         <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isLoading}>
-                Cancel
-            </Button>
-            <Button onClick={handleSubmit(handleFormSubmit)} disabled={isLoading}>
-                {isLoading ? 'Creating...' : 'Create Term'}
-            </Button>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit(handleFormSubmit)} disabled={isLoading}>
+            {isLoading ? (initialData ? 'Updating...' : 'Creating...') : (initialData ? 'Update Term' : 'Create Term')}
+          </Button>
         </div>
       }
     >
@@ -88,13 +101,13 @@ export const ExamTermForm: React.FC<ExamTermFormProps> = ({
 
         {/* Simplified Class Selection for MVP */}
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Classes
-            </label>
-            <p className="text-sm text-gray-500 italic">
-                (Assuming all classes for this prototype)
-            </p>
-            <input type="hidden" {...register('classes')} value={['all']} />
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Classes
+          </label>
+          <p className="text-sm text-gray-500 italic">
+            (Assuming all classes for this prototype)
+          </p>
+          <input type="hidden" {...register('classes')} value={['all']} />
         </div>
       </form>
     </Modal>

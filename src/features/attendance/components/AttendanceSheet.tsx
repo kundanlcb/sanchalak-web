@@ -95,13 +95,13 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({
               {student.profilePhoto ? (
                 <img
                   src={student.profilePhoto}
-                  alt={student.name}
+                  alt={student.name || (student as any).studentName || 'Unknown'}
                   className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
                   <span className="text-white font-semibold text-lg">
-                    {student.name.charAt(0)}
+                    {(student.name || (student as any).studentName || 'U').charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
@@ -109,10 +109,10 @@ export const AttendanceSheet: React.FC<AttendanceSheetProps> = ({
               {/* Name and Roll Number */}
               <div className="flex-1">
                 <h4 className="text-base font-semibold text-gray-900 dark:text-white">
-                  {student.name}
+                  {student.name || (student as any).studentName || 'Unknown Student'}
                 </h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Roll No: {student.rollNumber}
+                  Roll No: {student.rollNumber || 'N/A'}
                 </p>
               </div>
             </div>
