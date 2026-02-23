@@ -3,7 +3,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../../services/api/client';
-import { type ChapterContent, type CreateChapterContentRequest } from '../../types/curriculum';
+import { type ChapterContent } from '../../types/curriculum';
 
 interface ContentFilters {
     classId?: string;
@@ -58,12 +58,17 @@ export const useAllContent = (filters: ContentFilters = {}) => {
     });
 
     const createContent = useMutation({
-        mutationFn: async (contentData: CreateChapterContentRequest & { chapterId: string }) => {
-            const response = await apiClient.post(`/api/curriculum/chapters/${contentData.chapterId}/content`, {
+        mutationFn: async (contentData: { title: string; classId: string; subjectId: string; chapterId?: string; textContent?: string; videoUrl?: string; pdfUrl?: string; linkUrl?: string; sequenceOrder?: number }) => {
+            const response = await apiClient.post(`/api/curriculum/content`, {
                 title: contentData.title,
-                contentType: contentData.contentType,
-                contentData: contentData.contentData,
-                sequenceOrder: contentData.sequenceOrder,
+                classId: Number(contentData.classId),
+                subjectId: Number(contentData.subjectId),
+                chapterId: contentData.chapterId ? Number(contentData.chapterId) : null,
+                textContent: contentData.textContent || null,
+                videoUrl: contentData.videoUrl || null,
+                pdfUrl: contentData.pdfUrl || null,
+                linkUrl: contentData.linkUrl || null,
+                sequenceOrder: contentData.sequenceOrder ?? 0,
             });
             return response.data;
         },

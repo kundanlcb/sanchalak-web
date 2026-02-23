@@ -31,6 +31,7 @@ export interface User {
   email: string;
   mobileNumber: string;
   role: UserRole;
+  schoolId?: string;
   profilePhoto?: string;
   themePreference: ThemePreference;
   isActive: boolean;

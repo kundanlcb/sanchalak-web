@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAcademicStructure } from '../hooks/useAcademicStructure';
 import { useRoutine } from '../hooks/useRoutine';
 import { useTeachers } from '../hooks/useTeachers';
+import { useTimetableSlots } from '../hooks/useTimetableSlots';
 import { RoutineGrid } from '../components/RoutineGrid';
 import { RoutineAssignmentModal } from '../components/RoutineAssignmentModal';
 import { Select } from '../../../components/common/Select';
@@ -11,11 +12,12 @@ import { type Routine } from '../types';
 export const RoutineManagementPage: React.FC = () => {
     const { classes, subjects, loading: academicLoading } = useAcademicStructure();
     const { teachers, loading: teachersLoading } = useTeachers();
+    const { slots, loading: slotsLoading } = useTimetableSlots();
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
 
     // Derived state for the modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingCell, setEditingCell] = useState<{ day: string, period: string, routine?: Routine } | null>(null);
+    const [editingCell, setEditingCell] = useState<{ day: string, period: string, periodIndex: number, routine?: Routine } | null>(null);
 
     // Fetch routines for selected class
     const { routines, loading: routineLoading, addRoutine, removeRoutine, error } = useRoutine(
@@ -28,8 +30,8 @@ export const RoutineManagementPage: React.FC = () => {
         setSelectedClassId(e.target.value ? Number(e.target.value) : null);
     };
 
-    const handleCellClick = (day: string, period: string, currentRoutine?: Routine) => {
-        setEditingCell({ day, period, routine: currentRoutine });
+    const handleCellClick = (day: string, periodName: string, periodIndex: number, currentRoutine?: Routine) => {
+        setEditingCell({ day, period: periodName, periodIndex, routine: currentRoutine });
         setIsModalOpen(true);
     };
 
@@ -53,6 +55,7 @@ export const RoutineManagementPage: React.FC = () => {
                 classId: selectedClassId,
                 day: editingCell.day as any,
                 period: editingCell.period as any,
+                periodIndex: editingCell.periodIndex,
                 subjectId: data.subjectId,
                 teacherId: data.teacherId
             };
@@ -78,7 +81,7 @@ export const RoutineManagementPage: React.FC = () => {
         label: `${c.className || `Grade ${c.grade}-${c.section}`}`
     }));
 
-    const isLoading = academicLoading || teachersLoading;
+    const isLoading = academicLoading || teachersLoading || slotsLoading;
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -130,6 +133,7 @@ export const RoutineManagementPage: React.FC = () => {
                                 routines={routines}
                                 subjects={subjects}
                                 teachers={teachers}
+                                slots={slots}
                                 editable={true}
                                 onCellClick={handleCellClick}
                             />

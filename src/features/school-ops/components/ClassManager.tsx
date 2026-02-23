@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, School } from 'lucide-react';
 import { type Class, ClassSchema } from '../types';
 import { Modal } from '../../../components/common/Modal';
@@ -32,6 +33,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<ClassFormValues>({
     resolver: zodResolver(CreateClassSchema),
@@ -195,7 +197,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredClasses.map((cls) => (
-                  <tr key={cls.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" data-testid="class-row">
+                  <tr key={cls.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer" data-testid="class-row" onClick={() => navigate(`/admin/academics/classes/${cls.id}`)}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {cls.id}
                     </td>
@@ -219,7 +221,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleEdit(cls)}
+                            onClick={(e) => { e.stopPropagation(); handleEdit(cls); }}
                             title="Edit"
                             data-testid="edit-class-btn"
                           >
@@ -230,7 +232,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => setDeleteId(cls.id)}
+                            onClick={(e) => { e.stopPropagation(); setDeleteId(cls.id); }}
                             title="Delete"
                             data-testid="delete-class-btn"
                           >

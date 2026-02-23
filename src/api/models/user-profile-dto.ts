@@ -21,6 +21,7 @@ export interface UserProfileDto {
     'firstName'?: string;
     'lastName'?: string;
     'role'?: string;
+    'schoolId'?: string;
     'permissions'?: Array<string>;
 }
 

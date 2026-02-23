@@ -1,4 +1,4 @@
-import type { Teacher, Class, Routine } from '../types';
+import type { Teacher, Class, Routine, TimetableSlot } from '../types';
 // Assuming a base client is configured, but if not we use axios directly or importing from src/services/api/client
 // Checking previous turn, src/services/api/client.ts exists. I should try to use it.
 import client from '../../../services/api/client';
@@ -104,7 +104,8 @@ export const schoolOpsApi = {
       // Assuming periods 1-8 and 'Break'. If period is 4, frontend might expect 'Break' or 'Period 4'. 
       // The frontend GLOBAL_PERIODS are ['Period 1', 'Period 2', 'Period 3', 'Break', 'Period 4', 'Period 5', 'Period 6', 'Period 7', 'Period 8']
       // Let's standardise on Period X
-      period: `Period ${item.period}`
+      period: `Period ${item.period}`,
+      periodIndex: item.period
     })) as Routine[];
   },
 
@@ -112,13 +113,15 @@ export const schoolOpsApi = {
     // Map frontend format (day: 'Monday', period: 'Period 1') to backend format (dayOfWeek: 'MONDAY', period: 1)
 
     // Extract period number from string like 'Period 1' -> 1, 'Break' -> might be 4 depending on logic
-    let periodNum = 1;
-    if (data.period === 'Break') {
-      periodNum = 4; // Assuming break is period 4 based on standard Indian school timetables, adapt if needed
-    } else {
-      const match = data.period.match(/\d+/);
-      if (match) {
-        periodNum = parseInt(match[0], 10);
+    let periodNum = data.periodIndex || 1;
+    if (!data.periodIndex) {
+      if (data.period === 'Break') {
+        periodNum = 4; // Assuming break is period 4 based on standard Indian school timetables, adapt if needed
+      } else {
+        const match = data.period?.match(/\d+/);
+        if (match) {
+          periodNum = parseInt(match[0], 10);
+        }
       }
     }
 
@@ -137,12 +140,24 @@ export const schoolOpsApi = {
     return {
       ...item,
       day: item.dayOfWeek ? item.dayOfWeek.charAt(0).toUpperCase() + item.dayOfWeek.slice(1).toLowerCase() : data.day,
-      period: item.period ? `Period ${item.period}` : data.period
+      period: item.period ? `Period ${item.period}` : data.period,
+      periodIndex: item.period
     } as Routine;
   },
 
   deleteRoutine: async (id: number): Promise<void> => {
     await client.delete(`/api/academics/routine/${id}`);
+  },
+
+  // Timetable Configuration
+  getTimetableSlots: async (): Promise<TimetableSlot[]> => {
+    const response = await client.get<TimetableSlot[]>('/api/academics/timetable-config');
+    return response.data;
+  },
+
+  updateTimetableSlots: async (slots: TimetableSlot[]): Promise<TimetableSlot[]> => {
+    const response = await client.put<TimetableSlot[]>('/api/academics/timetable-config', slots);
+    return response.data;
   },
 
   // Permissions

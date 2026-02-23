@@ -19,7 +19,7 @@ const tabConfig: { key: ExamTab; label: string; icon: React.ElementType }[] = [
 ];
 
 export const ExamConfigPage: React.FC = () => {
-  const { examTerms, isLoading, createExamTerm, updateExamTerm } = useExamTerms();
+  const { examTerms, isLoading, createExamTerm, updateExamTerm, deleteExamTerm } = useExamTerms();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<ExamTab>('terms');
@@ -58,6 +58,16 @@ export const ExamConfigPage: React.FC = () => {
   const openForm = (term?: ExamTerm) => {
     setSelectedTerm(term || null);
     setIsModalOpen(true);
+  };
+
+  const handleDeleteTerm = async (id: string) => {
+    try {
+      if (deleteExamTerm) {
+        await deleteExamTerm(id);
+      }
+    } catch (error) {
+      console.error("Failed to delete exam term", error);
+    }
   };
 
   return (
@@ -105,7 +115,7 @@ export const ExamConfigPage: React.FC = () => {
             </Button>
           </div>
 
-          <ExamTermList examTerms={examTerms} isLoading={isLoading} onEdit={openForm} />
+          <ExamTermList examTerms={examTerms} isLoading={isLoading} onEdit={openForm} onDelete={handleDeleteTerm} />
 
           <ExamTermForm
             isOpen={isModalOpen}

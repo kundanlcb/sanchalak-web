@@ -7,9 +7,10 @@ interface ExamTermListProps {
   examTerms: ExamTerm[];
   isLoading: boolean;
   onEdit?: (term: ExamTerm) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const ExamTermList: React.FC<ExamTermListProps> = ({ examTerms, isLoading, onEdit }) => {
+export const ExamTermList: React.FC<ExamTermListProps> = ({ examTerms, isLoading, onEdit, onDelete }) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -35,24 +36,26 @@ export const ExamTermList: React.FC<ExamTermListProps> = ({ examTerms, isLoading
           key={term.id}
           className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow group relative"
         >
-          <div className="flex justify-between items-start mb-2 pr-8">
+          <div className="flex justify-between items-start mb-2 pr-2">
             <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
               {term.name}
             </h3>
-            {term.isActive ? (
-              <div className="flex items-center text-green-600 dark:text-green-400 text-xs font-medium bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Active
-              </div>
-            ) : (
-              <div className="flex items-center text-gray-500 dark:text-gray-400 text-xs font-medium bg-gray-100 dark:bg-gray-700/50 px-2 py-1 rounded-full">
-                <XCircle className="w-3 h-3 mr-1" />
-                Inactive
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {term.isActive ? (
+                <div className="flex items-center text-green-600 dark:text-green-400 text-xs font-medium bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Active
+                </div>
+              ) : (
+                <div className="flex items-center text-gray-500 dark:text-gray-400 text-xs font-medium bg-gray-100 dark:bg-gray-700/50 px-2 py-1 rounded-full">
+                  <XCircle className="w-3 h-3 mr-1" />
+                  Inactive
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1 mb-4">
             <p>
               <span className="font-medium">Academic Year:</span> {term.academicYear}
             </p>
@@ -60,8 +63,37 @@ export const ExamTermList: React.FC<ExamTermListProps> = ({ examTerms, isLoading
               <span className="font-medium">Date:</span> {new Date(term.startDate).toLocaleDateString()} - {new Date(term.endDate).toLocaleDateString()}
             </p>
             <p>
-              <span className="font-medium">Classes:</span> {term.classes.length} classes
+              <span className="font-medium">Classes:</span> {term.classes?.length || 0} classes
             </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            {onEdit && (
+              <button
+                onClick={() => onEdit(term)}
+                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                title="Edit Exam Term"
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit
+              </button>
+            )}
+            <button
+              // Delete functionality logic will be handled by the parent component or within term list if we pass delete down
+              onClick={() => {
+                if (window.confirm(`Are you sure you want to delete Exam Term: ${term.name}?`)) {
+                  if (onDelete) {
+                    onDelete(term.id);
+                  }
+                }
+              }}
+              className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors ml-auto"
+              title="Delete Exam Term"
+            >
+              <XCircle className="w-4 h-4" />
+              Delete
+            </button>
           </div>
         </div>
       ))}

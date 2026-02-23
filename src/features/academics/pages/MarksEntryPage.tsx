@@ -137,9 +137,11 @@ export const MarksEntryPage: React.FC = () => {
               disabled={loadingSubjects}
             >
               <option value="">Select Subject</option>
-              {subjects.map(sub => (
-                <option key={sub.id} value={sub.id}>{sub.name}</option>
-              ))}
+              {subjects
+                .filter(sub => !selectedClassId || !sub.classId || String(sub.classId) === selectedClassId)
+                .map(sub => (
+                  <option key={sub.id} value={sub.id}>{sub.name}</option>
+                ))}
             </Select>
             {loadingSubjects && <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-gray-400" />}
           </div>

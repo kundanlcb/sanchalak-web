@@ -28,6 +28,10 @@ import { AcademicSetupPage } from './features/school-ops/pages/AcademicSetupPage
 import { TeacherListPage } from './features/school-ops/pages/TeacherListPage';
 import { TeacherDetail } from './features/school-ops/components/TeacherDetail';
 import { RoutineManagementPage } from './features/school-ops/pages/RoutineManagementPage';
+import { TimetableSettingsPage } from './features/school-ops/pages/TimetableSettingsPage';
+import { HolidayCalendarPage } from './features/school-ops/pages/HolidayCalendarPage';
+import { LeavePolicyPage } from './features/school-ops/pages/LeavePolicyPage';
+import { LeaveApprovalPage } from './features/school-ops/pages/LeaveApprovalPage';
 import RoleManagementPage from './features/school-ops/pages/RoleManagementPage';
 import { ExamConfigPage } from './features/academics/pages/ExamConfigPage';
 import { MarksEntryPage } from './features/academics/pages/MarksEntryPage';
@@ -239,6 +243,36 @@ function App() {
                 }
               />
               <Route
+                path="/admin/academics/holidays"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <HolidayCalendarPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/hr/leave-policies"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <LeavePolicyPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/hr/leave-approvals"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <LeaveApprovalPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/admin/permissions"
                 element={
                   <ProtectedRoute allowedRoles={['Admin']}>
@@ -363,6 +397,16 @@ function App() {
                 }
               />
 
+              <Route
+                path="/admin/academics/timetable-config"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <TimetableSettingsPage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/settings"
                 element={

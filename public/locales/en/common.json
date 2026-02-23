@@ -18,7 +18,8 @@
       "subtitle": "Manage assessment periods and terms",
       "newTerm": "New Exam Term",
       "tabTerms": "Exam Terms",
-      "tabSubjects": "Subjects"
+      "tabSubjects": "Subjects",
+      "tabSchedules": "Schedules"
     },
     "subjects": {
       "title": "Subjects",

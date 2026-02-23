@@ -10,15 +10,16 @@ import { Button } from '../../../components/common/Button';
 import { Loader2, Plus, Trash2, FileQuestion, Check } from 'lucide-react';
 
 export const ExamQuestionPaper: React.FC = () => {
-    const { examTerms, isLoading: loadingTerms } = useExamTerms();
-    const { classes, loading: loadingClasses } = useAcademicStructure();
+    const { examTerms } = useExamTerms();
+    const { classes } = useAcademicStructure();
     const { subjects } = useSubjects();
 
-    const [selectedTerm, setSelectedTerm] = useState('');
-    const [selectedClass, setSelectedClass] = useState('');
-    const [selectedSubject, setSelectedSubject] = useState('');
+    const [selectedTerm, setSelectedTerm] = useState<string>('');
+    const [selectedClass, setSelectedClass] = useState<string>('');
+    const [selectedSubject, setSelectedSubject] = useState<string>('');
 
-    const { schedules, isLoading: loadingSchedules } = useExamSchedules({
+    // Mocks / hooks for schedules & papers
+    const { schedules } = useExamSchedules({
         examTermId: selectedTerm || undefined,
         classId: selectedClass || undefined,
     });

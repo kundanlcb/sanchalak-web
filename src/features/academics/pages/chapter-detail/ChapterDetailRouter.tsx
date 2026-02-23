@@ -72,7 +72,7 @@ export const ChapterDetailRouter: React.FC = () => {
                 contentType: data.contentType,
                 contentData: data.contentData,
                 sequenceOrder: Number(data.sequenceOrder)
-            });
+            } as any);
             setIsContentModalOpen(false);
             contentForm.reset();
         } catch (e) {
@@ -176,11 +176,11 @@ export const ChapterDetailRouter: React.FC = () => {
                                 <div key={c.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-sm">
                                     <div className="flex items-center gap-4">
                                         <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
-                                            {getContentIcon(c.contentType)}
+                                            {getContentIcon((c as any).contentType)}
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900 dark:text-gray-100">{c.title}</h4>
-                                            <a href={c.contentData} target="_blank" rel="noreferrer" className="text-sm text-blue-500 hover:underline line-clamp-1">{c.contentData}</a>
+                                            <a href={(c as any).contentData} target="_blank" rel="noreferrer" className="text-sm text-blue-500 hover:underline line-clamp-1">{(c as any).contentData}</a>
                                         </div>
                                     </div>
                                     <button onClick={() => deleteContent(c.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">

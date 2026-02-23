@@ -18,17 +18,26 @@ export interface CreateSubjectChapterRequest {
 export interface ChapterContent {
     id: string;
     chapterId: string;
+    classId?: number;
+    subjectId?: number;
     title: string;
-    contentType: 'TEXT' | 'VIDEO' | 'PDF' | 'LINK';
-    contentData: string;
+    textContent?: string;
+    videoUrl?: string;
+    pdfUrl?: string;
+    linkUrl?: string;
     sequenceOrder: number;
 }
 
 export interface CreateChapterContentRequest {
     title: string;
-    contentType: 'TEXT' | 'VIDEO' | 'PDF' | 'LINK';
-    contentData: string;
-    sequenceOrder: number;
+    classId: string;
+    subjectId: string;
+    chapterId?: string;
+    textContent?: string;
+    videoUrl?: string;
+    pdfUrl?: string;
+    linkUrl?: string;
+    sequenceOrder?: number;
 }
 
 export interface QuestionOption {

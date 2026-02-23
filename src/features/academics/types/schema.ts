@@ -22,6 +22,8 @@ export const subjectSchema = z.object({
   name: z.string().min(1, 'Subject name is required'),
   code: z.string().min(1, 'Subject code is required'),
   classId: z.string().min(1, 'Class is required'),
+  maxMarks: z.number().optional(),
+  passingMarks: z.number().optional(),
 });
 
 export type ExamTermFormData = z.infer<typeof examTermSchema>;

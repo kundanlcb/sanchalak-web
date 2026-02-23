@@ -6,15 +6,15 @@ import { PaymentGatewayMock } from '../components/PaymentGatewayMock';
 
 export const FeePaymentPage: React.FC = () => {
   // const { user } = useAuth(); // Assuming we have logged in user
-  const { 
-    ledger, transactions, isProcessing, error, 
-    fetchLedger, fetchTransactions, initiatePayment 
+  const {
+    ledger, transactions, isProcessing, error,
+    fetchLedger, fetchTransactions, initiatePayment
   } = usePayment();
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // MOCK: Hardcode student ID for demo if user context doesn't have it
-  const studentId = 'STU-2026-001'; 
+  const studentId = 'STU-2026-001';
   const studentName = 'Raj Kumar';
 
   useEffect(() => {
@@ -37,15 +37,15 @@ export const FeePaymentPage: React.FC = () => {
   };
 
   if (isProcessing && !ledger) {
-    return <div className="p-8 text-center">Loading Fee Details...</div>;
+    return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading Fee Details...</div>;
   }
 
   if (error) {
-    return <div className="p-8 text-center text-red-600">{error}</div>;
+    return <div className="p-8 text-center text-red-600 dark:text-red-400">{error}</div>;
   }
 
   if (!ledger) {
-    return <div className="p-8 text-center text-gray-500">No fee records found for this student.</div>;
+    return <div className="p-8 text-center text-gray-500 dark:text-gray-400">No fee records found for this student.</div>;
   }
 
   return (
@@ -57,10 +57,10 @@ export const FeePaymentPage: React.FC = () => {
         </div>
       </div>
 
-      <StudentFeeLedger 
-        ledger={ledger} 
-        transactions={transactions} 
-        onPayNow={handlePayNow} 
+      <StudentFeeLedger
+        ledger={ledger}
+        transactions={transactions}
+        onPayNow={handlePayNow}
       />
 
       <PaymentGatewayMock

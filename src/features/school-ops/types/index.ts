@@ -43,7 +43,8 @@ export const RoutineSchema = z.object({
   id: z.coerce.number(),
   classId: z.coerce.number(), // FK to Class.id
   day: z.enum(DAYS_OF_WEEK),
-  period: z.enum(GLOBAL_PERIODS),
+  period: z.string(),
+  periodIndex: z.number().optional(),
   subjectId: z.coerce.number(), // FK to Subject.id
   teacherId: z.coerce.number(), // FK to Teacher.id
 });
@@ -58,9 +59,18 @@ export type Routine = z.infer<typeof RoutineSchema>;
 // --- Aggregated Types ---
 
 export interface RoutineCell {
-  period: typeof GLOBAL_PERIODS[number];
+  period: string; // Modified from typeof GLOBAL_PERIODS[number] to dynamic string
   day: typeof DAYS_OF_WEEK[number];
   entry?: Routine; // If undefined, cell is empty/free
+}
+
+export interface TimetableSlot {
+  id?: number;
+  name: string;
+  startTime: string; // "HH:mm:ss"
+  endTime: string;
+  isBreak: boolean;
+  orderIndex: number;
 }
 export interface SchoolRolePermission {
   id: string;

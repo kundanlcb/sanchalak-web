@@ -25,7 +25,7 @@ export const ExamScheduleConfig: React.FC = () => {
 
     const classOptions = classes.map((c: any) => ({
         value: String(c.id),
-        label: c.name,
+        label: c.className || String(c.id),
     }));
 
     return (

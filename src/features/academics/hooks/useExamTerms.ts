@@ -4,6 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { academicApi } from '../../../api/instances';
+import { apiClient } from '../../../services/api/client';
 import type { ExamTermRequest } from '../../../api/models';
 import { type ExamTerm, type CreateExamTermRequest } from '../types';
 
@@ -34,9 +35,9 @@ export const useExamTerms = () => {
     mutationFn: async (data: CreateExamTermRequest) => {
       // Map local request to API request (omit classes)
       const request: ExamTermRequest = {
-        name: data.name,
-        startDate: data.startDate,
-        endDate: data.endDate,
+        name: data.name || '',
+        startDate: data.startDate || '',
+        endDate: data.endDate || '',
       };
       const response = await academicApi.createTerm({ examTermRequest: request });
 
@@ -70,11 +71,12 @@ export const useExamTerms = () => {
     mutationKey: ['examTerms', 'update'],
     mutationFn: async ({ id, data }: { id: string; data: Partial<CreateExamTermRequest> }) => {
       const request: ExamTermRequest = {
-        name: data.name,
-        startDate: data.startDate,
-        endDate: data.endDate,
+        name: data.name || '',
+        startDate: data.startDate || '',
+        endDate: data.endDate || '',
       };
-      const response = await academicApi.updateTerm(Number(id), { examTermRequest: request });
+      // Use imported axios or fetch instead of missing generated api
+      const response = await apiClient.put(`/api/academic/terms/${id}`, request);
       return response.data;
     },
     onMutate: async ({ id, data }) => {
@@ -95,12 +97,33 @@ export const useExamTerms = () => {
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['examTerms'] }),
   });
 
+  // --- Mutation: Delete exam term ---
+  const deleteMutation = useMutation({
+    mutationKey: ['examTerms', 'delete'],
+    mutationFn: async (id: string) => {
+      // AcademicControllerApi.deleteTerm is not generated, call axios directly
+      return await apiClient.delete(`/api/academic/terms/${id}`);
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['examTerms'] });
+      const previous = queryClient.getQueryData<ExamTerm[]>(['examTerms']);
+
+      queryClient.setQueryData<ExamTerm[]>(['examTerms'], (old) => {
+        return (old ?? []).filter((term) => term.id !== id);
+      });
+      return { previous };
+    },
+    onError: (_e, _d, ctx) => queryClient.setQueryData(['examTerms'], ctx?.previous),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['examTerms'] }),
+  });
+
   return {
     examTerms,
-    isLoading: isLoading || createMutation.isPending || updateMutation.isPending,
-    error: queryError?.message ?? createMutation.error?.message ?? updateMutation.error?.message ?? null,
+    isLoading: isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
+    error: queryError?.message ?? createMutation.error?.message ?? updateMutation.error?.message ?? deleteMutation.error?.message ?? null,
     createExamTerm: createMutation.mutateAsync,
     updateExamTerm: updateMutation.mutateAsync,
+    deleteExamTerm: deleteMutation.mutateAsync,
     refetch,
   };
 };

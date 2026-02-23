@@ -16,7 +16,7 @@ export const FeeStructureList: React.FC<FeeStructureListProps> = ({
   onDelete
 }) => {
   if (structures.length === 0) {
-    return <div className="text-gray-500 py-8 text-center bg-white rounded shadow">No fee structures defined yet.</div>;
+    return <div className="text-gray-500 dark:text-gray-400 py-8 text-center bg-white dark:bg-gray-800 rounded shadow border border-transparent dark:border-gray-700 transition-colors">No fee structures defined yet.</div>;
   }
 
   // Group by Class

@@ -72,7 +72,7 @@ export const MarksGrid: React.FC<MarksGridProps> = ({
                 key={studentIdStr}
                 student={{ ...student, studentID: String(student.id) }}
                 marksObtained={displayMark}
-                maxMarks={subject.maxMarks}
+                maxMarks={subject.maxMarks || 100}
                 isUpdating={false}
                 onUpdate={(val) => onUpdateMark(studentIdStr, val)}
               />

@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import * as authService from './authService';
+import { queryClient } from '../../../lib/queryClient';
 import type { User, AuthContextType, LoginOTPResponse } from '../types/auth.types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -106,12 +107,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear local state regardless of API success
-      sessionStorage.removeItem('authToken');
-      sessionStorage.removeItem('refreshToken');
-      sessionStorage.removeItem('user');
+      // 1. Clear session storage completely
+      sessionStorage.clear();
+
+      // 2. Comprehensive localStorage cleanup (preserve theme)
+      const themePref = localStorage.getItem('theme');
+      localStorage.clear();
+      if (themePref) {
+        localStorage.setItem('theme', themePref);
+      }
+
+      // 3. Clear query cache
+      queryClient.clear();
+
+      // 4. Reset local state
       setUser(null);
       setIsLoading(false);
+
+      // 5. Force redirect to login to ensure fresh start
+      window.location.href = '/login';
     }
   };
 

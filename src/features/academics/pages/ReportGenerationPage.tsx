@@ -52,7 +52,7 @@ export const ReportGenerationPage: React.FC = () => {
 
         const subjectMarks = marks.map(mark => {
             const subject = subjects.find(s => s.id === mark.subjectId);
-            const maxMarks = subject?.maxMarks || 100;
+            const maxMarks = (subject as any)?.maxMarks || 100;
             const percentage = (mark.marksObtained / maxMarks) * 100;
 
             let grade = 'F';
@@ -191,14 +191,14 @@ export const ReportGenerationPage: React.FC = () => {
                                 key={student.id}
                                 onClick={() => setSelectedStudentId(String(student.id))}
                                 className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all ${selectedStudentId === String(student.id)
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 ring-1 ring-blue-500'
-                                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent'
+                                    ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 ring-1 ring-blue-500'
+                                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${selectedStudentId === String(student.id)
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                                         }`}>
                                         {student.rollNumber || '#'}
                                     </div>

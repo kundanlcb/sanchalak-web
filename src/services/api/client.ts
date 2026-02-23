@@ -41,10 +41,17 @@ apiClient.interceptors.response.use(
       const isMasterData = error.config?.url?.includes('/api/platform/v1/masters');
 
       if (!isMasterData) {
-        sessionStorage.removeItem('authToken');
-        sessionStorage.removeItem('user');
+        // 1. Clear session storage completely
+        sessionStorage.clear();
 
-        // Only redirect if not already on login page
+        // 2. Comprehensive localStorage cleanup (preserve theme)
+        const themePref = localStorage.getItem('theme');
+        localStorage.clear();
+        if (themePref) {
+          localStorage.setItem('theme', themePref);
+        }
+
+        // 3. Force redirect to login which will also clear in-memory cache
         if (!window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }

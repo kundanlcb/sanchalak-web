@@ -47,7 +47,7 @@ const simulateParentNotification = (student: Student, date: string, status: Atte
 👤 Student: ${student.name} (ID: ${student.id})
 📅 Date: ${date}
 ⚠️  Status: ${status}
-📚 Class: ${student.classID}
+📚 Class: ${(student as any).classID || student.classId}
 
 Message: Your child ${student.name} was marked ${status.toUpperCase()} on ${date}.
 ${status === 'Absent' ? 'Please contact the school if this is unexpected.' : ''}
@@ -261,13 +261,13 @@ export const handleGetClassAttendanceSheet = async (request: GetClassAttendanceS
   const firstRecord = dateAttendances[0];
 
   // Find class detail
-  const classObj = db.classes.find(c => c.classID === String(request.classId));
+  const classObj = db.classes.find(c => (c as any).classID === String(request.classId) || c.id === Number(request.classId));
   const className = classObj
     ? (classObj.className || `Class ${classObj.grade}-${classObj.section}`)
     : String(request.classId);
 
   return {
-    classID: String(request.classId),
+    classId: String(request.classId),
     className,
     date: request.date,
     totalStudents,

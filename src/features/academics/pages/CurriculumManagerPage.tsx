@@ -2,38 +2,45 @@
  * CurriculumManagerPage — Unified content & question manager
  * Shows all curriculum content across classes with filterable tabs
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructure';
 import { useSubjects } from '../hooks/useSubjects';
 import { useChapters } from '../hooks/curriculum/useChapters';
 import { useAllContent } from '../hooks/curriculum/useAllContent';
+import type { ChapterContent } from '../types/curriculum';
 import { useAllQuestions } from '../hooks/curriculum/useAllQuestions';
 import { Select } from '../../../components/common/Select';
 import { Button } from '../../../components/common/Button';
 import { Modal } from '../../../components/common/Modal';
 import { Input } from '../../../components/common/Input';
 import {
-    FileText, Video, Image, HelpCircle, Plus, Loader2, Trash2, Filter,
-    ChevronLeft, ChevronRight
+    FileText, Video, HelpCircle, Plus, Loader2, Trash2, Filter,
+    ChevronLeft, ChevronRight, Upload, Link as LinkIcon
 } from 'lucide-react';
 
-type ContentTab = 'text' | 'video' | 'image' | 'questions';
+type ContentTab = 'content' | 'questions';
 
 export const CurriculumManagerPage: React.FC = () => {
     // ─── Filters ───
     const [selectedClassId, setSelectedClassId] = useState('');
     const [selectedSubjectId, setSelectedSubjectId] = useState('');
     const [selectedChapterId, setSelectedChapterId] = useState('');
-    const [activeTab, setActiveTab] = useState<ContentTab>('text');
+    const [activeTab, setActiveTab] = useState<ContentTab>('content');
     const [contentPage, setContentPage] = useState(1);
     const [questionsPage, setQuestionsPage] = useState(1);
 
     // ─── Add Modal ───
     const [showAddModal, setShowAddModal] = useState(false);
     const [addTitle, setAddTitle] = useState('');
-    const [addContentData, setAddContentData] = useState('');
-    const [addContentType, setAddContentType] = useState<'TEXT' | 'VIDEO' | 'PDF' | 'LINK'>('TEXT');
+    const [addTextContent, setAddTextContent] = useState('');
+    const [addVideoUrl, setAddVideoUrl] = useState('');
+    const [addPdfUrl, setAddPdfUrl] = useState('');
+    const [addLinkUrl, setAddLinkUrl] = useState('');
     const [addChapterId, setAddChapterId] = useState('');
+    const [addClassId, setAddClassId] = useState('');
+    const [addSubjectId, setAddSubjectId] = useState('');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     // Question fields
     const [addQuestionText, setAddQuestionText] = useState('');
     const [addQuestionType, setAddQuestionType] = useState<'MCQ' | 'TRUE_FALSE' | 'SUBJECTIVE'>('MCQ');
@@ -73,9 +80,8 @@ export const CurriculumManagerPage: React.FC = () => {
         return subjects.filter(s => String(s.classId) === selectedClassId || s.classId === 'all');
     }, [subjects, selectedClassId]);
 
-    const textContents = useMemo(() => contents.filter(c => c.contentType === 'TEXT' || c.contentType === 'PDF'), [contents]);
-    const videoContents = useMemo(() => contents.filter(c => c.contentType === 'VIDEO' || c.contentType === 'LINK'), [contents]);
-    const imageContents = useMemo(() => contents.filter(c => c.contentType !== 'TEXT' && c.contentType !== 'PDF' && c.contentType !== 'VIDEO' && c.contentType !== 'LINK'), [contents]);
+    // No separate tab filtering needed — multi-type content all shows together
+    const allContents = contents;
 
     const isLoading = classesLoading || subjectsLoading || contentLoading || questionsLoading;
 
@@ -96,14 +102,28 @@ export const CurriculumManagerPage: React.FC = () => {
     };
 
     const handleAddContent = async () => {
-        if (!addChapterId) return;
+        if (!addClassId || !addSubjectId) return;
         try {
+            let pdfUrl = addPdfUrl;
+            // For file uploads, read as base64 data URL
+            if (selectedFile) {
+                pdfUrl = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(selectedFile);
+                });
+                if (!addTitle) setAddTitle(selectedFile.name);
+            }
             await createContent({
-                chapterId: addChapterId,
-                title: addTitle,
-                contentType: addContentType,
-                contentData: addContentData,
-                sequenceOrder: contents.length + 1,
+                classId: addClassId,
+                subjectId: addSubjectId,
+                chapterId: addChapterId || undefined,
+                title: addTitle || 'Untitled',
+                textContent: addTextContent || undefined,
+                videoUrl: addVideoUrl || undefined,
+                pdfUrl: pdfUrl || undefined,
+                linkUrl: addLinkUrl || undefined,
             });
             resetAddForm();
         } catch (e) {
@@ -129,23 +149,31 @@ export const CurriculumManagerPage: React.FC = () => {
     const resetAddForm = () => {
         setShowAddModal(false);
         setAddTitle('');
-        setAddContentData('');
-        setAddContentType('TEXT');
+        setAddTextContent('');
+        setAddVideoUrl('');
+        setAddPdfUrl('');
+        setAddLinkUrl('');
         setAddChapterId('');
+        setAddClassId('');
+        setAddSubjectId('');
+        setSelectedFile(null);
         setAddQuestionText('');
         setAddQuestionType('MCQ');
         setAddQuestionMarks('1');
     };
 
+    const addFilteredSubjects = useMemo(() => {
+        if (!addClassId) return subjects;
+        return subjects.filter(s => String(s.classId) === addClassId);
+    }, [subjects, addClassId]);
+
     // ─── Tab Config ───
     const tabs: { key: ContentTab; label: string; icon: React.ElementType; count: number }[] = [
-        { key: 'text', label: 'Text / PDF', icon: FileText, count: activeTab === 'text' ? contentTotalElements : textContents.length },
-        { key: 'video', label: 'Video', icon: Video, count: activeTab === 'video' ? contentTotalElements : videoContents.length },
-        { key: 'image', label: 'Image', icon: Image, count: activeTab === 'image' ? contentTotalElements : imageContents.length },
+        { key: 'content', label: 'Content', icon: FileText, count: contentTotalElements },
         { key: 'questions', label: 'Questions', icon: HelpCircle, count: questionTotalElements },
     ];
 
-    const currentContents = activeTab === 'text' ? textContents : activeTab === 'video' ? videoContents : imageContents;
+    // content is shown in a single unified list
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -288,24 +316,23 @@ export const CurriculumManagerPage: React.FC = () => {
                                 </div>
                             ))}
                         </div>
-                    )
-                ) : (
-                    /* Content Tabs (Text/PDF, Video, Image) */
-                    currentContents.length === 0 ? (
-                        <EmptyState label={`No ${activeTab} content found`} onAdd={() => setShowAddModal(true)} />
+                    )) : (
+                    /* Content */
+                    allContents.length === 0 ? (
+                        <EmptyState label="No content found" onAdd={() => setShowAddModal(true)} />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {currentContents.map(c => (
+                            {allContents.map((c: ChapterContent) => (
                                 <div
                                     key={c.id}
                                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <ContentIcon type={c.contentType} />
-                                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 font-medium">
-                                                {c.contentType}
-                                            </span>
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                            {c.textContent && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"><FileText className="w-3 h-3" />Text</span>}
+                                            {c.videoUrl && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"><Video className="w-3 h-3" />Video</span>}
+                                            {c.pdfUrl && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"><FileText className="w-3 h-3" />PDF</span>}
+                                            {c.linkUrl && <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"><LinkIcon className="w-3 h-3" />Link</span>}
                                         </div>
                                         <button
                                             onClick={() => deleteContent({ chapterId: c.chapterId, contentId: c.id })}
@@ -315,7 +342,8 @@ export const CurriculumManagerPage: React.FC = () => {
                                         </button>
                                     </div>
                                     <h4 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{c.title}</h4>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{c.contentData}</p>
+                                    {c.textContent && <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-1">{c.textContent}</p>}
+                                    {c.linkUrl && <a href={c.linkUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-500 hover:underline truncate block">{c.linkUrl}</a>}
                                 </div>
                             ))}
                         </div>
@@ -336,25 +364,25 @@ export const CurriculumManagerPage: React.FC = () => {
             {/* Add New Modal */}
             <Modal isOpen={showAddModal} onClose={resetAddForm} title={activeTab === 'questions' ? 'Add New Question' : 'Add New Content'}>
                 <div className="space-y-4 pt-4">
-                    {/* Chapter selector — required for both content and questions */}
+                    {/* Class + Subject required, Chapter optional */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Select
-                            label="Class"
-                            value={addChapterId ? '' : selectedClassId}
-                            onChange={(e) => { setSelectedClassId(e.target.value); setSelectedSubjectId(''); setAddChapterId(''); }}
+                            label="Class *"
+                            value={addClassId}
+                            onChange={(e) => { setAddClassId(e.target.value); setAddSubjectId(''); setAddChapterId(''); }}
                             options={[{ label: 'Select Class', value: '' }, ...classes.map(c => ({ label: c.className || `Grade ${c.grade}-${c.section}`, value: String(c.id) }))]}
                         />
                         <Select
-                            label="Subject"
-                            value={selectedSubjectId}
-                            onChange={(e) => { setSelectedSubjectId(e.target.value); setAddChapterId(''); }}
-                            options={[{ label: 'Select Subject', value: '' }, ...filteredSubjects.map(s => ({ label: s.name, value: String(s.id) }))]}
+                            label="Subject *"
+                            value={addSubjectId}
+                            onChange={(e) => { setAddSubjectId(e.target.value); setAddChapterId(''); }}
+                            options={[{ label: 'Select Subject', value: '' }, ...addFilteredSubjects.map(s => ({ label: s.name, value: String(s.id) }))]}
                         />
                         <Select
-                            label="Chapter"
+                            label="Chapter (optional)"
                             value={addChapterId}
                             onChange={e => setAddChapterId(e.target.value)}
-                            options={[{ label: 'Select Chapter', value: '' }, ...chapters.map(ch => ({ label: ch.name, value: ch.id }))]}
+                            options={[{ label: 'No Chapter', value: '' }, ...chapters.map(ch => ({ label: ch.name, value: ch.id }))]}
                         />
                     </div>
 
@@ -386,26 +414,87 @@ export const CurriculumManagerPage: React.FC = () => {
                         </>
                     ) : (
                         <>
-                            <Input label="Title" value={addTitle} onChange={e => setAddTitle(e.target.value)} placeholder="Content title" />
-                            <Select
-                                label="Content Type"
-                                value={addContentType}
-                                onChange={e => setAddContentType(e.target.value as 'TEXT' | 'VIDEO' | 'PDF' | 'LINK')}
-                                options={[
-                                    { label: 'Text', value: 'TEXT' },
-                                    { label: 'PDF', value: 'PDF' },
-                                    { label: 'Video', value: 'VIDEO' },
-                                    { label: 'Link', value: 'LINK' },
-                                ]}
-                            />
+                            <Input label="Title *" value={addTitle} onChange={e => setAddTitle(e.target.value)} placeholder="Content title" />
+
+                            {/* Text Content */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content / URL</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <span className="inline-flex items-center gap-1.5"><FileText className="w-4 h-4 text-blue-500" /> Text Content</span>
+                                </label>
                                 <textarea
-                                    value={addContentData}
-                                    onChange={e => setAddContentData(e.target.value)}
-                                    rows={4}
+                                    value={addTextContent}
+                                    onChange={e => setAddTextContent(e.target.value)}
+                                    rows={3}
                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter content text, paste a URL, or describe the material..."
+                                    placeholder="Enter content text (optional)..."
+                                />
+                            </div>
+
+                            {/* Video URL */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <span className="inline-flex items-center gap-1.5"><Video className="w-4 h-4 text-purple-500" /> Video URL</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    value={addVideoUrl}
+                                    onChange={e => setAddVideoUrl(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="https://youtube.com/watch?v=... or video URL (optional)"
+                                />
+                            </div>
+
+                            {/* PDF Upload / URL */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <span className="inline-flex items-center gap-1.5"><Upload className="w-4 h-4 text-red-500" /> PDF</span>
+                                </label>
+                                <div className="flex gap-2">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept=".pdf"
+                                        onChange={e => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                setSelectedFile(file);
+                                                setAddPdfUrl('');
+                                                if (!addTitle) setAddTitle(file.name);
+                                            }
+                                        }}
+                                        className="hidden"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-colors text-sm text-gray-500 dark:text-gray-400"
+                                    >
+                                        <Upload className="w-4 h-4" />
+                                        {selectedFile ? selectedFile.name : 'Upload PDF'}
+                                    </button>
+                                    <span className="text-xs text-gray-400 self-center">or</span>
+                                    <input
+                                        type="url"
+                                        value={addPdfUrl}
+                                        onChange={e => { setAddPdfUrl(e.target.value); setSelectedFile(null); }}
+                                        disabled={!!selectedFile}
+                                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                                        placeholder="PDF URL (optional)"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Link URL */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <span className="inline-flex items-center gap-1.5"><LinkIcon className="w-4 h-4 text-green-500" /> External Link</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    value={addLinkUrl}
+                                    onChange={e => setAddLinkUrl(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="https://example.com/resource (optional)"
                                 />
                             </div>
                         </>
@@ -415,7 +504,7 @@ export const CurriculumManagerPage: React.FC = () => {
                         <Button type="button" variant="outline" onClick={resetAddForm}>Cancel</Button>
                         <Button
                             onClick={activeTab === 'questions' ? handleAddQuestion : handleAddContent}
-                            disabled={!addChapterId}
+                            disabled={activeTab === 'questions' ? !addChapterId : (!addClassId || !addSubjectId)}
                         >
                             {activeTab === 'questions' ? 'Add Question' : 'Add Content'}
                         </Button>
@@ -437,16 +526,7 @@ const EmptyState: React.FC<{ label: string; onAdd: () => void }> = ({ label, onA
     </div>
 );
 
-const ContentIcon: React.FC<{ type: string }> = ({ type }) => {
-    const iconClass = "w-4 h-4";
-    switch (type) {
-        case 'TEXT': return <FileText className={`${iconClass} text-blue-500`} />;
-        case 'PDF': return <FileText className={`${iconClass} text-red-500`} />;
-        case 'VIDEO': return <Video className={`${iconClass} text-purple-500`} />;
-        case 'LINK': return <Video className={`${iconClass} text-indigo-500`} />;
-        default: return <Image className={`${iconClass} text-green-500`} />;
-    }
-};
+
 
 const PaginationControls: React.FC<{
     currentPage: number;
