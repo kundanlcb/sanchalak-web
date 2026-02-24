@@ -11,8 +11,6 @@ import type { UserRole } from '../../../utils/permissions/checkPermission';
 // ============================================================================
 
 /** Generated request/response DTOs — use these in services that call the API directly */
-export type { OtpRequestDto } from '../../../api/models/otp-request-dto';
-export type { OtpVerifyDto } from '../../../api/models/otp-verify-dto';
 export type { RefreshTokenRequestDto } from '../../../api/models/refresh-token-request-dto';
 export type { LoginRequest } from '../../../api/models/login-request';
 export type { AuthTokenResponseDto } from '../../../api/models/auth-token-response-dto';
@@ -42,21 +40,7 @@ export interface User {
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 
-// Login with OTP flow
-export interface LoginOTPRequest {
-  mobileNumber: string;
-}
 
-export interface LoginOTPResponse {
-  success: boolean;
-  message: string;
-  otpSentAt: string;
-}
-
-export interface VerifyOTPRequest {
-  mobileNumber: string;
-  otp: string;
-}
 
 // Login with Email/Password (Admin only)
 export interface LoginEmailRequest {
@@ -99,8 +83,6 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  loginWithOTP: (mobileNumber: string) => Promise<LoginOTPResponse>;
-  verifyOTP: (mobileNumber: string, otp: string) => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;

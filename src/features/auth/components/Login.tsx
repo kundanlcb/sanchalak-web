@@ -1,32 +1,15 @@
-/**
- * Login Page
- * Dual authentication: OTP (all users) and Email/Password (Admin only)
- */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/authContext';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
-import { OTPInput } from './OTPInput';
 import { useTranslation } from 'react-i18next';
-import { Phone, Mail, Loader2 } from 'lucide-react';
-import { cn } from '../../../utils/cn';
-
-type LoginMode = 'otp' | 'email';
+import { Mail, Loader2 } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { loginWithOTP, verifyOTP, loginWithEmail, isLoading, isAuthenticated } = useAuth();
-
-  const [mode, setMode] = useState<LoginMode>('otp');
-
-  // OTP flow state
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpMessage, setOtpMessage] = useState('');
+  const { loginWithEmail, isLoading, isAuthenticated } = useAuth();
 
   // Email flow state
   const [email, setEmail] = useState('');
@@ -41,42 +24,6 @@ export const Login: React.FC = () => {
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
-
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!mobileNumber || mobileNumber.length < 10) {
-      setError('Please enter a valid mobile number');
-      return;
-    }
-
-    try {
-      const response = await loginWithOTP(mobileNumber);
-      setOtpSent(true);
-      setOtpMessage(response.message);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send OTP');
-    }
-  };
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (otp.length !== 6) {
-      setError('Please enter the 6-digit OTP');
-      return;
-    }
-
-    try {
-      await verifyOTP(mobileNumber, otp);
-      // Navigation will happen via useEffect when isAuthenticated becomes true
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'OTP verification failed');
-      setOtp('');
-    }
-  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,13 +40,6 @@ export const Login: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
-  };
-
-  const handleModeSwitch = (newMode: LoginMode) => {
-    setMode(newMode);
-    setError('');
-    setOtpSent(false);
-    setOtp('');
   };
 
   return (
@@ -120,35 +60,10 @@ export const Login: React.FC = () => {
 
         {/* Login Card */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-soft-lg p-8 border border-gray-200 dark:border-gray-800 animate-in" style={{ animationDelay: '100ms' }}>
-          {/* Mode Tabs */}
-          <div className="flex gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <button
-              onClick={() => handleModeSwitch('otp')}
-              className={cn(
-                'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
-                'flex items-center justify-center gap-2',
-                mode === 'otp'
-                  ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-              )}
-            >
-              <Phone className="w-4 h-4" />
-              Mobile OTP
-            </button>
-            <button
-              onClick={() => handleModeSwitch('email')}
-              className={cn(
-                'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
-                'flex items-center justify-center gap-2',
-                mode === 'email'
-                  ? 'bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-              )}
-            >
-              <Mail className="w-4 h-4" />
-              Admin Login
-            </button>
-          </div>
+          <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Mail className="w-5 h-5 text-blue-500" />
+            Login to your account
+          </h2>
 
           {/* Error Message */}
           {error && (
@@ -157,129 +72,47 @@ export const Login: React.FC = () => {
             </div>
           )}
 
-          {/* OTP Login Form */}
-          {mode === 'otp' && !otpSent && (
-            <form onSubmit={handleSendOTP} className="space-y-4">
-              <Input
-                label="Mobile Number"
-                type="tel"
-                placeholder="+91 9876543210"
-                value={mobileNumber}
-                onChange={(e) => setMobileNumber(e.target.value)}
-                disabled={isLoading}
-              />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Sending OTP...
-                  </>
-                ) : (
-                  'Send OTP'
-                )}
-              </Button>
-            </form>
-          )}
-
-          {/* OTP Verification Form */}
-          {mode === 'otp' && otpSent && (
-            <form onSubmit={handleVerifyOTP} className="space-y-6">
-              {otpMessage && (
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md text-green-700 dark:text-green-400 text-sm">
-                  {otpMessage}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Enter 6-digit OTP
-                </label>
-                <OTPInput
-                  value={otp}
-                  onChange={setOtp}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setOtpSent(false);
-                    setOtp('');
-                    setError('');
-                  }}
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isLoading || otp.length !== 6}
-                  className="flex-1"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    'Verify OTP'
-                  )}
-                </Button>
-              </div>
-            </form>
-          )}
-
           {/* Email/Password Login Form */}
-          {mode === 'email' && (
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-              <Input
-                label="Email"
-                type="email"
-                placeholder="admin@sanchalan.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-              />
-              <Input
-                label="Password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  t('common.login')
-                )}
-              </Button>
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                Admin credentials: admin@sanchalan.com / admin123
-              </p>
-            </form>
-          )}
+          <form onSubmit={handleEmailLogin} className="space-y-4">
+            <Input
+              label="Email"
+              type="email"
+              placeholder="admin@sanchalan.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+            />
+            <Input
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+            />
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                t('common.login')
+              )}
+            </Button>
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+              Default credentials: Use your registered email and password
+            </p>
+          </form>
         </div>
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-          For testing: Use OTP <span className="font-mono font-bold">123456</span> for any mobile number
+          © {new Date().getFullYear()} {t('common.appName')}. All rights reserved.
         </p>
       </div>
     </div>

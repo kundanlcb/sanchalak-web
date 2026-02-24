@@ -6,7 +6,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import * as authService from './authService';
 import { queryClient } from '../../../lib/queryClient';
-import type { User, AuthContextType, LoginOTPResponse } from '../types/auth.types';
+import type { User, AuthContextType } from '../types/auth.types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -37,41 +37,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  /**
-   * Step 1: Request OTP for mobile number
-   */
-  const loginWithOTP = async (mobileNumber: string): Promise<LoginOTPResponse> => {
-    setIsLoading(true);
-    try {
-      const response = await authService.loginWithOTP(mobileNumber);
-      return response;
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  /**
-   * Step 2: Verify OTP and complete login
-   */
-  const verifyOTP = async (mobileNumber: string, otp: string): Promise<void> => {
-    setIsLoading(true);
-    try {
-      const response = await authService.verifyOTP(mobileNumber, otp);
-
-      // Store auth data
-      sessionStorage.setItem('authToken', response.token);
-      sessionStorage.setItem('refreshToken', response.refreshToken);
-      sessionStorage.setItem('user', JSON.stringify(response.user));
-
-      setUser(response.user);
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   /**
    * Login with email and password (Admin only)
@@ -152,8 +118,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     isAuthenticated: !!user,
     isLoading,
-    loginWithOTP,
-    verifyOTP,
     loginWithEmail,
     logout,
     refreshToken: refreshTokenFunc,
