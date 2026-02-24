@@ -4,11 +4,11 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - VITE_API_BASE_URL=/api
+        - VITE_API_BASE_URL=https://lhgsvq3v-8082.inc1.devtunnels.ms/
         - VITE_USE_MOCK_API=false
     container_name: sanchalan_frontend
     ports:
-      - "5174:80"
+      - "8085:80"
     restart: unless-stopped
     # If using in a full stack, you might want to link it with sanchalak-be
     # networks:
