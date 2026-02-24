@@ -34,7 +34,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             id={selectId}
             className={cn(
               'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm',
-              'pr-10 appearance-none', // Space for icon and remove native arrow
+              'pr-12 appearance-none', // Space for icon and remove native arrow
               'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100',
@@ -52,7 +52,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                 </option>
               ))}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 pointer-events-none" />
+          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400 pointer-events-none" />
         </div>
         {error && (
           <p className="mt-1 text-sm text-red-600 dark:text-red-400">
