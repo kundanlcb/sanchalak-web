@@ -12,7 +12,7 @@ import { Input } from '../../../components/common/Input';
 import { Skeleton } from '../../../components/common/Skeleton';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
 import { useToast } from '../../../components/common/ToastContext';
-import { getStudents, deleteStudent, bulkImportStudents } from '../services/studentService';
+import { getStudents, deleteStudent, bulkImportStudents, approveStudent, getDrafts } from '../services/studentService';
 import type { Student, StudentListQuery } from '../types/student.types';
 
 export const StudentList: React.FC = () => {
@@ -23,6 +23,9 @@ export const StudentList: React.FC = () => {
   const [importing, setImporting] = useState(false);
   const [error, setError] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'ACTIVE' | 'DRAFT'>('ACTIVE');
+  const [approvingId, setApprovingId] = useState<number | null>(null);
+  const [drafts, setDrafts] = useState<any[]>([]);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const downloadRef = React.useRef<HTMLAnchorElement>(null);
@@ -59,7 +62,7 @@ export const StudentList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
   const limit = 50;
 
   // Fetch students
@@ -68,20 +71,46 @@ export const StudentList: React.FC = () => {
       setLoading(true);
       setError('');
 
-      const query: StudentListQuery = {
-        page: currentPage,
-        limit,
-        search: searchTerm,
-        sortBy: 'rollNo',
-        sortOrder: 'asc',
-      };
+      if (activeTab === 'DRAFT') {
+        const response = await getDrafts();
+        if (response.success) {
+          // Map staging records to a compatible student-like shape for the table
+          const mappedDrafts = response.drafts.map(d => ({
+            id: d.id,
+            name: (d.firstName || '') + (d.lastName ? ' ' + d.lastName : ''),
+            email: d.email,
+            admissionNumber: d.admissionNo || 'N/A',
+            classId: d.classId || 0, // Assuming classId is a number, default to 0 or handle string
+            section: d.section || '', // Assuming section is a string, default to empty
+            rollNumber: d.rollNo || 'N/A',
+            status: 'DRAFT',
+            mobileNumber: d.phone,
+            processed: d.processed,
+            errorMessage: d.errorMessage
+          }));
+          setDrafts(mappedDrafts);
+          setTotalItems(mappedDrafts.length);
+          setTotalPages(1); // Drafts are not paginated from API, so treat as single page
+        }
+      } else {
+        const query: StudentListQuery = {
+          page: currentPage,
+          limit,
+          search: searchTerm,
+          status: activeTab,
+          sortBy: 'rollNo',
+          sortOrder: 'asc',
+        };
 
-      const response = await getStudents(query);
-      setStudents(response.students);
-      setTotal(response.total);
-      setTotalPages(response.totalPages);
+        const response = await getStudents(query);
+        if (response.success) {
+          setStudents(response.students);
+          setTotalItems(response.total);
+          setTotalPages(response.totalPages);
+        }
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch students');
+      setError('Failed to fetch students. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -102,7 +131,20 @@ export const StudentList: React.FC = () => {
 
   useEffect(() => {
     fetchStudents();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, activeTab]);
+
+  const handleApprove = async (id: number) => {
+    try {
+      setApprovingId(id);
+      await approveStudent(id);
+      showToast('Student onboarded successfully', 'success');
+      fetchStudents();
+    } catch (err) {
+      showToast('Failed to onboard student', 'error');
+    } finally {
+      setApprovingId(null);
+    }
+  };
 
   // Debounce search
   useEffect(() => {
@@ -124,7 +166,7 @@ export const StudentList: React.FC = () => {
               Manage student profiles
             </p>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-              {total} total
+              {totalItems} total
             </span>
           </div>
         </div>
@@ -194,6 +236,28 @@ export const StudentList: React.FC = () => {
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <button
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'ACTIVE'
+            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          onClick={() => { setActiveTab('ACTIVE'); setCurrentPage(1); }}
+        >
+          Active Students
+        </button>
+        <button
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'DRAFT'
+            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          onClick={() => { setActiveTab('DRAFT'); setCurrentPage(1); }}
+        >
+          Drafts (Imported)
+        </button>
       </div>
 
       {/* Search and Filters */}
@@ -286,7 +350,7 @@ export const StudentList: React.FC = () => {
             </table>
           </div>
         </div>
-      ) : students.length === 0 ? (
+      ) : (activeTab === 'ACTIVE' ? students : drafts).length === 0 ? (
         <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-soft">
           <div className="max-w-sm mx-auto">
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -298,7 +362,7 @@ export const StudentList: React.FC = () => {
             <p className="text-gray-500 dark:text-gray-500 text-sm mt-2">
               {searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first student'}
             </p>
-            {!searchTerm && (
+            {!searchTerm && activeTab === 'ACTIVE' && (
               <Button onClick={() => navigate('/students/new')} className="mt-6">
                 <Plus className="w-4 h-4 mr-2" />
                 Add First Student
@@ -336,11 +400,11 @@ export const StudentList: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {students.map((student) => (
+                {(activeTab === 'ACTIVE' ? students : drafts).map((student) => (
                   <tr
                     key={student.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/students/${student.id}`)}
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${activeTab === 'ACTIVE' ? 'cursor-pointer' : ''}`}
+                    onClick={() => activeTab === 'ACTIVE' && navigate(`/students/${student.id}`)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {student.id}
@@ -375,9 +439,11 @@ export const StudentList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'Active'
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'ACTIVE'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                          : student.status === 'DRAFT'
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                           }`}
                       >
                         {student.status}
@@ -385,6 +451,26 @@ export const StudentList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                       <div className="flex justify-end gap-2">
+                        {student.status === 'DRAFT' && !student.processed && (
+                          <div className="flex flex-col items-end gap-1">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleApprove(student.id);
+                              }}
+                              disabled={approvingId === student.id}
+                            >
+                              {approvingId === student.id ? 'Onboarding...' : 'Onboard'}
+                            </Button>
+                            {student.errorMessage && (
+                              <span className="text-[10px] text-red-500 max-w-[150px] truncate" title={student.errorMessage}>
+                                {student.errorMessage}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
@@ -419,7 +505,7 @@ export const StudentList: React.FC = () => {
           {totalPages > 1 && (
             <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, total)} of {total} students
+                Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, totalItems)} of {totalItems} students
               </div>
               <div className="flex gap-2">
                 <Button

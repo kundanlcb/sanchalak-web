@@ -67,7 +67,7 @@ export type Gender = string;
 
 export type BloodGroup = string;
 
-export type StudentStatus = 'Active' | 'Inactive' | 'Transferred' | 'Graduated' | 'Suspended';
+export type StudentStatus = 'ACTIVE' | 'DRAFT' | 'INACTIVE' | 'TRANSFERRED' | 'GRADUATED' | 'SUSPENDED';
 
 export interface Address {
   street: string;

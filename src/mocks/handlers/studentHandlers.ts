@@ -235,7 +235,7 @@ export async function handleCreateStudent(
     medicalConditions: request.medicalConditions || [],
     allergies: request.allergies || [],
     isActive: true,
-    status: 'Active',
+    status: 'ACTIVE',
     createdBy: 'user-001', // Mock user
     createdDate: new Date().toISOString(),
   };
@@ -336,7 +336,7 @@ export async function handleDeleteStudent(
   db.students[studentIndex] = {
     ...db.students[studentIndex],
     isActive: false,
-    status: 'Inactive',
+    status: 'INACTIVE',
     updatedBy: 'user-001',
     updatedDate: new Date().toISOString(),
   };

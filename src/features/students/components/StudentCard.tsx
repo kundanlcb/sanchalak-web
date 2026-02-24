@@ -43,8 +43,8 @@ export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) =>
           <p className="text-xs text-gray-500 dark:text-gray-400">Class: {student.classId} • {student.admissionNumber}</p>
           <div className="mt-1">
             <span
-              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${student.status === 'Active'
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+              className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${student.status === 'ACTIVE'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
                 : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                 }`}
             >

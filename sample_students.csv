@@ -1,0 +1,5 @@
+fullName,email,phone,admissionNo,className,parentName,parentPhone
+John Doe,john.doe@example.com,9876543210,ADM001,Class 10,James Doe,9876543211
+Jane Smith,jane.smith@example.com,9876543212,ADM002,Class 10,Mary Smith,9876543213
+Bob Johnson,bob.johnson@example.com,9876543214,ADM003,Class 9,Robert Johnson,9876543215
+Alice Brown,alice.brown@example.com,9876543216,ADM004,Class 9,Arthur Brown,9876543217

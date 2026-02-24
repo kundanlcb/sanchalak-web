@@ -192,9 +192,9 @@ export const StudentDetail: React.FC = () => {
                   {student.name}
                 </h1>
                 <span
-                  className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium self-center sm:self-auto ${student.status === 'Active'
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border ${student.status === 'ACTIVE'
+                    ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                    : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800'
                     }`}
                 >
                   {student.status}

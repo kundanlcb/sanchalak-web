@@ -140,6 +140,27 @@ export async function bulkImportStudents(
 }
 
 /**
+ * Get list of draft (staged) students
+ */
+export async function getDrafts(): Promise<{ success: boolean; drafts: any[] }> {
+  const { apiClient } = await import('../../../services/api/client');
+  const response = await apiClient.get('/api/academics/students/drafts');
+  return {
+    success: true,
+    drafts: response.data
+  };
+}
+
+/**
+ * Approve a draft student (onboard them)
+ */
+export async function approveStudent(id: number): Promise<{ success: boolean }> {
+  const { apiClient } = await import('../../../services/api/client');
+  await apiClient.put(`/api/academics/students/${id}/approve`);
+  return { success: true };
+}
+
+/**
  * Search students by name (with debounce in component)
  */
 export async function searchStudents(

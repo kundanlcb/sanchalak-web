@@ -24,8 +24,7 @@ import {
   Clock,
   ClipboardList,
   LayoutDashboard,
-  LogOut,
-  ChevronDown
+  LogOut
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useSidebar } from './SidebarContext';
