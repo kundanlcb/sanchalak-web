@@ -1,0 +1,19 @@
+services:
+  sanchalan-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=/api
+        - VITE_USE_MOCK_API=false
+    container_name: sanchalan_frontend
+    ports:
+      - "5174:80"
+    restart: unless-stopped
+    # If using in a full stack, you might want to link it with sanchalak-be
+    # networks:
+    #   - sanchalan-network
+
+    # networks:
+    #   sanchalan-network:
+    #     driver: bridge

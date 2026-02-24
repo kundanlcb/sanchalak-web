@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.gitignore
+.vscode
+.DS_Store
+*.log
+npm-debug.log*
+README.md
+specs
+docs
+docker-compose.yml
+Dockerfile
+nginx.conf
+.env
+.env.local
+.antigravityignore
