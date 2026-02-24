@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { Select } from '../../../components/common/Select';
 import type { Holiday, CreateHolidayRequest, HolidayType } from '../types/holiday';
 
 interface HolidayModalProps {
@@ -114,21 +115,15 @@ export const HolidayModal: React.FC<HolidayModalProps> = ({
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Holiday Type
-                        </label>
-                        <select
-                            value={formData.type}
-                            onChange={(e) => setFormData({ ...formData, type: e.target.value as HolidayType })}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all outline-none"
-                        >
-                            <option value="INSTITUTIONAL">Institutional</option>
-                            {/* Admins usually don't set National manually, but they can if they want */}
-                            <option value="NATIONAL">National</option>
-                            <option value="REGIONAL">Regional</option>
-                        </select>
-                    </div>
+                    <Select
+                        label="Holiday Type"
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value as HolidayType })}
+                    >
+                        <option value="INSTITUTIONAL">Institutional</option>
+                        <option value="NATIONAL">National</option>
+                        <option value="REGIONAL">Regional</option>
+                    </Select>
 
                     <div className="flex gap-4 pt-2">
                         <label className="flex items-center gap-2 cursor-pointer">

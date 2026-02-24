@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X, AlertCircle } from 'lucide-react';
 import { cn } from '../../../utils/cn';
+import { Select } from '../../../components/common/Select';
 import * as noticeService from '../services/noticeService';
 import type { CreateNoticeRequest } from '../types/notice.types';
 
@@ -51,7 +52,7 @@ export const NoticeForm: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
-        
+
         {error && (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg flex items-center gap-2">
             <AlertCircle className="w-5 h-5" />
@@ -94,42 +95,34 @@ export const NoticeForm: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Audience */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Audience *
-            </label>
-            <select
-              name="audience"
-              value={formData.audience}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            >
-              <option value="All">All Users</option>
-              <option value="Students">Students Only</option>
-              <option value="Parents">Parents Only</option>
-              <option value="Teachers">Teachers Only</option>
-              <option value="Staff">Staff Only</option>
-              <option value="Class">Specific Class</option>
-            </select>
-          </div>
+          <Select
+            label="Audience"
+            name="audience"
+            required
+            value={formData.audience}
+            onChange={handleChange}
+          >
+            <option value="All">All Users</option>
+            <option value="Students">Students Only</option>
+            <option value="Parents">Parents Only</option>
+            <option value="Teachers">Teachers Only</option>
+            <option value="Staff">Staff Only</option>
+            <option value="Class">Specific Class</option>
+          </Select>
 
           {/* Priority */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Priority *
-            </label>
-            <select
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Urgent">Urgent</option>
-            </select>
-          </div>
+          <Select
+            label="Priority"
+            name="priority"
+            required
+            value={formData.priority}
+            onChange={handleChange}
+          >
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+          </Select>
 
           {/* Expiry Date */}
           <div>

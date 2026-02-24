@@ -4,11 +4,11 @@ import {
     ShieldCheck,
     Save,
     UserCog,
-    ChevronRight,
     Info,
     CheckCircle2,
     Lock
 } from 'lucide-react';
+import { Select } from '../../../components/common/Select';
 import { schoolOpsApi } from '../services/api';
 import { cn } from '../../../utils/cn';
 
@@ -89,26 +89,18 @@ const RoleManagementPage: React.FC = () => {
                             <UserCog className="w-6 h-6" />
                         </div>
                         <div className="min-w-[320px] md:min-w-[400px]">
-                            <label htmlFor="role-select" className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
-                                School Role
-                            </label>
-                            <div className="relative group">
-                                <select
-                                    id="role-select"
-                                    value={selectedRole}
-                                    onChange={(e) => setSelectedRole(e.target.value)}
-                                    className="block w-full pl-4 pr-10 py-2.5 text-base border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 sm:text-sm rounded-xl transition-all shadow-sm appearance-none font-medium group-hover:border-gray-300 dark:group-hover:border-gray-500"
-                                >
-                                    {ROLES.map((role) => (
-                                        <option key={role.id} value={role.id}>
-                                            {role.name} — {role.description}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-                                    <ChevronRight className="h-5 w-5 rotate-90" aria-hidden="true" />
-                                </div>
-                            </div>
+                            <Select
+                                id="role-select"
+                                label="School Role"
+                                value={selectedRole}
+                                onChange={(e) => setSelectedRole(e.target.value)}
+                            >
+                                {ROLES.map((role) => (
+                                    <option key={role.id} value={role.id}>
+                                        {role.name} — {role.description}
+                                    </option>
+                                ))}
+                            </Select>
                         </div>
                     </div>
 

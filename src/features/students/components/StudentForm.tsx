@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
+import { Select } from '../../../components/common/Select';
 import { useToast } from '../../../components/common/ToastContext';
 import { createStudent, updateStudent, getStudent } from '../services/studentService';
 import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructure';
@@ -224,54 +225,46 @@ export const StudentForm: React.FC = () => {
               error={errors.academicYear?.message}
             />
 
-            {/* Class Selection - Ideally this would be a dynamic select from API */}
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Class <span className="text-red-500">*</span>
-              </label>
-              <Controller
-                name="classId"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    {...field}
-                    value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : '')}
-                  >
-                    <option value="">Select Class</option>
-                    {classes.map((cls) => (
-                      <option key={cls.id} value={cls.id}>
-                        {cls.className || `Grade ${cls.grade}-${cls.section}`}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              />
-              {errors.classId && <p className="text-sm text-red-500 mt-1">{errors.classId.message}</p>}
-            </div>
+            {/* Class Selection */}
+            <Controller
+              name="classId"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Class"
+                  required
+                  {...field}
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : '')}
+                  error={errors.classId?.message}
+                >
+                  <option value="">Select Class</option>
+                  {classes.map((cls) => (
+                    <option key={cls.id} value={cls.id}>
+                      {cls.className || `Grade ${cls.grade}-${cls.section}`}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            />
 
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Section <span className="text-red-500">*</span>
-              </label>
-              <Controller
-                name="section"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    {...field}
-                  >
-                    <option value="">Select Section</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                  </select>
-                )}
-              />
-              {errors.section && <p className="text-sm text-red-500 mt-1">{errors.section.message}</p>}
-            </div>
+            <Controller
+              name="section"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Section"
+                  required
+                  {...field}
+                  error={errors.section?.message}
+                >
+                  <option value="">Select Section</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                </Select>
+              )}
+            />
 
             <Input
               label="Roll Number"
@@ -308,48 +301,39 @@ export const StudentForm: React.FC = () => {
               error={errors.dateOfBirth?.message}
             />
 
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Gender <span className="text-red-500">*</span>
-              </label>
-              <Controller
-                name="gender"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    {...field}
-                  >
-                    <option value="">Select Gender</option>
-                    {genders.map((g) => (
-                      <option key={g.code} value={g.code}>{g.label}</option>
-                    ))}
-                  </select>
-                )}
-              />
-              {errors.gender && <p className="text-sm text-red-500 mt-1">{errors.gender.message}</p>}
-            </div>
+            <Controller
+              name="gender"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Gender"
+                  required
+                  {...field}
+                  error={errors.gender?.message}
+                >
+                  <option value="">Select Gender</option>
+                  {genders.map((g) => (
+                    <option key={g.code} value={g.code}>{g.label}</option>
+                  ))}
+                </Select>
+              )}
+            />
 
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Blood Group
-              </label>
-              <Controller
-                name="bloodGroup"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    {...field}
-                  >
-                    <option value="">Select Blood Group</option>
-                    {bloodGroups.map((bg) => (
-                      <option key={bg.code} value={bg.code}>{bg.label}</option>
-                    ))}
-                  </select>
-                )}
-              />
-            </div>
+            <Controller
+              name="bloodGroup"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Blood Group"
+                  {...field}
+                >
+                  <option value="">Select Blood Group</option>
+                  {bloodGroups.map((bg) => (
+                    <option key={bg.code} value={bg.code}>{bg.label}</option>
+                  ))}
+                </Select>
+              )}
+            />
           </div>
         </div>
 
@@ -421,29 +405,23 @@ export const StudentForm: React.FC = () => {
               error={errors.primaryParent?.name?.message}
             />
 
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Relationship <span className="text-red-500">*</span>
-              </label>
-              <Controller
-                name="primaryParent.relationship"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    {...field}
-                  >
-                    <option value="">Select Relationship</option>
-                    {relations.map((r) => (
-                      <option key={r.code} value={r.code}>{r.label}</option>
-                    ))}
-                  </select>
-                )}
-              />
-              {errors.primaryParent?.relationship && (
-                <p className="text-sm text-red-500 mt-1">{errors.primaryParent.relationship.message}</p>
+            <Controller
+              name="primaryParent.relationship"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Relationship"
+                  required
+                  {...field}
+                  error={errors.primaryParent?.relationship?.message}
+                >
+                  <option value="">Select Relationship</option>
+                  {relations.map((r) => (
+                    <option key={r.code} value={r.code}>{r.label}</option>
+                  ))}
+                </Select>
               )}
-            </div>
+            />
 
             <Input
               label="Mobile Number"

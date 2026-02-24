@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, FileText } from 'lucide-react';
+import { Select } from '../../../components/common/Select';
 import { useLeavePolicies } from '../hooks/useLeavePolicies';
 import type { LeaveRequest } from '../services/leaveRequestApi';
 
@@ -52,20 +53,17 @@ export const ApplyLeaveModal: React.FC<ApplyLeaveModalProps> = ({
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Leave Type</label>
-                        <select
-                            required
-                            value={formData.leaveTypeId}
-                            onChange={(e) => setFormData({ ...formData, leaveTypeId: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="">Select Type</option>
-                            {leaveTypes.map(type => (
-                                <option key={type.id} value={type.id}>{type.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <Select
+                        label="Leave Type"
+                        required
+                        value={formData.leaveTypeId}
+                        onChange={(e) => setFormData({ ...formData, leaveTypeId: e.target.value })}
+                    >
+                        <option value="">Select Type</option>
+                        {leaveTypes.map(type => (
+                            <option key={type.id} value={type.id}>{type.name}</option>
+                        ))}
+                    </Select>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
