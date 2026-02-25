@@ -76,7 +76,6 @@ const navGroups: NavGroup[] = [
     name: 'Student Ops',
     icon: Users,
     items: [
-      { name: 'Students', path: '/students', icon: Users, roles: ['Admin', 'Teacher', 'Staff'], featureCode: 'STUDENT_MGMT' },
       { name: 'Attendance', path: '/attendance', icon: ClipboardList, featureCode: 'ATTENDANCE' },
       { name: 'Homework', path: '/homework', icon: BookOpen, featureCode: 'HOMEWORK' },
     ]
@@ -85,7 +84,6 @@ const navGroups: NavGroup[] = [
     name: 'HR & Staff',
     icon: FileUser,
     items: [
-      { name: 'Teachers', path: '/admin/teachers', icon: UserCog, roles: ['Admin'], featureCode: 'TEACHERS' },
       { name: 'Leave Policies', path: '/admin/hr/leave-policies', icon: FileUser, roles: ['Admin'], featureCode: 'HR' },
       { name: 'Leave Approvals', path: '/admin/hr/leave-approvals', icon: ClipboardList, roles: ['Admin'], featureCode: 'HR' },
     ]
@@ -94,7 +92,6 @@ const navGroups: NavGroup[] = [
     name: 'Finance',
     icon: Wallet,
     items: [
-      { name: 'Fees', path: '/admin/finance/fees', icon: Wallet, roles: ['Admin'], featureCode: 'FEES' },
       { name: 'Pay Fees', path: '/finance/pay', icon: CreditCard, roles: ['Student', 'Parent'], featureCode: 'FEES' },
       { name: 'Payroll', path: '/admin/finance/payroll', icon: Banknote, roles: ['Admin'], featureCode: 'PAYROLL' },
       { name: 'Finance', path: '/admin/finance/reports', icon: TrendingUp, roles: ['Admin'], featureCode: 'FINANCE' },
@@ -104,7 +101,6 @@ const navGroups: NavGroup[] = [
     name: 'More',
     icon: Settings,
     items: [
-      { name: 'Notices', path: '/notices', icon: Bell, featureCode: 'NOTICES' },
       { name: 'School Template', path: '/admin/settings/school-template', icon: School, roles: ['Admin'] },
       { name: 'Settings', path: '/settings', icon: Settings },
       { name: 'Access Control', path: '/admin/permissions', icon: ShieldCheck, roles: ['Admin'] },
