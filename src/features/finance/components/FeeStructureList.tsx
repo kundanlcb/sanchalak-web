@@ -88,14 +88,16 @@ export const FeeStructureList: React.FC<FeeStructureListProps> = ({
         </div>
       ))}
 
-      {/* Dashed add button below list */}
-      <button
-        onClick={onAdd}
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-400 dark:text-gray-500 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-600 transition-colors"
-      >
-        <Plus className="h-4 w-4" />
-        Add Fee Structure
-      </button>
+      {/* Add button – right-aligned below list */}
+      <div className="flex justify-end">
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <Plus className="h-4 w-4" />
+          Add Fee Structure
+        </button>
+      </div>
     </div>
   );
 };

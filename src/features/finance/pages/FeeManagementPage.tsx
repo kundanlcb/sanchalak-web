@@ -7,7 +7,6 @@ import { FeeStructureForm } from '../components/FeeStructureForm';
 import { GenerateBillsTab } from '../components/GenerateBillsTab';
 import { FeeLedgerTab } from '../components/FeeLedgerTab';
 import { Modal } from '../../../components/common/Modal';
-import { Button } from '../../../components/common/Button';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
 import { useToast } from '../../../components/common/ToastContext';
 import type { FeeCategoryFormData, FeeStructureFormData } from '../types/schema';
@@ -238,14 +237,16 @@ export const FeeManagementPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Add button below */}
-              <button
-                onClick={() => setIsCategoryModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-400 dark:text-gray-500 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 dark:hover:border-blue-600 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                Add Fee Category
-              </button>
+              {/* Add button – right-aligned */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setIsCategoryModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  Add Fee Category
+                </button>
+              </div>
             </>
           )}
         </div>
