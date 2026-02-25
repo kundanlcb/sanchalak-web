@@ -73,7 +73,7 @@ export const LeavePolicyPage: React.FC = () => {
 
     if (error) {
         return (
-            <div className="p-4 bg-red-50 text-red-600 rounded-lg flex items-center gap-2">
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg flex items-center gap-2 border border-red-100 dark:border-red-800/30">
                 <AlertCircle className="w-5 h-5" />
                 Failed to load leave policies. Please try again later.
             </div>
@@ -115,7 +115,7 @@ export const LeavePolicyPage: React.FC = () => {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-gray-750 border-b border-gray-200 dark:border-gray-700">
+                            <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Policy Name</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quota (Days)</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>

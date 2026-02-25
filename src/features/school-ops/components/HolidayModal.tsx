@@ -59,8 +59,8 @@ export const HolidayModal: React.FC<HolidayModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mb-20 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg mb-20 animate-in slide-in-from-bottom-4 duration-300 border border-gray-100 dark:border-gray-700">
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                         {holidayToEdit ? 'Edit Holiday' : 'Add New Holiday'}
@@ -126,24 +126,24 @@ export const HolidayModal: React.FC<HolidayModalProps> = ({
                     </Select>
 
                     <div className="flex gap-4 pt-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer group">
                             <input
                                 type="checkbox"
                                 checked={formData.applicableToStudents}
                                 onChange={(e) => setFormData({ ...formData, applicableToStudents: e.target.checked })}
-                                className="w-4 h-4 text-blue-600 dark:text-blue-400 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-2"
+                                className="w-4 h-4 text-blue-600 dark:text-blue-500 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-2 bg-white dark:bg-gray-700"
                             />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Applies to Students</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">Applies to Students</span>
                         </label>
-
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        +
+                        <label className="flex items-center gap-2 cursor-pointer group">
                             <input
                                 type="checkbox"
                                 checked={formData.applicableToStaff}
                                 onChange={(e) => setFormData({ ...formData, applicableToStaff: e.target.checked })}
-                                className="w-4 h-4 text-blue-600 dark:text-blue-400 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-2"
+                                className="w-4 h-4 text-blue-600 dark:text-blue-500 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-2 bg-white dark:bg-gray-700"
                             />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">Applies to Staff</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">Applies to Staff</span>
                         </label>
                     </div>
 

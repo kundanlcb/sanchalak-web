@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Plus, Upload, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Select } from '../../../components/common/Select';
@@ -14,7 +14,9 @@ import { DOMAINS, getMasterValues, type MasterValue } from '../../../services/ap
 
 // Validation Schema
 const studentSchema = z.object({
-  name: z.string().min(2, 'Name is required'),
+  firstName: z.string().min(1, 'First name is required'),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, 'Last name is required'),
   admissionNumber: z.string().min(1, 'Admission number is required'),
   admissionDate: z.string().min(1, 'Admission date is required'),
   rollNumber: z.coerce.number().min(1, 'Roll number is required'),
@@ -23,11 +25,21 @@ const studentSchema = z.object({
   academicYear: z.string().min(1, 'Academic year is required'),
 
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
-  gender: z.string().min(1, 'Gender is required'), // Dynamic now
-  bloodGroup: z.string().optional(), // Dynamic now
+  gender: z.string().min(1, 'Gender is required'),
+  bloodGroup: z.string().optional(),
 
   mobileNumber: z.string().regex(/^\d{10}$/, 'Valid 10-digit mobile number is required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
+
+  // New identity fields — all optional for backward compat
+  fatherName: z.string().optional(),
+  motherName: z.string().optional(),
+  studentAadhar: z.string().regex(/^\d{12}$/, 'Must be 12 digits').optional().or(z.literal('')),
+  fatherAadhar: z.string().regex(/^\d{12}$/, 'Must be 12 digits').optional().or(z.literal('')),
+  motherAadhar: z.string().regex(/^\d{12}$/, 'Must be 12 digits').optional().or(z.literal('')),
+  nationality: z.string().optional(),
+  isDisabled: z.boolean().optional(),
+  photoUrl: z.string().optional(),
 
   address: z.object({
     street: z.string().min(1, 'Street address is required'),
@@ -35,11 +47,13 @@ const studentSchema = z.object({
     state: z.string().min(1, 'State is required'),
     pincode: z.string().min(1, 'Pincode is required'),
     country: z.string(),
+    village: z.string().optional(),
+    district: z.string().optional(),
   }),
 
   primaryParent: z.object({
     name: z.string().min(1, 'Parent name is required'),
-    relationship: z.string().min(1, 'Relationship is required'), // Dynamic now
+    relationship: z.string().min(1, 'Relationship is required'),
     mobileNumber: z.string().regex(/^\d{10}$/, 'Valid 10-digit mobile number is required'),
     email: z.string().email('Invalid email').optional().or(z.literal('')),
     occupation: z.string().optional(),
@@ -105,7 +119,9 @@ export const StudentForm: React.FC = () => {
           const data = response.student;
 
           reset({
-            name: data.name,
+            firstName: data.firstName || '',
+            middleName: data.middleName || '',
+            lastName: data.lastName || '',
             admissionNumber: data.admissionNumber,
             admissionDate: data?.admissionDate ? data.admissionDate.split('T')[0] : '',
             rollNumber: data.rollNumber,
@@ -117,6 +133,7 @@ export const StudentForm: React.FC = () => {
             bloodGroup: data.bloodGroup || '',
             mobileNumber: data.mobileNumber,
             email: data.email || '',
+            photoUrl: data.profilePhoto || '',
             address: data.address,
             primaryParent: {
               name: data?.primaryParent?.name || '',
@@ -142,14 +159,9 @@ export const StudentForm: React.FC = () => {
   const onSubmit = async (data: StudentFormData) => {
     setLoading(true);
     try {
-      const nameParts = data.name.trim().split(/\s+/);
-      const firstName = nameParts[0];
-      const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-
       const payload = {
         ...data,
-        firstName,
-        lastName,
+        name: `${data.firstName} ${data.middleName ? data.middleName + ' ' : ''}${data.lastName}`.trim(),
         rollNo: data.rollNumber,
         classId: Number(data.classId)
       };
@@ -283,13 +295,87 @@ export const StudentForm: React.FC = () => {
             Personal Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
+            {/* Premium Photo Row - Dedicated */}
+            <div className="md:col-span-3 flex justify-center sm:justify-start pb-6 mb-2">
+              <div className="relative group">
+                <div className="h-28 w-28 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900/50 transition-all group-hover:border-blue-500 dark:group-hover:border-blue-400 shadow-sm">
+                  {control._formValues.photoUrl ? (
+                    <img src={control._formValues.photoUrl} alt="Student" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-gray-400">
+                      <Plus className="w-8 h-8" />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Photo</span>
+                    </div>
+                  )}
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                    <Upload className="w-8 h-8 text-white" />
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      if (isEditMode && studentId) {
+                        try {
+                          setLoading(true);
+                          const { uploadUrl, publicUrl } = await import('../services/studentService').then(s => s.getPhotoUploadUrl(studentId, file.name, file.type));
+                          await import('../services/studentService').then(s => s.uploadFileToUrl(uploadUrl, file, file.type));
+                          reset({ ...control._formValues, photoUrl: publicUrl });
+                          showToast('Photo uploaded successfully', 'success');
+                        } catch (err) {
+                          showToast('Failed to upload photo', 'error');
+                        } finally {
+                          setLoading(false);
+                        }
+                      } else {
+                        showToast('Please upload photo after creating the student record', 'info');
+                      }
+                    }}
+                  />
+                </div>
+                {control._formValues.photoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => reset({ ...control._formValues, photoUrl: '' })}
+                    className="absolute -top-2 -right-2 p-1.5 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors shadow-lg z-20 border border-white dark:border-gray-800"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <div className="absolute -bottom-2 -left-2 -right-2 text-center pointer-events-none">
+                  <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-tighter bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-700">
+                    {control._formValues.photoUrl ? 'Change' : 'Upload'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
               <Input
-                label="Full Name"
+                label="First Name"
                 required
-                {...register('name')}
-                error={errors.name?.message}
-                placeholder="First Middle Last"
+                {...register('firstName')}
+                error={errors.firstName?.message}
+                placeholder="First Name"
+                className="text-lg font-semibold"
+              />
+              <Input
+                label="Middle Name"
+                {...register('middleName')}
+                placeholder="Middle Name"
+                className="text-lg font-semibold"
+              />
+              <Input
+                label="Last Name"
+                required
+                {...register('lastName')}
+                error={errors.lastName?.message}
+                placeholder="Last Name"
+                className="text-lg font-semibold"
               />
             </div>
 
@@ -334,6 +420,91 @@ export const StudentForm: React.FC = () => {
                 </Select>
               )}
             />
+          </div>
+        </div>
+
+        {/* Aadhar & Identity Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <span className="w-1 h-6 bg-indigo-500 rounded-full"></span>
+            Identity & Aadhar Details
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Input
+              label="Father's Name"
+              {...register('fatherName')}
+              placeholder="Father's full name"
+            />
+            <Input
+              label="Mother's Name"
+              {...register('motherName')}
+              placeholder="Mother's full name"
+            />
+            <div /> {/* spacer */}
+
+            <Input
+              label="Student Aadhar No."
+              {...register('studentAadhar')}
+              placeholder="12-digit Aadhar number"
+              maxLength={12}
+              error={errors.studentAadhar?.message}
+            />
+            <Input
+              label="Father's Aadhar No."
+              {...register('fatherAadhar')}
+              placeholder="12-digit Aadhar number"
+              maxLength={12}
+              error={errors.fatherAadhar?.message}
+            />
+            <Input
+              label="Mother's Aadhar No."
+              {...register('motherAadhar')}
+              placeholder="12-digit Aadhar number"
+              maxLength={12}
+              error={errors.motherAadhar?.message}
+            />
+
+            <Input
+              label="Nationality"
+              {...register('nationality')}
+              placeholder="Indian"
+            />
+
+            <div className="flex flex-col gap-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Disability
+              </label>
+              <Controller
+                name="isDisabled"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex items-center gap-4 mt-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="false"
+                        checked={field.value === false || field.value === undefined}
+                        onChange={() => field.onChange(false)}
+                        className="accent-blue-500"
+                      />
+                      <span className="text-sm">No</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="true"
+                        checked={field.value === true}
+                        onChange={() => field.onChange(true)}
+                        className="accent-blue-500"
+                      />
+                      <span className="text-sm">Yes</span>
+                    </label>
+                  </div>
+                )}
+              />
+            </div>
+
+
           </div>
         </div>
 
@@ -387,6 +558,16 @@ export const StudentForm: React.FC = () => {
               {...register('address.pincode')}
               error={errors.address?.pincode?.message}
               maxLength={6}
+            />
+            <Input
+              label="Village"
+              {...register('address.village')}
+              placeholder="Village name"
+            />
+            <Input
+              label="District"
+              {...register('address.district')}
+              placeholder="District name"
             />
           </div>
         </div>

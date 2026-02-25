@@ -55,20 +55,28 @@ export const FeeStructureForm: React.FC<FeeStructureFormProps> = ({
         options={categories.map(c => ({ value: c.id, label: c.name }))}
       />
 
-      <Input
-        type="number"
-        label="Amount (₹)"
-        {...register('amount', { valueAsNumber: true })}
-        error={errors.amount?.message}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input
+          type="number"
+          label="Amount (₹)"
+          {...register('amount', {
+            setValueAs: v => v === "" ? undefined : parseFloat(v)
+          })}
+          error={errors.amount?.message}
+        />
 
-      <Input
-        type="number"
-        label="Due Day (of month)"
-        {...register('dueDateDay', { valueAsNumber: true })}
-        error={errors.dueDateDay?.message}
-        placeholder="e.g. 10"
-      />
+        <Input
+          type="number"
+          label="Due Day (of month)"
+          {...register('dueDateDay', {
+            setValueAs: v => v === "" ? undefined : parseInt(v, 10)
+          })}
+          error={errors.dueDateDay?.message}
+          placeholder="e.g. 10"
+          min={1}
+          max={31}
+        />
+      </div>
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button variant="outline" onClick={onCancel} type="button">Cancel</Button>

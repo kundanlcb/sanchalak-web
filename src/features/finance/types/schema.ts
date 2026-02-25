@@ -6,6 +6,7 @@ export const FeeCategorySchema = z.object({
   type: z.enum(['Tuition', 'Transport', 'Exam', 'Lab', 'Library', 'Activity', 'Other']),
   frequency: z.enum(['Monthly', 'Quarterly', 'Annual', 'OneTime']),
   isMandatory: z.boolean(),
+  defaultDueDateDay: z.number().min(1).max(31).optional(),
   active: z.boolean()
 });
 

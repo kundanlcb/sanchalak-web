@@ -21,6 +21,7 @@ export type { StudentProfileDto } from '../../../api/models/student-profile-dto'
 export interface Student {
   id: number;
   firstName?: string;
+  middleName?: string;
   lastName?: string;
   name: string;
   dateOfBirth?: string;
@@ -101,6 +102,7 @@ export interface CreateStudentRequest {
   bloodGroup?: BloodGroup;
   admissionDate: string;
   firstName?: string;
+  middleName?: string;
   lastName?: string;
   rollNo?: number;
   classId: number;

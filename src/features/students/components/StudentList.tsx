@@ -411,12 +411,21 @@ export const StudentList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                            <span className="font-medium text-primary-700">
-                              {(student.name || student.firstName || '?').charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                        <div className="h-10 w-10 flex-shrink-0 relative">
+                          {student.profilePhoto ? (
+                            <img
+                              src={student.profilePhoto}
+                              alt={student.name}
+                              className="h-10 w-10 rounded-xl object-cover shadow-sm border border-gray-100 dark:border-gray-700"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 flex items-center justify-center border border-blue-200/50 dark:border-blue-700/50">
+                              <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                {(student.name || student.firstName || '?').charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <div className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-gray-800 ${student.status === 'ACTIVE' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">

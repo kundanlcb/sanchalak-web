@@ -10,17 +10,30 @@ interface FeeCategoryFormProps {
   onSubmit: (data: FeeCategoryFormData) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
+  initialData?: Partial<FeeCategoryFormData>;
 }
 
-export const FeeCategoryForm: React.FC<FeeCategoryFormProps> = ({ onSubmit, onCancel, isLoading }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FeeCategoryFormData>({
+export const FeeCategoryForm: React.FC<FeeCategoryFormProps> = ({ onSubmit, onCancel, isLoading, initialData }) => {
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<FeeCategoryFormData>({
     resolver: zodResolver(FeeCategorySchema),
     defaultValues: {
       isMandatory: true,
       active: true,
-      frequency: 'Monthly'
+      frequency: 'Monthly',
+      ...initialData
     }
   });
+
+  React.useEffect(() => {
+    if (initialData) {
+      reset({
+        isMandatory: true,
+        active: true,
+        frequency: 'Monthly',
+        ...initialData
+      });
+    }
+  }, [initialData, reset]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -50,14 +63,28 @@ export const FeeCategoryForm: React.FC<FeeCategoryFormProps> = ({ onSubmit, onCa
         options={['Monthly', 'Quarterly', 'Annual', 'OneTime'].map(v => ({ value: v, label: v }))}
       />
 
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="isMandatory"
-          {...register('isMandatory')}
-          className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-        />
-        <label htmlFor="isMandatory" className="text-sm text-gray-700 dark:text-gray-300">Is Mandatory?</label>
+      <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="isMandatory"
+            {...register('isMandatory')}
+            className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+          />
+          <label htmlFor="isMandatory" className="text-sm text-gray-700 dark:text-gray-300">Is Mandatory?</label>
+        </div>
+
+        <div className="flex-1 max-w-[150px]">
+          <Input
+            type="number"
+            label="Default Due Day"
+            {...register('defaultDueDateDay', {
+              setValueAs: v => v === "" ? undefined : parseInt(v, 10)
+            })}
+            placeholder="1-31"
+            error={errors.defaultDueDateDay?.message}
+          />
+        </div>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">

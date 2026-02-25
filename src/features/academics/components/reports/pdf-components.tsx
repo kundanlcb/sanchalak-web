@@ -63,24 +63,26 @@ const styles = StyleSheet.create({
   },
 });
 
-export const ReportCardHeader = () => (
+export const ReportHeader = ({ title }: { title: string }) => (
   <View>
-      <View style={styles.headerContainer}>
-        <View>
-            <Text style={styles.schoolName}>Sanchalan High School</Text>
-            <Text style={styles.schoolAddress}>123 Academic Road, Knowledge City, INDIA</Text>
-        </View>
-        <View>
-            {/* Logo placeholder */}
-            <View style={{ width: 50, height: 50, backgroundColor: '#eee', borderRadius: 25 }} /> 
-        </View>
+    <View style={styles.headerContainer}>
+      <View>
+        <Text style={styles.schoolName}>Sanchalan High School</Text>
+        <Text style={styles.schoolAddress}>123 Academic Road, Knowledge City, INDIA</Text>
       </View>
-      <Text style={styles.reportTitle}>ANNUAL REPORT CARD</Text>
+      <View>
+        {/* Logo placeholder */}
+        <View style={{ width: 50, height: 50, backgroundColor: '#eee', borderRadius: 25 }} />
+      </View>
+    </View>
+    <Text style={styles.reportTitle}>{title}</Text>
   </View>
 );
 
+export const ReportCardHeader = () => <ReportHeader title="ANNUAL REPORT CARD" />;
+
 interface MarksTableProps {
-    data: Array<{ subject: string; max: number; obtained: number; grade: string }>;
+  data: Array<{ subject: string; max: number; obtained: number; grade: string }>;
 }
 
 export const MarksTable: React.FC<MarksTableProps> = ({ data }) => (
@@ -92,12 +94,12 @@ export const MarksTable: React.FC<MarksTableProps> = ({ data }) => (
       <View style={styles.tableColHeader}><Text style={styles.tableCellHeader}>Grade</Text></View>
     </View>
     {data.map((row, i) => (
-       <View style={styles.tableRow} key={i}>
-         <View style={styles.tableCol}><Text style={styles.tableCell}>{row.subject}</Text></View>
-         <View style={styles.tableCol}><Text style={styles.tableCell}>{row.max}</Text></View>
-         <View style={styles.tableCol}><Text style={styles.tableCell}>{row.obtained}</Text></View>
-         <View style={styles.tableCol}><Text style={styles.tableCell}>{row.grade}</Text></View>
-       </View>
+      <View style={styles.tableRow} key={i}>
+        <View style={styles.tableCol}><Text style={styles.tableCell}>{row.subject}</Text></View>
+        <View style={styles.tableCol}><Text style={styles.tableCell}>{row.max}</Text></View>
+        <View style={styles.tableCol}><Text style={styles.tableCell}>{row.obtained}</Text></View>
+        <View style={styles.tableCol}><Text style={styles.tableCell}>{row.grade}</Text></View>
+      </View>
     ))}
   </View>
 );

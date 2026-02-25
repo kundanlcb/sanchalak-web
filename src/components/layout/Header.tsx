@@ -3,40 +3,19 @@
  * Main navigation header with user profile and theme toggle
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { ThemeToggle } from '../common/ThemeToggle';
-import { LogOut, User, ChevronDown, Menu, Settings } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../features/auth/services/authContext';
 import { useSidebar } from './SidebarContext';
 import { GlobalSearch } from '../../features/dashboard/components/GlobalSearch';
-import { cn } from '../../utils/cn';
+import { FavoriteToggle } from '../common/FavoriteToggle';
 
 const Header: React.FC = () => {
   const { t } = useTranslation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toggleSidebar } = useSidebar();
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   // Don't render if not authenticated
   if (!isAuthenticated || !user) {
     return null;
@@ -77,72 +56,13 @@ const Header: React.FC = () => {
 
         {/* Right side: Theme toggle and user profile */}
         <div className="flex items-center gap-1 sm:gap-4">
+          {/* Favorite Toggle */}
+          <div className="hidden sm:block">
+            <FavoriteToggle />
+          </div>
+
           {/* Theme Toggle */}
           <ThemeToggle />
-
-          {/* User Profile Dropdown */}
-          <div className="relative" ref={menuRef}>
-            <div
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={cn(
-                "flex items-center gap-2 px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-lg cursor-pointer transition-colors max-w-[100px] sm:max-w-none",
-                isMenuOpen ? "bg-gray-100 dark:bg-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-800"
-              )}
-            >
-              {user.profilePhoto ? (
-                <img
-                  src={user.profilePhoto}
-                  alt={user.name}
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 flex-shrink-0"
-                />
-              ) : (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md flex-shrink-0">
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                </div>
-              )}
-              <div className="hidden md:block text-sm truncate">
-                <p className="font-medium text-gray-900 dark:text-white truncate">
-                  {user.name}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {user.role}
-                </p>
-              </div>
-              <ChevronDown className={cn(
-                "hidden sm:block w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 flex-shrink-0",
-                isMenuOpen && "rotate-180"
-              )} />
-            </div>
-
-            {/* Dropdown Menu */}
-            {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-gray-900 shadow-xl border border-gray-100 dark:border-gray-800 py-2 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-800 mb-1 lg:hidden">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.role}</p>
-                </div>
-
-                <button
-                  onClick={() => {
-                    navigate('/settings');
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  Account Settings
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  {t('common.logout')}
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </header>

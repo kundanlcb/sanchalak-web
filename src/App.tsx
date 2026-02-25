@@ -46,6 +46,8 @@ import { FeePaymentPage } from './features/finance/pages/FeePaymentPage';
 import { PayrollPage } from './features/payroll/pages/PayrollPage';
 import { FinancialReportsPage } from './features/analytics/pages/FinancialReportsPage';
 import { DashboardHome } from './features/dashboard/pages/DashboardHome';
+import { AccountPage } from './features/profile/pages/AccountPage';
+import { SchoolTemplatePage } from './features/settings/pages/SchoolTemplatePage';
 
 // Placeholder pages (will be replaced in Phase 6+) - Dashboard removed
 
@@ -335,6 +337,16 @@ function App() {
                 }
               />
               <Route
+                path="/admin/settings/school-template"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin']}>
+                    <AuthenticatedLayout>
+                      <SchoolTemplatePage />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/finance/pay"
                 element={
                   <ProtectedRoute allowedRoles={['Admin', 'Parent', 'Student']}>
@@ -413,6 +425,16 @@ function App() {
                   <ProtectedRoute>
                     <AuthenticatedLayout>
                       <div className="p-8 text-center text-gray-500">Settings coming soon...</div>
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/account"
+                element={
+                  <ProtectedRoute>
+                    <AuthenticatedLayout>
+                      <AccountPage />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
                 }

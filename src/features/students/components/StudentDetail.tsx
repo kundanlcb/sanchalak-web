@@ -168,42 +168,53 @@ export const StudentDetail: React.FC = () => {
 
         <div className="px-4 sm:px-6 pb-6">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 relative">
-            {/* Avatar */}
-            <div className="-mt-12 mx-auto sm:mx-0">
-              {student.profilePhoto ? (
-                <img
-                  src={student.profilePhoto}
-                  alt={student.name}
-                  className="h-24 w-24 sm:h-32 sm:w-32 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md"
-                />
-              ) : (
-                <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-md">
-                  <span className="text-3xl sm:text-5xl font-bold text-blue-600 dark:text-blue-400">
-                    {(student.name || student.firstName || '?').charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+            {/* Avatar - Premium Style */}
+            <div className="-mt-16 mx-auto sm:mx-0 relative">
+              <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-[2.5rem] bg-white dark:bg-gray-800 p-1.5 shadow-2xl border border-white/20">
+                {student.profilePhoto ? (
+                  <img
+                    src={student.profilePhoto}
+                    alt={student.name}
+                    className="h-full w-full rounded-[2rem] object-cover shadow-inner"
+                  />
+                ) : (
+                  <div className="h-full w-full rounded-[2rem] bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center border border-blue-200/50 dark:border-blue-700/50">
+                    <span className="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+                      {(student.name || student.firstName || '?').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Basic Info */}
-            <div className="pt-2 sm:pt-4 flex-1 text-center sm:text-left min-w-0">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                  {student.name}
-                </h1>
-                <span
-                  className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border ${student.status === 'ACTIVE'
-                    ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
-                    : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800'
-                    }`}
-                >
-                  {student.status}
-                </span>
+            {/* Basic Info - Refined Typography */}
+            <div className="pt-4 sm:pt-10 flex-1 text-center sm:text-left min-w-0">
+              <div className="mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-1">
+                  <h1 className="text-2xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+                    {student.name}
+                  </h1>
+                  <div className="flex justify-center sm:justify-start">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border transition-all shadow-sm ${student.status === 'ACTIVE'
+                      ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                      : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800'
+                      }`}>
+                      <span className={`h-2 w-2 rounded-full mr-2 ${student.status === 'ACTIVE' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                      {student.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">
+                  <span className="flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-2"></span>
+                    ID: {student.id}
+                  </span>
+                  <span className="text-gray-300 dark:text-gray-600">|</span>
+                  <span className="flex items-center">
+                    Adm: {student.admissionNumber}
+                  </span>
+                </div>
               </div>
-
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">
-                {student.id} • {student.admissionNumber}
-              </p>
 
               {/* Quick Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 py-4 border-t border-gray-100 dark:border-gray-700">

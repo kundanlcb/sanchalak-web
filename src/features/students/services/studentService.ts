@@ -161,6 +161,33 @@ export async function approveStudent(id: number): Promise<{ success: boolean }> 
 }
 
 /**
+ * Get presigned URL for student photo upload
+ */
+export async function getPhotoUploadUrl(
+  id: number,
+  fileName: string,
+  contentType: string
+): Promise<{ uploadUrl: string; publicUrl: string }> {
+  const { apiClient } = await import('../../../services/api/client');
+  const response = await apiClient.post(`/api/academics/students/${id}/photo-url`, null, {
+    params: { fileName, contentType }
+  });
+  return response.data;
+}
+
+/**
+ * Upload file to presigned URL
+ */
+export async function uploadFileToUrl(url: string, file: File, contentType: string): Promise<void> {
+  const axios = (await import('axios')).default;
+  await axios.put(url, file, {
+    headers: {
+      'Content-Type': contentType,
+    },
+  });
+}
+
+/**
  * Search students by name (with debounce in component)
  */
 export async function searchStudents(
