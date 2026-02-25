@@ -25,8 +25,26 @@ export const useFees = () => {
   const structuresQuery = useQuery<FeeStructure[]>({
     queryKey: ['fees', 'structures'],
     queryFn: async () => {
-      const res = await apiClient.get<FeeStructure[]>('/api/finance/structures');
-      return res.data;
+      const res = await apiClient.get<any[]>('/api/finance/structures');
+      // Flatten backend structures (nested items) into frontend FeeStructure format
+      const flattened: FeeStructure[] = [];
+      res.data.forEach(s => {
+        if (s.items && s.items.length > 0) {
+          s.items.forEach((item: any) => {
+            flattened.push({
+              id: `${s.id}-${item.id || Math.random()}`,
+              academicYear: s.academicYear,
+              classId: 'N/A', // Assignments are handled separately in backend
+              categoryId: item.categoryId.toString(),
+              amount: item.amount,
+              dueDateDay: 10, // Placeholder
+              name: s.name,
+              frequency: s.frequency
+            } as any);
+          });
+        }
+      });
+      return flattened;
     },
     staleTime: 10 * 60 * 1000,
   });
@@ -56,8 +74,28 @@ export const useFees = () => {
   const createStructureMutation = useMutation({
     mutationKey: ['fees', 'structure', 'create'],
     mutationFn: async (data: FeeStructureFormData) => {
-      const res = await apiClient.post<FeeStructure>('/api/finance/structures', data);
-      return res.data;
+      // Map flat form data to backend FeeStructureDto
+      const payload = {
+        name: data.name,
+        academicYear: data.academicYear,
+        frequency: data.frequency,
+        lateFeeAmount: data.lateFeeAmount,
+        gracePeriodDays: data.gracePeriodDays,
+        items: [
+          {
+            categoryId: data.categoryId,
+            amount: data.amount
+          }
+        ]
+      };
+      const res = await apiClient.post<any>('/api/finance/structures', payload);
+      const structure = res.data;
+
+      // Assign to class if classId is provided
+      if (data.classId && structure.id) {
+        await apiClient.post(`/api/finance/structures/${structure.id}/assign?classId=${data.classId}`);
+      }
+      return structure;
     },
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ['fees', 'structures'] });
@@ -112,7 +150,23 @@ export const useFees = () => {
   const updateStructureMutation = useMutation({
     mutationKey: ['fees', 'structure', 'update'],
     mutationFn: async ({ id, data }: { id: string; data: Partial<FeeStructureFormData> }) => {
-      const res = await apiClient.put<FeeStructure>(`/api/finance/structures/${id}`, data);
+      // Note: id here might be a composite id from flattening (e.g. "5-101"). 
+      // We need the real structure id (the part before the hyphen).
+      const realId = id.toString().split('-')[0];
+      const payload = {
+        name: data.name,
+        academicYear: data.academicYear,
+        frequency: data.frequency,
+        lateFeeAmount: data.lateFeeAmount,
+        gracePeriodDays: data.gracePeriodDays,
+        items: data.categoryId ? [
+          {
+            categoryId: data.categoryId,
+            amount: data.amount
+          }
+        ] : undefined
+      };
+      const res = await apiClient.put<any>(`/api/finance/structures/${realId}`, payload);
       return res.data;
     },
     onMutate: async ({ id, data }) => {

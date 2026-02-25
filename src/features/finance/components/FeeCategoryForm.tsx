@@ -73,18 +73,6 @@ export const FeeCategoryForm: React.FC<FeeCategoryFormProps> = ({ onSubmit, onCa
           />
           <label htmlFor="isMandatory" className="text-sm text-gray-700 dark:text-gray-300">Is Mandatory?</label>
         </div>
-
-        <div className="flex-1 max-w-[150px]">
-          <Input
-            type="number"
-            label="Default Due Day"
-            {...register('defaultDueDateDay', {
-              setValueAs: v => v === "" ? undefined : parseInt(v, 10)
-            })}
-            placeholder="1-31"
-            error={errors.defaultDueDateDay?.message}
-          />
-        </div>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">

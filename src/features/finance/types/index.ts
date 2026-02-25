@@ -15,11 +15,15 @@ export interface FeeCategory {
 // Fee Structure Configuration (Assigned to Grade)
 export interface FeeStructure {
   id: string; // FS-2026-G5-001
+  name: string;
   academicYear: string; // "2025-2026"
+  frequency: FeeFrequency;
   classId: number | string; // Numeric ID or Legacy String
   categoryId: string; // F-CAT-001
   amount: number;
   dueDateDay: number; // 10th of applicable month
+  lateFeeAmount?: number;
+  gracePeriodDays?: number;
   lateFeeRule?: {
     gracePeriodDays: number;
     penaltyType: 'Fixed' | 'Percentage';

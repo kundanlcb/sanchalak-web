@@ -34,28 +34,46 @@ export const FeeStructureForm: React.FC<FeeStructureFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Select
-        label="Academic Year"
-        {...register('academicYear')}
-        error={errors.academicYear?.message}
-        options={['2025-2026', '2026-2027'].map(v => ({ value: v, label: v }))}
-      />
-
-      <Select
-        label="Class/Grade"
-        {...register('classId')}
-        error={errors.classId?.message}
-        options={classes.map(c => ({ value: String(c.id), label: c.name }))}
-      />
-
-      <Select
-        label="Fee Category"
-        {...register('categoryId')}
-        error={errors.categoryId?.message}
-        options={categories.map(c => ({ value: c.id, label: c.name }))}
+      <Input
+        label="Structure Name"
+        {...register('name')}
+        error={errors.name?.message}
+        placeholder="e.g. Annual Fees 2025"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select
+          label="Academic Year"
+          {...register('academicYear')}
+          error={errors.academicYear?.message}
+          options={['2025-2026', '2026-2027'].map(v => ({ value: v, label: v }))}
+        />
+
+        <Select
+          label="Frequency"
+          {...register('frequency')}
+          error={errors.frequency?.message}
+          options={['Monthly', 'Quarterly', 'Annual', 'OneTime'].map(v => ({ value: v, label: v }))}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select
+          label="Class/Grade"
+          {...register('classId')}
+          error={errors.classId?.message}
+          options={classes.map(c => ({ value: String(c.id), label: c.name }))}
+        />
+
+        <Select
+          label="Fee Category"
+          {...register('categoryId')}
+          error={errors.categoryId?.message}
+          options={categories.map(c => ({ value: c.id, label: c.name }))}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Input
           type="number"
           label="Amount (₹)"
@@ -67,16 +85,32 @@ export const FeeStructureForm: React.FC<FeeStructureFormProps> = ({
 
         <Input
           type="number"
-          label="Due Day (of month)"
+          label="Due Day"
           {...register('dueDateDay', {
             setValueAs: v => v === "" ? undefined : parseInt(v, 10)
           })}
           error={errors.dueDateDay?.message}
-          placeholder="e.g. 10"
-          min={1}
-          max={31}
+          placeholder="1-31"
+        />
+
+        <Input
+          type="number"
+          label="Grace Days"
+          {...register('gracePeriodDays', {
+            setValueAs: v => v === "" ? undefined : parseInt(v, 10)
+          })}
+          error={errors.gracePeriodDays?.message}
         />
       </div>
+
+      <Input
+        type="number"
+        label="Late Fee Amount (₹)"
+        {...register('lateFeeAmount', {
+          setValueAs: v => v === "" ? undefined : parseFloat(v)
+        })}
+        error={errors.lateFeeAmount?.message}
+      />
 
       <div className="flex justify-end space-x-2 pt-4">
         <Button variant="outline" onClick={onCancel} type="button">Cancel</Button>

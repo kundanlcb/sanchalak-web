@@ -252,11 +252,15 @@ export const FeeManagementPage: React.FC = () => {
           onCancel={closeStructureModal}
           isLoading={isLoading}
           initialData={editingStructure ? {
+            name: editingStructure.name,
             classId: editingStructure.classId,
             categoryId: editingStructure.categoryId,
             amount: editingStructure.amount,
+            frequency: editingStructure.frequency,
             dueDateDay: editingStructure.dueDateDay,
-            academicYear: '2025-2026' // Assuming mocked
+            lateFeeAmount: editingStructure.lateFeeAmount,
+            gracePeriodDays: editingStructure.gracePeriodDays,
+            academicYear: editingStructure.academicYear || '2025-2026'
           } : undefined}
         />
       </Modal>
