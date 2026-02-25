@@ -203,6 +203,18 @@ export const FeeManagementPage: React.FC = () => {
             </div>
           ) : (
             <>
+              {/* Header with Add button */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fee Categories</h3>
+                <button
+                  onClick={() => setIsCategoryModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  Add Fee Category
+                </button>
+              </div>
+
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700 transition-colors">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
@@ -235,17 +247,6 @@ export const FeeManagementPage: React.FC = () => {
                     </tbody>
                   </table>
                 </div>
-              </div>
-
-              {/* Add button – right-aligned */}
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                  Add Fee Category
-                </button>
               </div>
             </>
           )}

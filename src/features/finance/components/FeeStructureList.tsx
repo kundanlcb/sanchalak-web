@@ -43,7 +43,19 @@ export const FeeStructureList: React.FC<FeeStructureListProps> = ({
   }, {} as Record<string, FeeStructure[]>);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
+      {/* Header with Add button */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fee Structures</h3>
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <Plus className="h-4 w-4" />
+          Add Fee Structure
+        </button>
+      </div>
+
       {Object.entries(grouped).map(([classId, items]) => (
         <div key={classId} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm text-sm overflow-hidden border border-gray-100 dark:border-gray-700 transition-colors">
           <div className="bg-gray-50 dark:bg-gray-900/50 px-5 py-3 font-semibold border-b border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
@@ -88,16 +100,7 @@ export const FeeStructureList: React.FC<FeeStructureListProps> = ({
         </div>
       ))}
 
-      {/* Add button – right-aligned below list */}
-      <div className="flex justify-end">
-        <button
-          onClick={onAdd}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-          Add Fee Structure
-        </button>
-      </div>
+
     </div>
   );
 };
