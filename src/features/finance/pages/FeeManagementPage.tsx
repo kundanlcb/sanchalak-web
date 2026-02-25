@@ -5,6 +5,7 @@ import { FeeStructureList } from '../components/FeeStructureList';
 import { FeeCategoryForm } from '../components/FeeCategoryForm';
 import { FeeStructureForm } from '../components/FeeStructureForm';
 import { GenerateBillsTab } from '../components/GenerateBillsTab';
+import { FeeLedgerTab } from '../components/FeeLedgerTab';
 import { Modal } from '../../../components/common/Modal';
 import { Button } from '../../../components/common/Button';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
@@ -23,7 +24,7 @@ export const FeeManagementPage: React.FC = () => {
 
   const { classes: opsClasses, refresh: fetchClasses } = useAcademicStructure();
 
-  const [activeTab, setActiveTab] = useState<'structures' | 'categories' | 'generate-bills'>('structures');
+  const [activeTab, setActiveTab] = useState<'structures' | 'categories' | 'generate-bills' | 'fee-ledger'>('fee-ledger');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
 
@@ -135,6 +136,18 @@ export const FeeManagementPage: React.FC = () => {
       <div className="border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
         <nav className="-mb-px flex space-x-8 min-w-max">
           <button
+            onClick={() => setActiveTab('fee-ledger')}
+            className={`${activeTab === 'fee-ledger' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+          >
+            Fee Ledger
+          </button>
+          <button
+            onClick={() => setActiveTab('generate-bills')}
+            className={`${activeTab === 'generate-bills' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+          >
+            Generate Bills
+          </button>
+          <button
             onClick={() => setActiveTab('structures')}
             className={`${activeTab === 'structures' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
           >
@@ -145,12 +158,6 @@ export const FeeManagementPage: React.FC = () => {
             className={`${activeTab === 'categories' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
           >
             Fee Categories
-          </button>
-          <button
-            onClick={() => setActiveTab('generate-bills')}
-            className={`${activeTab === 'generate-bills' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-          >
-            Generate Bills
           </button>
         </nav>
       </div>
@@ -173,6 +180,12 @@ export const FeeManagementPage: React.FC = () => {
       {activeTab === 'generate-bills' && (
         <GenerateBillsTab
           categories={categories}
+          classes={classes}
+        />
+      )}
+
+      {activeTab === 'fee-ledger' && (
+        <FeeLedgerTab
           classes={classes}
         />
       )}

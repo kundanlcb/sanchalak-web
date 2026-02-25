@@ -12,9 +12,8 @@ export interface SearchResult {
 const APP_PAGES = [
   { name: 'Dashboard', link: '/' },
   { name: 'Students', link: '/students' },
-  // { name: 'Admission', link: '/students/admission' }, // Assuming route
   { name: 'Teachers', link: '/school-ops/teachers' },
-  { name: 'Classes', link: '/school-ops/classes' }, // Correct route from Tasks/Plan? Need to verify routing.
+  { name: 'Classes', link: '/school-ops/classes' },
   { name: 'Routine', link: '/school-ops/routine' },
   { name: 'Subjects', link: '/school-ops/subjects' },
   { name: 'Fees', link: '/finance/fees' },
@@ -24,6 +23,28 @@ const APP_PAGES = [
 ];
 
 export const searchService = {
+  /** Search students only — used by the header search bar. */
+  searchStudents: async (query: string): Promise<SearchResult[]> => {
+    if (!query || query.length < 2) return [];
+    try {
+      const studentResponse = await getStudents({ search: query, limit: 8 });
+      return studentResponse.students.map(s => ({
+        id: String(s.id),
+        type: 'student' as const,
+        title: s.name,
+        subtitle: [
+          s.className ? `Class: ${s.className}` : (s.classId ? `Class: ${s.classId}` : null),
+          s.rollNumber ? `Roll: ${s.rollNumber}` : null,
+        ].filter(Boolean).join('  •  '),
+        link: `/students/${s.id}`
+      }));
+    } catch (error) {
+      console.error('Student search error', error);
+      return [];
+    }
+  },
+
+  /** Full search across students, teachers, and pages — kept for future use. */
   globalSearch: async (query: string): Promise<SearchResult[]> => {
     if (!query || query.length < 2) return [];
 
@@ -42,25 +63,23 @@ export const searchService = {
 
     try {
       // 2. Search Students
-      // Assuming getStudents supports pagination, we ask for small limit
       const studentResponse = await getStudents({ search: query, limit: 5 });
       const studentResults: SearchResult[] = studentResponse.students.map(s => ({
         id: String(s.id),
-        type: 'student',
+        type: 'student' as const,
         title: s.name,
         subtitle: `Class: ${s.classId} | ID: ${s.id}`,
         link: `/students/${s.id}`
       }));
 
       // 3. Search Teachers
-      // schoolOpsApi.getTeachers returns all. We filter client side for now as per plan/mock limitation.
       const allTeachers = await schoolOpsApi.getTeachers();
       const teacherResults: SearchResult[] = allTeachers
         .filter(t => t.name.toLowerCase().includes(lowerQuery) || t.email.toLowerCase().includes(lowerQuery))
         .slice(0, 5)
         .map(t => ({
           id: String(t.id),
-          type: 'teacher',
+          type: 'teacher' as const,
           title: t.name,
           subtitle: t.email,
           link: `/admin/teachers/${t.id}`
@@ -70,8 +89,8 @@ export const searchService = {
 
     } catch (error) {
       console.error("Global search error", error);
-      // Return at least page results if data fetch fails
       return pageResults;
     }
   }
 };
+

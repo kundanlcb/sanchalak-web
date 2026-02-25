@@ -25,10 +25,10 @@ export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) =>
             <img
               src={student.profilePhoto}
               alt={student.name}
-              className="h-16 w-16 rounded-2xl object-cover shadow-sm border border-gray-100 dark:border-gray-700"
+              className="h-16 w-16 rounded-full object-cover shadow-sm border border-gray-100 dark:border-gray-700"
             />
           ) : (
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center border border-blue-200/50 dark:border-blue-700/50">
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center border border-blue-200/50 dark:border-blue-700/50">
               <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
                 {student.name.charAt(0)}
               </span>

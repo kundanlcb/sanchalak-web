@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Trash2, Edit, UserCog } from 'lucide-react';
+import { Plus, Search, Trash2, Edit, UserCog, Upload } from 'lucide-react';
 import Select from 'react-select';
 import { TeacherSchema } from '../types';
 import { useTeachers } from '../hooks/useTeachers';
@@ -13,6 +13,8 @@ import { Input } from '../../../components/common/Input';
 import { Button } from '../../../components/common/Button';
 import { Skeleton } from '../../../components/common/Skeleton';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
+import { schoolOpsApi } from '../services/api';
+import { useToast } from '../../../components/common/ToastContext';
 
 // Schema for creating a teacher (id is optional/generated)
 const CreateTeacherSchema = TeacherSchema.omit({ id: true, isActive: true }).extend({
@@ -29,6 +31,10 @@ export const TeacherManager: React.FC = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { showToast } = useToast();
+  const [uploading, setUploading] = useState(false);
 
   const {
     register,
@@ -52,6 +58,7 @@ export const TeacherManager: React.FC = () => {
     setValue('joiningDate', teacher.joiningDate.split('T')[0]);
     setValue('qualification', teacher.qualification || '');
     setValue('specializedSubjects', teacher.specializedSubjects || []);
+    // Ensure profileImage is also handled if we decide to use form state for it
     setIsModalOpen(true);
   };
 
@@ -59,21 +66,45 @@ export const TeacherManager: React.FC = () => {
     setIsModalOpen(false);
     setEditingId(null);
     reset({ specializedSubjects: [] });
+    setPreviewUrl(null);
+    setSelectedFile(null);
   };
-
   const onSubmit = async (data: CreateTeacherForm) => {
     try {
+      let teacherId = editingId;
       if (editingId) {
         await updateTeacher(editingId, data);
+        showToast('Teacher updated successfully', 'success');
       } else {
-        await addTeacher({
+        const response = await addTeacher({
           ...data,
           isActive: true,
-        });
+        }) as any;
+        teacherId = response.id;
+        showToast('Teacher created successfully', 'success');
       }
+
+      // Handle photo upload if a file was selected
+      if (selectedFile && teacherId) {
+        try {
+          setUploading(true);
+          const { uploadUrl, publicUrl } = await schoolOpsApi.getPhotoUploadUrl(teacherId, selectedFile.name, selectedFile.type);
+          await schoolOpsApi.uploadFileToUrl(uploadUrl, selectedFile, selectedFile.type);
+          // Update teacher with the new publicUrl
+          await updateTeacher(teacherId, { profileImage: publicUrl } as any);
+          showToast('Photo uploaded successfully', 'success');
+        } catch (uploadErr) {
+          console.error('Photo upload failed:', uploadErr);
+          showToast('Teacher saved, but photo upload failed', 'warning');
+        } finally {
+          setUploading(false);
+        }
+      }
+
       closeModal();
     } catch (e) {
       console.error(e);
+      showToast('Failed to save teacher', 'error');
     }
   };
 
@@ -289,11 +320,15 @@ export const TeacherManager: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center group-hover/row:bg-blue-200 dark:group-hover/row:bg-blue-800 transition-colors">
-                            <span className="font-medium text-blue-700 dark:text-blue-300">
-                              {teacher.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          {teacher.profileImage ? (
+                            <img src={teacher.profileImage} alt={teacher.name} className="h-10 w-10 rounded-full object-cover" />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center group-hover/row:bg-blue-200 dark:group-hover/row:bg-blue-800 transition-colors">
+                              <span className="font-medium text-blue-700 dark:text-blue-300">
+                                {teacher.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-white group-hover/row:text-blue-600 dark:group-hover/row:text-blue-400">
@@ -360,6 +395,60 @@ export const TeacherManager: React.FC = () => {
         onClose={closeModal}
         title={editingId ? "Edit Teacher" : "Add New Teacher"}
       >
+        <div className="mb-6 flex justify-center">
+          <div className="relative group">
+            <div className="h-24 w-24 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900/50 transition-all group-hover:border-blue-500 dark:group-hover:border-blue-400 shadow-sm">
+              {(previewUrl || (editingId && teachers.find(t => t.id === editingId)?.profileImage)) ? (
+                <img
+                  src={previewUrl || teachers.find(t => t.id === editingId)?.profileImage}
+                  alt="Preview"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center text-gray-400">
+                  <Plus className="w-6 h-6" />
+                  <span className="text-[10px] items-center uppercase font-bold tracking-wider">Photo</span>
+                </div>
+              )}
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                <Upload className="w-6 h-6 text-white" />
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setSelectedFile(file);
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setPreviewUrl(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+            {(previewUrl || (editingId && teachers.find(t => t.id === editingId)?.profileImage)) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setPreviewUrl(null);
+                  setSelectedFile(null);
+                  if (editingId) {
+                    // If editing, we might want to clear the existing image
+                    // For now just clear local preview
+                  }
+                }}
+                className="absolute top-0 right-0 p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200 shadow-sm border border-white dark:border-gray-800"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             label="Full Name"
@@ -467,8 +556,12 @@ export const TeacherManager: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting} data-testid="submit-teacher-btn">
-              {editingId ? "Save Changes" : "Add Teacher"}
+            <Button type="submit" disabled={isSubmitting || uploading} data-testid="submit-teacher-btn">
+              {(isSubmitting || uploading) ? (
+                <><span className="animate-spin mr-2">⏳</span> Processing...</>
+              ) : (
+                editingId ? "Save Changes" : "Add Teacher"
+              )}
             </Button>
           </div>
         </form>

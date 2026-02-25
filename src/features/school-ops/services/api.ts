@@ -46,6 +46,23 @@ export const schoolOpsApi = {
     await client.delete(`/api/academics/teachers/${id}`);
   },
 
+  getPhotoUploadUrl: async (id: number, fileName: string, contentType: string): Promise<{ uploadUrl: string; publicUrl: string }> => {
+    const response = await client.post(`/api/academics/teachers/${id}/photo-url`, null, {
+      params: { fileName, contentType }
+    });
+    return response.data;
+  },
+
+  uploadFileToUrl: async (url: string, file: File, contentType: string): Promise<void> => {
+    const axios = (await import('axios')).default;
+    await axios.put(url, file, {
+      headers: {
+        'Content-Type': contentType,
+        'x-ms-blob-type': 'BlockBlob',
+      },
+    });
+  },
+
   // Classes
   getClasses: async (): Promise<Class[]> => {
     const response = await client.get<Class[]>('/api/academic/classes');

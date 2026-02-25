@@ -18,6 +18,7 @@ export interface BackDueBreakdown {
 export interface DemandBillRequest {
     monthLabel: string;
     classId?: number | null;
+    studentId?: number | null;   // set for single-student bill generation
     backDues?: number;
     lineItems: DemandBillLineItem[];
     backDueBreakdown?: BackDueBreakdown[];
@@ -47,9 +48,7 @@ export interface DemandBillPreviewItem {
 }
 
 export const demandBillService = {
-    /**
-     * Preview bills without saving to DB.
-     */
+    /** Preview bill data (no PDF, no DB save). */
     preview: async (request: DemandBillRequest): Promise<DemandBillPreviewItem[]> => {
         const res = await apiClient.post<DemandBillPreviewItem[]>(
             '/api/fees/demand-bill/preview',
@@ -59,8 +58,18 @@ export const demandBillService = {
     },
 
     /**
-     * Generate bills, save to DB, and download PDF.
-     * Returns a Blob to trigger file download.
+     * Preview as PDF in-memory (no DB save).
+     * Returns a Blob for the PdfPreviewModal.
+     */
+    previewPdf: async (request: DemandBillRequest): Promise<Blob> => {
+        const res = await apiClient.post('/api/fees/demand-bill/preview-pdf', request, {
+            responseType: 'blob',
+        });
+        return res.data as Blob;
+    },
+
+    /**
+     * Generate bills, save to DB, return PDF Blob for download.
      */
     generatePdf: async (request: DemandBillRequest): Promise<Blob> => {
         const res = await apiClient.post('/api/fees/demand-bill/generate', request, {
@@ -69,12 +78,18 @@ export const demandBillService = {
         return res.data as Blob;
     },
 
-    /**
-     * Get bill history for a student.
-     */
+    /** Get bill history for a single student. */
     getStudentHistory: async (studentId: number): Promise<DemandBillPreviewItem[]> => {
         const res = await apiClient.get<DemandBillPreviewItem[]>(
             `/api/fees/demand-bill/student/${studentId}`
+        );
+        return res.data;
+    },
+
+    /** Get bill history for all students in a class. */
+    getClassHistory: async (classId: number): Promise<DemandBillPreviewItem[]> => {
+        const res = await apiClient.get<DemandBillPreviewItem[]>(
+            `/api/fees/demand-bill/class/${classId}/history`
         );
         return res.data;
     },

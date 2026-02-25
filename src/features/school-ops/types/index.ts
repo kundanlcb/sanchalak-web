@@ -37,6 +37,7 @@ export const TeacherSchema = z.object({
   specializedSubjects: z.array(z.coerce.number()), // Array of Subject IDs
   qualification: z.string().optional(),
   isActive: z.boolean().default(true),
+  profileImage: z.string().optional(),
 });
 
 export const RoutineSchema = z.object({

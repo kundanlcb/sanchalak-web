@@ -1,11 +1,11 @@
 /**
  * StudentDetail Component
- * Full student profile page with tabs for Info, Documents, Attendance
+ * Full student profile page with tabs for Info, Documents, Attendance, Payment
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Phone, Mail, MapPin, Bell, CheckCircle2, AlertTriangle, IndianRupee, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/common/Button';
 import { ConfirmationDialog } from '../../../components/common/ConfirmationDialog';
 import { Skeleton } from '../../../components/common/Skeleton';
@@ -13,6 +13,8 @@ import { useToast } from '../../../components/common/ToastContext';
 import { getStudent, deleteStudent } from '../services/studentService';
 import { getStudentDocuments } from '../services/documentService';
 import { getAttendance } from '../../attendance/services/attendanceService';
+import { demandBillService, type DemandBillPreviewItem } from '../../finance/services/demandBillService';
+import { apiClient } from '../../../services/api/client';
 import { AttendanceHistory } from '../../attendance/components/AttendanceHistory';
 import type { Student } from '../types/student.types';
 import type { Document } from '../types/document.types';
@@ -29,7 +31,12 @@ export const StudentDetail: React.FC = () => {
   const [attendanceHistory, setAttendanceHistory] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'info' | 'documents' | 'attendance'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'documents' | 'attendance' | 'payment'>('info');
+
+  // Payment tab state
+  const [billHistory, setBillHistory] = useState<DemandBillPreviewItem[]>([]);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [sendingNotification, setSendingNotification] = useState(false);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -74,6 +81,38 @@ export const StudentDetail: React.FC = () => {
 
     fetchData();
   }, [studentId]);
+
+  // Fetch payment history when the payment tab is activated
+  const fetchPaymentHistory = useCallback(async () => {
+    if (!studentId) return;
+    setPaymentLoading(true);
+    try {
+      const bills = await demandBillService.getStudentHistory(studentId);
+      setBillHistory(bills || []);
+    } catch (err) {
+      console.error('Failed to load payment history', err);
+    } finally {
+      setPaymentLoading(false);
+    }
+  }, [studentId]);
+
+  useEffect(() => {
+    if (activeTab === 'payment') {
+      fetchPaymentHistory();
+    }
+  }, [activeTab, fetchPaymentHistory]);
+
+  const handleSendPaymentNotification = async () => {
+    setSendingNotification(true);
+    try {
+      await apiClient.post(`/api/notifications/payment-reminder/${studentId}`);
+      showToast('Payment reminder sent successfully', 'success');
+    } catch (err) {
+      showToast('Failed to send notification', 'error');
+    } finally {
+      setSendingNotification(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -170,15 +209,15 @@ export const StudentDetail: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 relative">
             {/* Avatar - Premium Style */}
             <div className="-mt-16 mx-auto sm:mx-0 relative">
-              <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-[2.5rem] bg-white dark:bg-gray-800 p-1.5 shadow-2xl border border-white/20">
+              <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-full bg-white dark:bg-gray-800 p-1.5 shadow-md border border-white/20">
                 {student.profilePhoto ? (
                   <img
                     src={student.profilePhoto}
                     alt={student.name}
-                    className="h-full w-full rounded-[2rem] object-cover shadow-inner"
+                    className="h-full w-full rounded-full object-cover shadow-inner"
                   />
                 ) : (
-                  <div className="h-full w-full rounded-[2rem] bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center border border-blue-200/50 dark:border-blue-700/50">
+                  <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center border border-blue-200/50 dark:border-blue-700/50">
                     <span className="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
                       {(student.name || student.firstName || '?').charAt(0).toUpperCase()}
                     </span>
@@ -273,6 +312,15 @@ export const StudentDetail: React.FC = () => {
               }`}
           >
             Attendance
+          </button>
+          <button
+            onClick={() => setActiveTab('payment')}
+            className={`px-4 py-2 font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === 'payment'
+              ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+          >
+            Payment
           </button>
         </div>
       </div>
@@ -431,6 +479,113 @@ export const StudentDetail: React.FC = () => {
           className="w-full"
         />
       )}
+
+      {activeTab === 'payment' && (() => {
+        const totalPaid = billHistory.reduce((sum, b) => sum + (b.grandTotal || 0), 0);
+        // Pending is approximated as back-dues sum from all bills
+        const totalPending = billHistory.reduce((sum, b) => sum + (b.totalBackDues || 0), 0);
+
+        return (
+          <div className="space-y-5">
+            {/* Summary cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 flex items-center gap-4 shadow-sm">
+                <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Fee Paid</p>
+                  <p className="text-2xl font-black text-green-700 dark:text-green-400 flex items-center gap-0.5">
+                    <IndianRupee className="h-5 w-5" />
+                    {totalPaid.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 flex items-center gap-4 shadow-sm">
+                <div className="h-12 w-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Fee Pending (Back Dues)</p>
+                  <p className="text-2xl font-black text-orange-700 dark:text-orange-400 flex items-center gap-0.5">
+                    <IndianRupee className="h-5 w-5" />
+                    {totalPending.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Notification action */}
+            <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-5 py-4">
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Send Payment Reminder</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Notify the parent via push notification about pending dues.</p>
+              </div>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSendPaymentNotification}
+                disabled={sendingNotification}
+                className="flex items-center gap-2 shrink-0"
+              >
+                {sendingNotification ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Bell className="h-4 w-4" />
+                )}
+                {sendingNotification ? 'Sending...' : 'Send Reminder'}
+              </Button>
+            </div>
+
+            {/* Bill History Table */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+              <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="font-semibold text-gray-900 dark:text-white">Fee Bill History</h3>
+              </div>
+              {paymentLoading ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-7 w-7 animate-spin text-blue-500" />
+                </div>
+              ) : billHistory.length === 0 ? (
+                <div className="py-10 text-center text-gray-500 dark:text-gray-400 text-sm">
+                  No bill records found for this student.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900/50">
+                        <th className="px-5 py-3">Bill No</th>
+                        <th className="px-5 py-3">Month</th>
+                        <th className="px-5 py-3">Current Fees</th>
+                        <th className="px-5 py-3">Back Dues</th>
+                        <th className="px-5 py-3">Grand Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                      {billHistory.map(bill => (
+                        <tr key={bill.billNo} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                          <td className="px-5 py-3 font-mono text-xs text-gray-600 dark:text-gray-300">{bill.billNo}</td>
+                          <td className="px-5 py-3 text-gray-700 dark:text-gray-300">{bill.monthLabel}</td>
+                          <td className="px-5 py-3 text-gray-900 dark:text-white font-medium">₹{bill.totalCurrentFees?.toLocaleString('en-IN')}</td>
+                          <td className="px-5 py-3">
+                            {bill.totalBackDues > 0 ? (
+                              <span className="text-orange-600 dark:text-orange-400 font-medium">₹{bill.totalBackDues.toLocaleString('en-IN')}</span>
+                            ) : (
+                              <span className="text-green-600 dark:text-green-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3 font-semibold text-gray-900 dark:text-white">₹{bill.grandTotal?.toLocaleString('en-IN')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       <ConfirmationDialog
         isOpen={showDeleteConfirm}

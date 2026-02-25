@@ -183,6 +183,7 @@ export async function uploadFileToUrl(url: string, file: File, contentType: stri
   await axios.put(url, file, {
     headers: {
       'Content-Type': contentType,
+      'x-ms-blob-type': 'BlockBlob',
     },
   });
 }

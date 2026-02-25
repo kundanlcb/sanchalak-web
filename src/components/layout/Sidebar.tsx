@@ -52,6 +52,10 @@ const navGroups: NavGroup[] = [
     icon: Home,
     items: [
       { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+      { name: 'Students', path: '/students', icon: Users, featureCode: 'STUDENT_MGMT' },
+      { name: 'Teachers', path: '/admin/teachers', icon: UserCog, roles: ['Admin'], featureCode: 'TEACHERS' },
+      { name: 'Fees', path: '/admin/finance/fees', icon: Wallet, roles: ['Admin'], featureCode: 'FEES' },
+      { name: 'Notices', path: '/notices', icon: Bell, featureCode: 'NOTICES' },
     ]
   },
   {

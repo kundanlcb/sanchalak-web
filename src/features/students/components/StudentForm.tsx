@@ -75,6 +75,8 @@ export const StudentForm: React.FC = () => {
   const [genders, setGenders] = useState<MasterValue[]>([]);
   const [bloodGroups, setBloodGroups] = useState<MasterValue[]>([]);
   const [relations, setRelations] = useState<MasterValue[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -173,7 +175,27 @@ export const StudentForm: React.FC = () => {
         } as any);
         showToast('Student updated successfully', 'success');
       } else {
-        await createStudent(payload as any);
+        const response = await createStudent(payload as any);
+        const newId = response.id;
+
+        // If there's a selected file, upload it now
+        if (selectedFile && newId) {
+          try {
+            const { uploadUrl, publicUrl } = await import('../services/studentService').then(s => s.getPhotoUploadUrl(newId, selectedFile.name, selectedFile.type));
+            await import('../services/studentService').then(s => s.uploadFileToUrl(uploadUrl, selectedFile, selectedFile.type));
+            // Note: Since we're navigating away, we don't strictly need to update the student record with photoUrl here 
+            // but the backend handles it via publicUrl in getPhotoUploadUrl? 
+            // Wait, the backend doesn't automatically save the photoUrl to the student. 
+            // The frontend should send another update or the publicUrl should be part of the initial payload.
+            // But for new students, we don't have the ID yet to generate the key.
+            // So we MUST update the student record AFTER upload.
+            await updateStudent({ id: newId, photoUrl: publicUrl } as any);
+          } catch (uploadErr) {
+            console.error('Photo upload failed:', uploadErr);
+            showToast('Student created, but photo upload failed', 'warning');
+          }
+        }
+
         showToast('Student created successfully', 'success');
       }
       navigate('/students');
@@ -298,9 +320,9 @@ export const StudentForm: React.FC = () => {
             {/* Premium Photo Row - Dedicated */}
             <div className="md:col-span-3 flex justify-center sm:justify-start pb-6 mb-2">
               <div className="relative group">
-                <div className="h-28 w-28 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900/50 transition-all group-hover:border-blue-500 dark:group-hover:border-blue-400 shadow-sm">
-                  {control._formValues.photoUrl ? (
-                    <img src={control._formValues.photoUrl} alt="Student" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                <div className="h-28 w-28 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-900/50 transition-all group-hover:border-blue-500 dark:group-hover:border-blue-400 shadow-sm">
+                  {(previewUrl || control._formValues.photoUrl) ? (
+                    <img src={previewUrl || control._formValues.photoUrl} alt="Student" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
                   ) : (
                     <div className="flex flex-col items-center gap-1 text-gray-400">
                       <Plus className="w-8 h-8" />
@@ -319,6 +341,14 @@ export const StudentForm: React.FC = () => {
                       const file = e.target.files?.[0];
                       if (!file) return;
 
+                      // For both edit and create modes, show preview
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setPreviewUrl(reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                      setSelectedFile(file);
+
                       if (isEditMode && studentId) {
                         try {
                           setLoading(true);
@@ -326,29 +356,33 @@ export const StudentForm: React.FC = () => {
                           await import('../services/studentService').then(s => s.uploadFileToUrl(uploadUrl, file, file.type));
                           reset({ ...control._formValues, photoUrl: publicUrl });
                           showToast('Photo uploaded successfully', 'success');
+                          setPreviewUrl(null); // Clear preview once uploaded
+                          setSelectedFile(null);
                         } catch (err) {
                           showToast('Failed to upload photo', 'error');
                         } finally {
                           setLoading(false);
                         }
-                      } else {
-                        showToast('Please upload photo after creating the student record', 'info');
                       }
                     }}
                   />
                 </div>
-                {control._formValues.photoUrl && (
+                {(previewUrl || control._formValues.photoUrl) && (
                   <button
                     type="button"
-                    onClick={() => reset({ ...control._formValues, photoUrl: '' })}
-                    className="absolute -top-2 -right-2 p-1.5 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors shadow-lg z-20 border border-white dark:border-gray-800"
+                    onClick={() => {
+                      setPreviewUrl(null);
+                      setSelectedFile(null);
+                      reset({ ...control._formValues, photoUrl: '' });
+                    }}
+                    className="absolute top-0 right-0 p-1.5 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors shadow-sm z-20 border border-white dark:border-gray-800"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 )}
                 <div className="absolute -bottom-2 -left-2 -right-2 text-center pointer-events-none">
                   <span className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-tighter bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-700">
-                    {control._formValues.photoUrl ? 'Change' : 'Upload'}
+                    {(previewUrl || control._formValues.photoUrl) ? 'Change' : 'Upload'}
                   </span>
                 </div>
               </div>

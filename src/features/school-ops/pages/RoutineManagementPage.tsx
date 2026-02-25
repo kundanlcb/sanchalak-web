@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAcademicStructure } from '../hooks/useAcademicStructure';
 import { useRoutine } from '../hooks/useRoutine';
 import { useTeachers } from '../hooks/useTeachers';
@@ -14,6 +14,13 @@ export const RoutineManagementPage: React.FC = () => {
     const { teachers, loading: teachersLoading } = useTeachers();
     const { slots, loading: slotsLoading } = useTimetableSlots();
     const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+
+    // Auto-select the first class when classes finish loading
+    useEffect(() => {
+        if (!academicLoading && classes.length > 0 && selectedClassId === null) {
+            setSelectedClassId(classes[0].id);
+        }
+    }, [academicLoading, classes, selectedClassId]);
 
     // Derived state for the modal
     const [isModalOpen, setIsModalOpen] = useState(false);
