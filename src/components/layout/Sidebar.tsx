@@ -139,9 +139,11 @@ const NavLinkItem: React.FC<{
       className={({ isActive }) =>
         cn(
           'group relative flex items-center gap-3 px-3 py-2 mx-2 rounded-xl transition-all duration-200',
-          !isActive && 'hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-0.5',
-          isActive && 'bg-white dark:bg-white/5 shadow-sm',
-          !isActive && 'text-gray-600 dark:text-gray-400',
+          isActive && [
+            'bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-600/20 dark:to-blue-500/10',
+            'text-white dark:text-blue-400 shadow-lg shadow-blue-500/20 dark:shadow-none',
+          ],
+          !isActive && 'hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-0.5 text-gray-600 dark:text-gray-400',
           isCollapsed && 'justify-center mx-1 px-0'
         )
       }
@@ -150,26 +152,26 @@ const NavLinkItem: React.FC<{
         <>
           {/* Colored left indicator bar */}
           {isActive && !isCollapsed && (
-            <div className={cn('absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full', palette.dot)} />
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-blue-600 dark:bg-blue-400 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
           )}
 
-          {/* Icon with colored background pill */}
+          {/* Icon: white on active, group-colored bg on hover */}
           <div className={cn(
             'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200',
-            isActive
-              ? cn(palette.bg, 'scale-100')
-              : 'bg-transparent group-hover:' + palette.bg.split(' ')[0]
+            !isActive && `group-hover:${palette.bg.split(' ')[0]}`
           )}>
             <item.icon className={cn(
-              'w-4 h-4 flex-shrink-0 transition-all duration-200',
-              isActive ? palette.text : 'text-gray-400 dark:text-gray-500 group-hover:' + palette.text.split(' ')[0]
+              'w-4 h-4 flex-shrink-0 transition-all duration-200 group-hover:scale-110',
+              isActive
+                ? 'text-white dark:text-blue-400'
+                : `text-gray-400 dark:text-gray-500 group-hover:${palette.text.split(' ')[0]}`
             )} />
           </div>
 
           {!isCollapsed && (
             <span className={cn(
               'text-sm tracking-tight truncate',
-              isActive ? cn('font-semibold', palette.text) : 'font-medium text-gray-600 dark:text-gray-400'
+              isActive ? 'font-bold text-white dark:text-blue-400' : 'font-medium'
             )}>{item.name}</span>
           )}
 
