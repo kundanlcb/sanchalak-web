@@ -319,7 +319,7 @@ export const TeacherDetail: React.FC = () => {
                                         {day.charAt(0) + day.slice(1).toLowerCase()}
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                        {(routinesByDay[day] ?? []).sort((a, b) => a.periodIndex - b.periodIndex).map(r => {
+                                        {(routinesByDay[day] ?? []).sort((a, b) => (a.periodIndex ?? 0) - (b.periodIndex ?? 0)).map(r => {
                                             const color = subjectColorMap.get(r.subjectId) ?? SUBJECT_COLORS[0];
                                             return (
                                                 <div key={r.id} className={cn('flex items-center gap-3 p-3 rounded-xl border', color)}>
@@ -330,7 +330,7 @@ export const TeacherDetail: React.FC = () => {
                                                         </p>
                                                     </div>
                                                     <span className="text-[10px] font-bold opacity-60 bg-white/60 dark:bg-black/20 px-1.5 py-0.5 rounded">
-                                                        P{r.periodIndex + 1}
+                                                        P{(r.periodIndex ?? 0) + 1}
                                                     </span>
                                                 </div>
                                             );
