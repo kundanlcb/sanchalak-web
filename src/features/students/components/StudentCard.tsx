@@ -99,5 +99,6 @@ export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) =>
           </div>
         </div>
       </div>
-      );
+    </div>
+  );
 };

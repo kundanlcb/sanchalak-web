@@ -14,7 +14,7 @@ export interface UseReportDataProps {
     examTermId?: string;
 }
 
-export const useReportData = ({ category, reportType, studentId, examTermId }: UseReportDataProps) => {
+export const useReportData = ({ category, studentId, examTermId }: UseReportDataProps) => {
     // 1. Fetch Student Profile (Always needed for certificates and personalization)
     const { data: student, isLoading: loadingStudent } = useQuery<Student>({
         queryKey: ['student', studentId],
