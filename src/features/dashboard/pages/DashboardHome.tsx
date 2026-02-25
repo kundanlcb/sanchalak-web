@@ -5,7 +5,6 @@ import { ExamResultChart } from '../components/ExamResultChart';
 import { GenderDonutChart } from '../components/GenderDonutChart';
 import { StarStudentTable } from '../components/StarStudentTable';
 import { RecentActivity } from '../components/RecentActivity';
-import { QuickLinks } from '../components/QuickLinks';
 import { useDashboardStats } from '../hooks/useDashboardStats';
 import { useAuth } from '../../auth/services/authContext';
 
@@ -34,9 +33,6 @@ export const DashboardHome: React.FC = () => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back, here's what's happening today.</p>
                 </div>
             </div>
-
-            {/* Quick Links */}
-            <QuickLinks />
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
