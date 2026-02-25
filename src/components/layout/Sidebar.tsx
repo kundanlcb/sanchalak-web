@@ -43,13 +43,25 @@ interface NavItem {
 interface NavGroup {
   name: string;
   icon: React.ElementType;
+  color: string;   // tailwind color name e.g. 'blue', 'violet'
   items: NavItem[];
 }
+
+// ── Per-group color palettes (icon bg + text) ──────────────────────────────
+const groupColors: Record<string, { bg: string; text: string; activeBg: string; dot: string }> = {
+  blue: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', activeBg: 'from-blue-600 to-blue-500', dot: 'bg-blue-500' },
+  violet: { bg: 'bg-violet-50 dark:bg-violet-500/10', text: 'text-violet-600 dark:text-violet-400', activeBg: 'from-violet-600 to-violet-500', dot: 'bg-violet-500' },
+  emerald: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', activeBg: 'from-emerald-600 to-emerald-500', dot: 'bg-emerald-500' },
+  amber: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', activeBg: 'from-amber-500 to-amber-400', dot: 'bg-amber-500' },
+  teal: { bg: 'bg-teal-50 dark:bg-teal-500/10', text: 'text-teal-600 dark:text-teal-400', activeBg: 'from-teal-600 to-teal-500', dot: 'bg-teal-500' },
+  slate: { bg: 'bg-slate-100 dark:bg-slate-500/10', text: 'text-slate-600 dark:text-slate-400', activeBg: 'from-slate-600 to-slate-500', dot: 'bg-slate-400' },
+};
 
 const navGroups: NavGroup[] = [
   {
     name: 'Overview',
     icon: Home,
+    color: 'blue',
     items: [
       { name: 'Dashboard', path: '/', icon: LayoutDashboard },
       { name: 'Students', path: '/students', icon: Users, featureCode: 'STUDENT_MGMT' },
@@ -61,6 +73,7 @@ const navGroups: NavGroup[] = [
   {
     name: 'Academics',
     icon: GraduationCap,
+    color: 'violet',
     items: [
       { name: 'Classes', path: '/admin/academics/setup', icon: School, roles: ['Admin'], featureCode: 'ACADEMICS' },
       { name: 'Curriculum', path: '/admin/curriculum', icon: BookOpen, roles: ['Admin', 'Teacher'], featureCode: 'ACADEMICS' },
@@ -75,6 +88,7 @@ const navGroups: NavGroup[] = [
   {
     name: 'Student Ops',
     icon: Users,
+    color: 'emerald',
     items: [
       { name: 'Attendance', path: '/attendance', icon: ClipboardList, featureCode: 'ATTENDANCE' },
       { name: 'Homework', path: '/homework', icon: BookOpen, featureCode: 'HOMEWORK' },
@@ -83,6 +97,7 @@ const navGroups: NavGroup[] = [
   {
     name: 'HR & Staff',
     icon: FileUser,
+    color: 'amber',
     items: [
       { name: 'Leave Policies', path: '/admin/hr/leave-policies', icon: FileUser, roles: ['Admin'], featureCode: 'HR' },
       { name: 'Leave Approvals', path: '/admin/hr/leave-approvals', icon: ClipboardList, roles: ['Admin'], featureCode: 'HR' },
@@ -91,6 +106,7 @@ const navGroups: NavGroup[] = [
   {
     name: 'Finance',
     icon: Wallet,
+    color: 'teal',
     items: [
       { name: 'Pay Fees', path: '/finance/pay', icon: CreditCard, roles: ['Student', 'Parent'], featureCode: 'FEES' },
       { name: 'Payroll', path: '/admin/finance/payroll', icon: Banknote, roles: ['Admin'], featureCode: 'PAYROLL' },
@@ -100,6 +116,7 @@ const navGroups: NavGroup[] = [
   {
     name: 'More',
     icon: Settings,
+    color: 'slate',
     items: [
       { name: 'School Template', path: '/admin/settings/school-template', icon: School, roles: ['Admin'] },
       { name: 'Settings', path: '/settings', icon: Settings },
@@ -112,48 +129,60 @@ const NavLinkItem: React.FC<{
   item: NavItem;
   isCollapsed: boolean;
   onItemClick: () => void;
-}> = ({ item, isCollapsed, onItemClick }) => (
-  <NavLink
-    to={item.path}
-    onClick={onItemClick}
-    className={({ isActive }) =>
-      cn(
-        'group relative flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl transition-all duration-300',
-        'hover:bg-gray-100 dark:hover:bg-white/5 hover:translate-x-1',
-        isActive && [
-          'bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-600/20 dark:to-blue-500/10',
-          'text-white dark:text-blue-400 shadow-lg shadow-blue-500/20 dark:shadow-none',
-        ],
-        !isActive && 'text-gray-600 dark:text-gray-400',
-        isCollapsed && 'justify-center mx-1 px-0'
-      )
-    }
-  >
-    {({ isActive }) => (
-      <>
-        {isActive && !isCollapsed && (
-          <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-blue-600 dark:bg-blue-400 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
-        )}
-        <item.icon className={cn(
-          "w-5 h-5 flex-shrink-0 transition-all duration-300 group-hover:scale-110",
-          isActive && "text-white dark:text-blue-400",
-          !isActive && "text-gray-400 dark:text-gray-500 group-hover:text-blue-500/70"
-        )} />
-        {!isCollapsed && (
-          <span className={cn(
-            "text-sm font-semibold tracking-tight",
-            isActive ? "font-bold" : "font-medium"
-          )}>{item.name}</span>
-        )}
-        {isCollapsed && (
-          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-white/10">
-            {item.name}
+  groupColor?: string;
+}> = ({ item, isCollapsed, onItemClick, groupColor = 'blue' }) => {
+  const palette = groupColors[groupColor] ?? groupColors.blue;
+  return (
+    <NavLink
+      to={item.path}
+      onClick={onItemClick}
+      className={({ isActive }) =>
+        cn(
+          'group relative flex items-center gap-3 px-3 py-2 mx-2 rounded-xl transition-all duration-200',
+          !isActive && 'hover:bg-gray-50 dark:hover:bg-white/5 hover:translate-x-0.5',
+          isActive && 'bg-white dark:bg-white/5 shadow-sm',
+          !isActive && 'text-gray-600 dark:text-gray-400',
+          isCollapsed && 'justify-center mx-1 px-0'
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {/* Colored left indicator bar */}
+          {isActive && !isCollapsed && (
+            <div className={cn('absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full', palette.dot)} />
+          )}
+
+          {/* Icon with colored background pill */}
+          <div className={cn(
+            'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200',
+            isActive
+              ? cn(palette.bg, 'scale-100')
+              : 'bg-transparent group-hover:' + palette.bg.split(' ')[0]
+          )}>
+            <item.icon className={cn(
+              'w-4 h-4 flex-shrink-0 transition-all duration-200',
+              isActive ? palette.text : 'text-gray-400 dark:text-gray-500 group-hover:' + palette.text.split(' ')[0]
+            )} />
           </div>
-        )}
-      </>
-    )}
-  </NavLink>
-);
+
+          {!isCollapsed && (
+            <span className={cn(
+              'text-sm tracking-tight truncate',
+              isActive ? cn('font-semibold', palette.text) : 'font-medium text-gray-600 dark:text-gray-400'
+            )}>{item.name}</span>
+          )}
+
+          {isCollapsed && (
+            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-white/10">
+              {item.name}
+            </div>
+          )}
+        </>
+      )}
+    </NavLink>
+  );
+};
 
 const UserProfile: React.FC<{ isCollapsed: boolean; user: any }> = ({ isCollapsed, user }) => {
   const { logout } = useAuth();
@@ -333,11 +362,13 @@ const Sidebar: React.FC = () => {
             });
 
             if (filteredItems.length === 0) return null;
+            const palette = groupColors[group.color] ?? groupColors.blue;
 
             return (
-              <div key={group.name} className="mb-6 last:mb-0 space-y-1">
+              <div key={group.name} className="mb-5 last:mb-0 space-y-0.5">
                 {!isCollapsed && (
-                  <p className="px-6 mb-2 text-[11px] font-medium text-gray-400 dark:text-gray-500 tracking-wide">
+                  <p className="px-5 mb-1.5 text-[10px] font-semibold text-gray-400 dark:text-gray-500 tracking-widest uppercase flex items-center gap-1.5">
+                    <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', palette.dot)} />
                     {group.name}
                   </p>
                 )}
@@ -347,6 +378,7 @@ const Sidebar: React.FC = () => {
                     item={item}
                     isCollapsed={isCollapsed}
                     onItemClick={closeSidebar}
+                    groupColor={group.color}
                   />
                 ))}
               </div>
