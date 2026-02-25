@@ -43,10 +43,6 @@ export const RoutineGrid: React.FC<RoutineGridProps> = ({
   // Stable color per subject ID
   const subjectColorMap = new Map<number | string, typeof SUBJECT_COLORS[0]>();
   subjects.forEach((s, i) => subjectColorMap.set(s.id, SUBJECT_COLORS[i % SUBJECT_COLORS.length]));
-
-  const teachingSlots = slots.filter(s => !s.isBreak);
-  const breakSlots = slots.filter(s => s.isBreak);
-
   return (
     <div className="space-y-4">
       {/* ── Period Header strip ──────────────────────────────────────── */}
@@ -162,20 +158,7 @@ export const RoutineGrid: React.FC<RoutineGridProps> = ({
         </div>
       </div>
 
-      {/* ── Legend ──────────────────────────────────────────────────── */}
-      {subjects.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {subjects.map((s, i) => {
-            const pal = SUBJECT_COLORS[i % SUBJECT_COLORS.length];
-            return (
-              <div key={s.id} className={cn('flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium', pal.bg, pal.text)}>
-                <span className={cn('w-2 h-2 rounded-full flex-shrink-0', pal.border.replace('border-l-', 'bg-'))} />
-                {s.name}
-              </div>
-            );
-          })}
-        </div>
-      )}
+
     </div>
   );
 };
