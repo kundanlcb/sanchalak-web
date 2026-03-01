@@ -15,7 +15,7 @@ export const ExamAdmitCards: React.FC = () => {
 
     const [selectedClassTerm, setSelectedClassTerm] = useState('');
     const [selectedExamTerm, setSelectedExamTerm] = useState('');
-    const [selectedStudentId, setSelectedStudentId] = useState<string>('');
+    const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
     const [isGeneratingBulk, setIsGeneratingBulk] = useState(false);
     const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -42,25 +42,39 @@ export const ExamAdmitCards: React.FC = () => {
         };
     }, [previewUrl]);
 
-    // Automatically load preview when student changes
+    // Automatically load preview when selection changes
     useEffect(() => {
-        if (selectedStudentId && selectedExamTerm) {
-            handlePreviewIndividual(selectedStudentId);
+        if (selectedStudentIds.length > 0 && selectedExamTerm && classId && section) {
+            handlePreviewSelection();
         } else {
             setPreviewUrl(null);
         }
-    }, [selectedStudentId, selectedExamTerm]);
+    }, [selectedStudentIds, selectedExamTerm, classId, section]);
 
     useEffect(() => {
         // Reset selections when class changes
-        setSelectedStudentId('');
+        setSelectedStudentIds([]);
     }, [selectedClassTerm]);
 
-    const handleSelectStudent = (id: string) => {
-        setSelectedStudentId(id);
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedStudentIds(students.map(s => String(s.id)));
+        } else {
+            setSelectedStudentIds([]);
+        }
     };
 
-    const handlePreviewIndividual = async (studentId: string) => {
+    const handleSelectStudent = (id: string, checked: boolean) => {
+        if (checked) {
+            setSelectedStudentIds(prev => [...prev, id]);
+        } else {
+            setSelectedStudentIds(prev => prev.filter(sId => sId !== id));
+        }
+    };
+
+    const isAllSelected = students.length > 0 && selectedStudentIds.length === students.length;
+
+    const handlePreviewSelection = async () => {
         if (!selectedExamTerm) return;
 
         setIsLoadingPreview(true);
@@ -70,14 +84,37 @@ export const ExamAdmitCards: React.FC = () => {
         }
 
         try {
-            const response = await apiClient.post(
-                '/api/documents/admit-card',
-                {
-                    studentId: Number(studentId),
-                    examTermId: Number(selectedExamTerm)
-                },
-                { responseType: 'blob' }
-            );
+            let response;
+            // If ALL students in class are selected, use the bulk endpoint
+            if (isAllSelected && classId && section) {
+                response = await apiClient.post(
+                    '/api/documents/admit-card/bulk',
+                    {
+                        classId: Number(classId),
+                        section,
+                        examTermId: Number(selectedExamTerm)
+                    },
+                    { responseType: 'blob' }
+                );
+            }
+            // If ONLY ONE student is selected, use the individual endpoint
+            else if (selectedStudentIds.length === 1) {
+                response = await apiClient.post(
+                    '/api/documents/admit-card',
+                    {
+                        studentId: Number(selectedStudentIds[0]),
+                        examTermId: Number(selectedExamTerm)
+                    },
+                    { responseType: 'blob' }
+                );
+            }
+            // We do not have a "selected subset" endpoint for admit cards yet, so if it's 2+ but not ALL, we warn.
+            // (The backend AdmitCardRequest only takes classId or studentId).
+            else {
+                showToast('API only supports single student or entire class preview currently.', 'warning');
+                setIsLoadingPreview(false);
+                return;
+            }
 
             const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
             setPreviewUrl(url);
@@ -90,8 +127,8 @@ export const ExamAdmitCards: React.FC = () => {
     };
 
     const handleDownloadIndividual = async () => {
-        if (!selectedExamTerm || !selectedStudentId) {
-            showToast('Please select an Exam Term and Student.', 'error');
+        if (!selectedExamTerm || selectedStudentIds.length !== 1) {
+            showToast('Please select exactly one Student to download individually.', 'error');
             return;
         }
 
@@ -99,7 +136,7 @@ export const ExamAdmitCards: React.FC = () => {
             const response = await apiClient.post(
                 '/api/documents/admit-card',
                 {
-                    studentId: Number(selectedStudentId),
+                    studentId: Number(selectedStudentIds[0]),
                     examTermId: Number(selectedExamTerm)
                 },
                 { responseType: 'blob' }
@@ -109,7 +146,7 @@ export const ExamAdmitCards: React.FC = () => {
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `AdmitCard_${selectedStudentId}.pdf`);
+            link.setAttribute('download', `AdmitCard_${selectedStudentIds[0]}.pdf`);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -223,22 +260,38 @@ export const ExamAdmitCards: React.FC = () => {
                                 <span>No students found in this class.</span>
                             </div>
                         ) : (
-                            <div className="space-y-1">
-                                {students.map(student => (
-                                    <label key={student.id} className="flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors">
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between pb-2 border-b dark:border-gray-700">
+                                    <label className="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700 dark:text-gray-300">
                                         <input
-                                            type="radio"
-                                            name="admit_student_select"
-                                            className="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                                            checked={selectedStudentId === String(student.id)}
-                                            onChange={() => handleSelectStudent(String(student.id))}
+                                            type="checkbox"
+                                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            checked={isAllSelected}
+                                            onChange={(e) => handleSelectAll(e.target.checked)}
                                         />
-                                        <div className="flex-1 overflow-hidden">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{student.name}</p>
-                                            <p className="text-[10px] text-gray-500">Roll: {student.rollNumber || 'N/A'}</p>
-                                        </div>
+                                        Select All
                                     </label>
-                                ))}
+                                    <span className="text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full">
+                                        {selectedStudentIds.length} Selected
+                                    </span>
+                                </div>
+
+                                <div className="space-y-1">
+                                    {students.map(student => (
+                                        <label key={student.id} className="flex items-center gap-3 p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                checked={selectedStudentIds.includes(String(student.id))}
+                                                onChange={(e) => handleSelectStudent(String(student.id), e.target.checked)}
+                                            />
+                                            <div className="flex-1 overflow-hidden">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{student.name}</p>
+                                                <p className="text-[10px] text-gray-500">Roll: {student.rollNumber || 'N/A'}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -246,7 +299,7 @@ export const ExamAdmitCards: React.FC = () => {
 
                 {/* RIGHT PANEL: Live PDF Preview */}
                 <div className="flex-1 bg-gray-100 dark:bg-gray-950 rounded-xl shadow-inner border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col relative h-[600px] lg:h-auto">
-                    {previewUrl && (
+                    {previewUrl && selectedStudentIds.length === 1 && (
                         <div className="absolute top-4 right-4 z-10 flex gap-2">
                             <Button size="sm" variant="default" onClick={handleDownloadIndividual} className="shadow-lg shadow-blue-500/20">
                                 <Download className="w-4 h-4 mr-2" />
@@ -255,11 +308,11 @@ export const ExamAdmitCards: React.FC = () => {
                         </div>
                     )}
 
-                    {!selectedStudentId ? (
+                    {selectedStudentIds.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
                             <FileText className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-700" />
                             <p className="text-lg font-medium text-gray-500">No Student Selected</p>
-                            <p className="text-sm mt-1">Select a student from the list to preview their Admit Card.</p>
+                            <p className="text-sm mt-1">Select a student (or all) from the list to preview their Admit Card.</p>
                         </div>
                     ) : isLoadingPreview ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
