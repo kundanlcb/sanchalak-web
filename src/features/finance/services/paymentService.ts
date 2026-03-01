@@ -5,6 +5,8 @@ export interface PaymentRequest {
     amount: number;
     paymentMethod: string;
     transactionReference?: string;
+    categoryId?: number;
+    monthLabel?: string;
 }
 
 export interface PaymentTransactionResponse {

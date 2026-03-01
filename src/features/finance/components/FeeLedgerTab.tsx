@@ -11,6 +11,7 @@ import { demandBillService, type DemandBillPreviewItem } from '../services/deman
 import { paymentService } from '../services/paymentService';
 import { apiClient } from '../../../services/api/client';
 import { getStudents } from '../../students/services/studentService';
+import { useFees } from '../hooks/useFees';
 import { Modal } from '../../../components/common/Modal';
 import { Input } from '../../../components/common/Input';
 import { Select } from '../../../components/common/Select';
@@ -87,8 +88,12 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
     const [paymentAmount, setPaymentAmount] = useState<number | ''>('');
     const [paymentMethod, setPaymentMethod] = useState('CASH');
     const [paymentRef, setPaymentRef] = useState('');
+    const [paymentCategory, setPaymentCategory] = useState<number | ''>('');
+    const [paymentMonth, setPaymentMonth] = useState('');
     const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
     const [isGeneratingBill, setIsGeneratingBill] = useState(false);
+
+    const { categories } = useFees();
 
     // Auto-select first class
     useEffect(() => {
@@ -199,7 +204,9 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
                 studentId: detailStudent.id,
                 amount: Number(paymentAmount),
                 paymentMethod,
-                transactionReference: paymentRef
+                transactionReference: paymentRef,
+                categoryId: paymentCategory ? Number(paymentCategory) : undefined,
+                monthLabel: paymentMonth || undefined
             });
             showToast('Payment credited successfully!', 'success');
             setShowPaymentModal(false);
@@ -649,6 +656,31 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
                         <option value="UPI">UPI</option>
                         <option value="CARD">Debit/Credit Card</option>
                         <option value="BANK_TRANSFER">Bank Transfer / NEFT</option>
+                    </Select>
+
+                    <Select
+                        label="Fee Type (Optional)"
+                        value={paymentCategory}
+                        onChange={e => setPaymentCategory(e.target.value ? Number(e.target.value) : '')}
+                    >
+                        <option value="">-- General Payment (Any Fee) --</option>
+                        {categories.map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        label="For Month (Optional)"
+                        value={paymentMonth}
+                        onChange={e => setPaymentMonth(e.target.value)}
+                    >
+                        <option value="">-- No Specific Month --</option>
+                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                            .map(m => {
+                                const year = new Date().getFullYear();
+                                const label = `${m} ${year}`;
+                                return <option key={label} value={label}>{label}</option>;
+                            })}
                     </Select>
 
                     <Input
