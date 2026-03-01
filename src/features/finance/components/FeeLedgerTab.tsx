@@ -90,6 +90,7 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
     const [paymentRef, setPaymentRef] = useState('');
     const [paymentCategory, setPaymentCategory] = useState<number | ''>('');
     const [paymentMonth, setPaymentMonth] = useState('');
+    const [paymentYear, setPaymentYear] = useState<string>(new Date().getFullYear().toString());
     const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
     const [isGeneratingBill, setIsGeneratingBill] = useState(false);
 
@@ -200,13 +201,15 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
 
         setIsSubmittingPayment(true);
         try {
+            const finalMonthLabel = paymentMonth && paymentYear ? `${paymentMonth} ${paymentYear}` : paymentMonth || paymentYear || undefined;
+
             const receipt = await paymentService.recordPayment({
                 studentId: detailStudent.id,
                 amount: Number(paymentAmount),
                 paymentMethod,
                 transactionReference: paymentRef,
                 categoryId: paymentCategory ? Number(paymentCategory) : undefined,
-                monthLabel: paymentMonth || undefined
+                monthLabel: finalMonthLabel
             });
             showToast('Payment credited successfully!', 'success');
             setShowPaymentModal(false);
@@ -669,19 +672,31 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
                         ))}
                     </Select>
 
-                    <Select
-                        label="For Month (Optional)"
-                        value={paymentMonth}
-                        onChange={e => setPaymentMonth(e.target.value)}
-                    >
-                        <option value="">-- No Specific Month --</option>
-                        {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-                            .map(m => {
-                                const year = new Date().getFullYear();
-                                const label = `${m} ${year}`;
-                                return <option key={label} value={label}>{label}</option>;
-                            })}
-                    </Select>
+                    <div className="flex gap-4">
+                        <Select
+                            label="For Month (Optional)"
+                            value={paymentMonth}
+                            onChange={e => setPaymentMonth(e.target.value)}
+                            className="flex-1"
+                        >
+                            <option value="">-- No Specific Month --</option>
+                            {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                                .map(m => (
+                                    <option key={m} value={m}>{m}</option>
+                                ))}
+                        </Select>
+
+                        <Select
+                            label="For Year"
+                            value={paymentYear}
+                            onChange={e => setPaymentYear(e.target.value)}
+                            className="w-1/3"
+                        >
+                            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
+                                <option key={y} value={y.toString()}>{y}</option>
+                            ))}
+                        </Select>
+                    </div>
 
                     <Input
                         label="Transaction Reference (Optional)"
