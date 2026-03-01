@@ -8,8 +8,13 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../../components/common/ToastContext';
 import { demandBillService, type DemandBillPreviewItem } from '../services/demandBillService';
+import { paymentService } from '../services/paymentService';
 import { apiClient } from '../../../services/api/client';
 import { getStudents } from '../../students/services/studentService';
+import { Modal } from '../../../components/common/Modal';
+import { Input } from '../../../components/common/Input';
+import { Select } from '../../../components/common/Select';
+import { Button } from '../../../components/common/Button';
 
 interface ClassOption { id: number; name: string; }
 interface StudentRow {
@@ -76,6 +81,14 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
     const [detailStudent, setDetailStudent] = useState<StudentRow | null>(null);
     const [detailBills, setDetailBills] = useState<DemandBillPreviewItem[]>([]);
     const [loadingDetail, setLoadingDetail] = useState(false);
+
+    // ── Payment state ───────────────────────────────────────────────────────
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [paymentAmount, setPaymentAmount] = useState<number | ''>('');
+    const [paymentMethod, setPaymentMethod] = useState('CASH');
+    const [paymentRef, setPaymentRef] = useState('');
+    const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+    const [isGeneratingBill, setIsGeneratingBill] = useState(false);
 
     // Auto-select first class
     useEffect(() => {
@@ -168,12 +181,87 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
         setSendingAll(false);
     };
 
-    // Detail
     const openDetail = async (row: StudentRow) => {
         setDetailStudent(row); setLoadingDetail(true); setDetailBills([]);
         try { setDetailBills(await demandBillService.getStudentHistory(row.id) || []); }
         catch { showToast('Failed to load history', 'error'); }
         finally { setLoadingDetail(false); }
+    };
+
+    // Credit Payment
+    const handleCreditPayment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!detailStudent || paymentAmount === '' || paymentAmount <= 0) return;
+
+        setIsSubmittingPayment(true);
+        try {
+            const receipt = await paymentService.recordPayment({
+                studentId: detailStudent.id,
+                amount: Number(paymentAmount),
+                paymentMethod,
+                transactionReference: paymentRef
+            });
+            showToast('Payment credited successfully!', 'success');
+            setShowPaymentModal(false);
+
+            if (window.confirm("Payment successful! Would you like to download the receipt?")) {
+                const blob = await paymentService.downloadReceipt(receipt.receiptNo);
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Receipt_${receipt.receiptNo}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }
+
+            // Refresh data
+            setPaymentAmount('');
+            setPaymentRef('');
+            setPage(1);
+            getStudents({ classId: selectedClassId!, limit: 200 })
+                .then(r => setRawStudents(r.students.map(s => ({ id: s.id, name: s.name, rollNumber: s.rollNumber }))));
+            demandBillService.getClassHistory(selectedClassId!)
+                .then(data => setClassHistory(data || []));
+
+            // Refresh Drawer bills
+            setDetailBills(await demandBillService.getStudentHistory(detailStudent.id) || []);
+            // Update detailStudent totalDues optimistically or re-fetch
+            setDetailStudent(prev => prev ? { ...prev, totalDues: Math.max(0, prev.totalDues - Number(paymentAmount)) } : null);
+        } catch (error) {
+            showToast('Failed to credit payment', 'error');
+            console.error(error);
+        } finally {
+            setIsSubmittingPayment(false);
+        }
+    };
+
+    // Generate Single Demand Bill
+    const handleGenerateDemandBill = async () => {
+        if (!detailStudent) return;
+        setIsGeneratingBill(true);
+        try {
+            const blob = await demandBillService.generatePdf({
+                monthLabel: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
+                studentId: detailStudent.id,
+                lineItems: []
+            });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `DemandBill_${detailStudent.name.replace(/\s+/g, '_')}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            showToast('Demand Bill generated successfully', 'success');
+
+            // Refresh Drawer bills
+            setDetailBills(await demandBillService.getStudentHistory(detailStudent.id) || []);
+        } catch {
+            showToast('Failed to generate demand bill', 'error');
+        } finally {
+            setIsGeneratingBill(false);
+        }
     };
 
     const loading = loadingStudents || loadingBills;
@@ -214,14 +302,7 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
                     </div>
                 </div>
 
-                {/* Record count indicator */}
-                {!loading && (
-                    <div className="self-end pb-0.5">
-                        <span className="text-sm text-gray-400 dark:text-gray-500">
-                            {filtered.length} student{filtered.length !== 1 ? 's' : ''}
-                        </span>
-                    </div>
-                )}
+
             </div>
 
             {/* ── Summary cards ──────────────────────────────────────────── */}
@@ -459,16 +540,28 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-2 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                        <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
                             {detailStudent.totalDues > 0 && (
-                                <button onClick={() => sendReminder(detailStudent.id)} disabled={sendingId === detailStudent.id}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 text-white text-xs font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm">
-                                    {sendingId === detailStudent.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
-                                    Send Reminder
-                                </button>
+                                <>
+                                    <button onClick={() => setShowPaymentModal(true)}
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+                                        <IndianRupee className="h-3.5 w-3.5" />
+                                        Credit Payment
+                                    </button>
+                                    <button onClick={() => sendReminder(detailStudent.id)} disabled={sendingId === detailStudent.id}
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 text-white text-xs font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm">
+                                        {sendingId === detailStudent.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+                                        Send Reminder
+                                    </button>
+                                </>
                             )}
+                            <button onClick={handleGenerateDemandBill} disabled={isGeneratingBill}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm">
+                                {isGeneratingBill ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Receipt className="h-3.5 w-3.5" />}
+                                Generate Bill
+                            </button>
                             <button onClick={() => window.location.href = `/students/${detailStudent.id}`}
-                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ml-auto">
                                 View Full Profile
                             </button>
                         </div>
@@ -527,6 +620,55 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
                     </div>
                 </div>
             )}
+
+            {/* ── Payment Modal ─────────────────────────────────────────── */}
+            <Modal
+                isOpen={showPaymentModal}
+                onClose={() => setShowPaymentModal(false)}
+                title={`Credit Payment: ${detailStudent?.name}`}
+            >
+                <form onSubmit={handleCreditPayment} className="space-y-4">
+                    <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900 rounded-lg p-3">
+                        <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Pending Dues: <span className="font-bold">₹{detailStudent?.totalDues.toLocaleString('en-IN')}</span></p>
+                    </div>
+
+                    <Input
+                        label="Payment Amount (₹)"
+                        type="number"
+                        required
+                        min="1"
+                        value={paymentAmount}
+                        onChange={e => setPaymentAmount(e.target.value ? Number(e.target.value) : '')}
+                        placeholder={detailStudent?.totalDues.toString()}
+                    />
+
+                    <Select
+                        label="Payment Method"
+                        value={paymentMethod}
+                        onChange={e => setPaymentMethod(e.target.value)}
+                    >
+                        <option value="CASH">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="CARD">Debit/Credit Card</option>
+                        <option value="BANK_TRANSFER">Bank Transfer / NEFT</option>
+                    </Select>
+
+                    <Input
+                        label="Transaction Reference (Optional)"
+                        value={paymentRef}
+                        onChange={e => setPaymentRef(e.target.value)}
+                        placeholder="e.g. UPI Ref / Cheque No"
+                    />
+
+                    <div className="pt-4 flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
+                        <Button type="submit" disabled={isSubmittingPayment || paymentAmount === '' || paymentAmount <= 0}>
+                            {isSubmittingPayment ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <IndianRupee className="w-4 h-4 mr-2" />}
+                            Credit ₹{paymentAmount || '0'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };

@@ -1,18 +1,11 @@
 import React from 'react';
 import { Trophy } from 'lucide-react';
 import { Skeleton } from '../../../components/common/Skeleton';
-
-interface Student {
-    id: string;
-    name: string;
-    marks: number;
-    percentage: number;
-    section: string;
-}
+import type { StarStudent } from '../types/dashboard.types';
 
 interface StarStudentTableProps {
     loading?: boolean;
-    students?: Student[];
+    students?: StarStudent[];
 }
 
 export const StarStudentTable: React.FC<StarStudentTableProps> = ({ loading, students = [] }) => {
@@ -51,10 +44,10 @@ export const StarStudentTable: React.FC<StarStudentTableProps> = ({ loading, stu
                                         {student.id}
                                     </td>
                                     <td className="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">
-                                        {student.marks}
+                                        {student.totalMarks}
                                     </td>
                                     <td className="px-6 py-4 text-right text-green-600 font-medium">
-                                        {student.percentage}%
+                                        {Number(student.percentage).toFixed(1)}%
                                     </td>
                                 </tr>
                             ))

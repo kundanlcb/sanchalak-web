@@ -1,20 +1,26 @@
 import React from 'react';
 import { Users, GraduationCap, School, IndianRupee } from 'lucide-react';
 import { StatsCard } from '../components/StatsCard';
-import { ExamResultChart } from '../components/ExamResultChart';
+import { GrowthGraph } from '../components/GrowthGraph';
 import { GenderDonutChart } from '../components/GenderDonutChart';
 import { StarStudentTable } from '../components/StarStudentTable';
 import { RecentActivity } from '../components/RecentActivity';
 import { useDashboardStats } from '../hooks/useDashboardStats';
+import { useDashboardGender } from '../hooks/useDashboardGender';
+import { useDashboardStarStudents } from '../hooks/useDashboardStarStudents';
+import { useDashboardActivity } from '../hooks/useDashboardActivity';
 import { useAuth } from '../../auth/services/authContext';
 
 export const DashboardHome: React.FC = () => {
     const { stats, loading } = useDashboardStats();
+    const { data: genderData, loading: genderLoading } = useDashboardGender();
+    const { students: starStudents, loading: studentsLoading } = useDashboardStarStudents();
+    const { activities, loading: activityLoading } = useDashboardActivity();
     const { user } = useAuth();
     const permissions = user?.permissions || [];
 
     const hasFinance = user?.role === 'Admin' || permissions.includes('FINANCE') || permissions.includes('FEES');
-    const hasExams = user?.role === 'Admin' || permissions.includes('EXAMS');
+
 
     const formatCurrency = (amount: number) =>
         new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
@@ -51,21 +57,21 @@ export const DashboardHome: React.FC = () => {
 
             {/* ── Charts Row ─────────────────────────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className={hasExams ? 'lg:col-span-2' : 'hidden'}>
-                    <ExamResultChart loading={loading} />
+                <div className="lg:col-span-2">
+                    <GrowthGraph />
                 </div>
-                <div className={hasExams ? 'lg:col-span-1' : 'lg:col-span-3'}>
-                    <GenderDonutChart loading={loading} />
+                <div className="lg:col-span-1">
+                    <GenderDonutChart loading={genderLoading || loading} data={genderData} />
                 </div>
             </div>
 
             {/* ── Tables & Activity Row ──────────────────────────────── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                    <StarStudentTable loading={loading} />
+                    <StarStudentTable loading={studentsLoading || loading} students={starStudents} />
                 </div>
                 <div className="lg:col-span-1">
-                    <RecentActivity loading={loading} />
+                    <RecentActivity loading={activityLoading || loading} activities={activities} />
                 </div>
             </div>
         </div>

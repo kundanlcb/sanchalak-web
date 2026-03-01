@@ -4,17 +4,20 @@ import { ExamTermList } from '../components/ExamTermList';
 import { ExamTermForm } from '../components/ExamTermForm';
 import { type ExamTermFormData } from '../types/schema';
 import { Button } from '../../../components/common/Button';
-import { Plus, Calendar, ClipboardList, FileQuestion, BarChart3 } from 'lucide-react';
+import { Plus, Calendar, ClipboardList, FileQuestion, BarChart3, FileText } from 'lucide-react';
 import { type CreateExamTermRequest, type ExamTerm } from '../types';
 import { ExamScheduleConfig } from '../components/ExamScheduleConfig';
 import { ExamQuestionPaper } from '../components/ExamQuestionPaper';
+import { ExamAdmitCards } from '../components/ExamAdmitCards';
+import { ExamResultsMarksheet } from '../components/ExamResultsMarksheet';
 
-type ExamTab = 'terms' | 'schedules' | 'questions' | 'results';
+type ExamTab = 'terms' | 'schedules' | 'questions' | 'admit-cards' | 'results';
 
 const tabConfig: { key: ExamTab; label: string; icon: React.ElementType }[] = [
   { key: 'terms', label: 'Exam Terms', icon: Calendar },
   { key: 'schedules', label: 'Schedules', icon: ClipboardList },
   { key: 'questions', label: 'Question Papers', icon: FileQuestion },
+  { key: 'admit-cards', label: 'Admit Cards', icon: FileText },
   { key: 'results', label: 'Results', icon: BarChart3 },
 ];
 
@@ -137,18 +140,8 @@ export const ExamConfigPage: React.FC = () => {
 
       {activeTab === 'schedules' && <ExamScheduleConfig />}
       {activeTab === 'questions' && <ExamQuestionPaper />}
-      {activeTab === 'results' && (
-        <div className="space-y-6 mt-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Exam Results</h2>
-          <p className="text-sm text-gray-500">View and manage student marks and results per exam.</p>
-          <div className="p-12 text-center text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-            <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="font-medium">Results & Marks Entry</p>
-            <p className="text-sm mt-1">Use the existing Marks Entry page under Academics to enter student marks.</p>
-            <p className="text-sm mt-1">Result analytics and report cards are coming soon.</p>
-          </div>
-        </div>
-      )}
+      {activeTab === 'admit-cards' && <ExamAdmitCards />}
+      {activeTab === 'results' && <ExamResultsMarksheet />}
     </div>
   );
 };

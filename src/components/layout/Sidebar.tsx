@@ -90,6 +90,7 @@ const navGroups: NavGroup[] = [
     icon: Users,
     color: 'emerald',
     items: [
+      { name: 'Documents', path: '/admin/documents', icon: FileUser, featureCode: 'DOCUMENTS' },
       { name: 'Attendance', path: '/attendance', icon: ClipboardList, featureCode: 'ATTENDANCE' },
       { name: 'Homework', path: '/homework', icon: BookOpen, featureCode: 'HOMEWORK' },
     ]

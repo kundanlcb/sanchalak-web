@@ -48,6 +48,7 @@ import { FinancialReportsPage } from './features/analytics/pages/FinancialReport
 import { DashboardHome } from './features/dashboard/pages/DashboardHome';
 import { AccountPage } from './features/profile/pages/AccountPage';
 import { SchoolTemplatePage } from './features/settings/pages/SchoolTemplatePage';
+import { DocumentManagementPage } from './features/documents/pages/DocumentManagementPage';
 
 // Placeholder pages (will be replaced in Phase 6+) - Dashboard removed
 
@@ -140,6 +141,16 @@ function App() {
                   <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
                     <AuthenticatedLayout>
                       <StudentForm />
+                    </AuthenticatedLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/documents"
+                element={
+                  <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+                    <AuthenticatedLayout>
+                      <DocumentManagementPage />
                     </AuthenticatedLayout>
                   </ProtectedRoute>
                 }
