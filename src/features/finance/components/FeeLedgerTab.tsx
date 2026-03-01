@@ -541,19 +541,17 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
 
                         {/* Actions */}
                         <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+                            <button onClick={() => setShowPaymentModal(true)}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+                                <IndianRupee className="h-3.5 w-3.5" />
+                                Credit Payment
+                            </button>
                             {detailStudent.totalDues > 0 && (
-                                <>
-                                    <button onClick={() => setShowPaymentModal(true)}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm">
-                                        <IndianRupee className="h-3.5 w-3.5" />
-                                        Credit Payment
-                                    </button>
-                                    <button onClick={() => sendReminder(detailStudent.id)} disabled={sendingId === detailStudent.id}
-                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 text-white text-xs font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm">
-                                        {sendingId === detailStudent.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
-                                        Send Reminder
-                                    </button>
-                                </>
+                                <button onClick={() => sendReminder(detailStudent.id)} disabled={sendingId === detailStudent.id}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 text-white text-xs font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm">
+                                    {sendingId === detailStudent.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+                                    Send Reminder
+                                </button>
                             )}
                             <button onClick={handleGenerateDemandBill} disabled={isGeneratingBill}
                                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm">
