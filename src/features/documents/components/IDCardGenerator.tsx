@@ -21,9 +21,12 @@ export const IDCardGenerator: React.FC = () => {
 
     useEffect(() => {
         fetchStructure();
+    }, [fetchStructure]);
+
+    useEffect(() => {
         // Load school dynamic template data once on mount
         documentTemplateService.get().then(res => setSchoolTemplate(res)).catch(err => console.error("Could not load setting", err));
-    }, [fetchStructure]);
+    }, []);
 
     useEffect(() => {
         // Reset selections when class changes

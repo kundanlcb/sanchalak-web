@@ -27,8 +27,11 @@ export const TCGenerator: React.FC = () => {
 
     useEffect(() => {
         fetchStructure();
-        documentTemplateService.get().then(res => setSchoolTemplate(res)).catch(err => console.error("Could not load setting", err));
     }, [fetchStructure]);
+
+    useEffect(() => {
+        documentTemplateService.get().then(res => setSchoolTemplate(res)).catch(err => console.error("Could not load setting", err));
+    }, []);
 
     useEffect(() => {
         // Reset selections when class changes
