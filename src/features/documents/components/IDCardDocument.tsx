@@ -260,7 +260,7 @@ export const IDCardDocument: React.FC<IDCardDocumentProps> = ({
         <Document>
             <Page size="A4" style={styles.page}>
                 {students.map((student, index) => (
-                    <View key={index} style={isPortrait ? styles.cardPortrait : styles.cardLandscape}>
+                    <View key={index} style={isPortrait ? styles.cardPortrait : styles.cardLandscape} wrap={false}>
 
                         {isPortrait ? (
                             // PORTRAIT STRUCTURE (Minimal & Premium)
