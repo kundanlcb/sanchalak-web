@@ -678,29 +678,31 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
                     </Select>
 
                     <div className="flex gap-4">
-                        <Select
-                            label="For Month (Optional)"
-                            value={paymentMonth}
-                            onChange={e => setPaymentMonth(e.target.value)}
-                            className="flex-1"
-                        >
-                            <option value="">-- No Specific Month --</option>
-                            {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-                                .map(m => (
-                                    <option key={m} value={m}>{m}</option>
-                                ))}
-                        </Select>
+                        <div className="flex-1">
+                            <Select
+                                label="For Month (Optional)"
+                                value={paymentMonth}
+                                onChange={e => setPaymentMonth(e.target.value)}
+                            >
+                                <option value="">-- No Specific Month --</option>
+                                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                                    .map(m => (
+                                        <option key={m} value={m}>{m}</option>
+                                    ))}
+                            </Select>
+                        </div>
 
-                        <Select
-                            label="For Year"
-                            value={paymentYear}
-                            onChange={e => setPaymentYear(e.target.value)}
-                            className="w-1/3"
-                        >
-                            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
-                                <option key={y} value={y.toString()}>{y}</option>
-                            ))}
-                        </Select>
+                        <div className="flex-1">
+                            <Select
+                                label="For Year"
+                                value={paymentYear}
+                                onChange={e => setPaymentYear(e.target.value)}
+                            >
+                                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => (
+                                    <option key={y} value={y.toString()}>{y}</option>
+                                ))}
+                            </Select>
+                        </div>
                     </div>
 
                     <Input
