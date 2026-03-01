@@ -201,7 +201,12 @@ export const FeeLedgerTab: React.FC<Props> = ({ classes }) => {
 
         setIsSubmittingPayment(true);
         try {
-            const finalMonthLabel = paymentMonth && paymentYear ? `${paymentMonth} ${paymentYear}` : paymentMonth || paymentYear || undefined;
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            let finalMonthLabel: string | undefined = undefined;
+            if (paymentMonth && paymentYear) {
+                const mIndex = months.indexOf(paymentMonth) + 1;
+                finalMonthLabel = `${paymentYear}-${mIndex.toString().padStart(2, '0')}-01`;
+            }
 
             const receipt = await paymentService.recordPayment({
                 studentId: detailStudent.id,
