@@ -256,104 +256,113 @@ export const IDCardDocument: React.FC<IDCardDocumentProps> = ({
     if (schoolTemplate?.addressLine2) addressParts.push(schoolTemplate.addressLine2);
     const SCHOOL_ADDRESS = addressParts.join(', ') || '123 Education Lane, Knowledge City, State - 123456';
 
+    // Chunk students to explicitly handle pagination without clipping
+    const chunkSize = isPortrait ? 9 : 4;
+    const pages = [];
+    for (let i = 0; i < students.length; i += chunkSize) {
+        pages.push(students.slice(i, i + chunkSize));
+    }
+
     return (
         <Document>
-            <Page size="A4" style={styles.page}>
-                {students.map((student, index) => (
-                    <View key={index} style={isPortrait ? styles.cardPortrait : styles.cardLandscape} wrap={false}>
+            {pages.map((pageStudents, pageIndex) => (
+                <Page key={pageIndex} size="A4" style={styles.page}>
+                    {pageStudents.map((student, index) => (
+                        <View key={index} style={isPortrait ? styles.cardPortrait : styles.cardLandscape} wrap={false}>
 
-                        {isPortrait ? (
-                            // PORTRAIT STRUCTURE (Minimal & Premium)
-                            <React.Fragment>
-                                <View style={styles.headerBoxPortrait}>
-                                    <Text style={styles.schoolNamePortrait}>{SCHOOL_NAME}</Text>
-                                    <Text style={styles.schoolAddressPortrait}>{SCHOOL_ADDRESS}</Text>
-                                    <View style={styles.badgePortrait}>
-                                        <Text style={styles.badgeTextPortrait}>STUDENT ID</Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.photoContainerPortrait}>
-                                    <Image src={student.photoUrl || PLACEHOLDER_AVATAR} style={styles.photo} />
-                                </View>
-
-                                <View style={styles.detailsPortrait}>
-                                    <Text style={styles.studentNamePortrait}>{student.name}</Text>
-                                    <Text style={styles.studentClassPortrait}>Class: {student.className} - {student.section}</Text>
-
-                                    <View style={styles.infoGridPortrait}>
-                                        <View style={styles.infoRow}>
-                                            <Text style={styles.infoLabelPortrait}>Roll No</Text>
-                                            <Text style={styles.infoValuePortrait}>{student.rollNumber}</Text>
-                                        </View>
-                                        <View style={styles.infoRow}>
-                                            <Text style={styles.infoLabelPortrait}>D.O.B</Text>
-                                            <Text style={styles.infoValuePortrait}>{student.dob}</Text>
-                                        </View>
-                                        <View style={styles.infoRow}>
-                                            <Text style={styles.infoLabelPortrait}>Blood Grp</Text>
-                                            <Text style={styles.infoValuePortrait}>{student.bloodGroup}</Text>
-                                        </View>
-                                        <View style={styles.infoRow}>
-                                            <Text style={styles.infoLabelPortrait}>Phone</Text>
-                                            <Text style={styles.infoValuePortrait}>{student.phone}</Text>
+                            {isPortrait ? (
+                                // PORTRAIT STRUCTURE (Minimal & Premium)
+                                <React.Fragment>
+                                    <View style={styles.headerBoxPortrait}>
+                                        <Text style={styles.schoolNamePortrait}>{SCHOOL_NAME}</Text>
+                                        <Text style={styles.schoolAddressPortrait}>{SCHOOL_ADDRESS}</Text>
+                                        <View style={styles.badgePortrait}>
+                                            <Text style={styles.badgeTextPortrait}>STUDENT ID</Text>
                                         </View>
                                     </View>
-                                </View>
 
-                                <View style={styles.footerPortrait}>
-                                    <Text style={styles.footerTextPortrait}>VALID FOR ACADEMIC YEAR</Text>
-                                </View>
-                            </React.Fragment>
-                        ) : (
-                            // LANDSCAPE STRUCTURE (Minimal & Premium)
-                            <React.Fragment>
-                                <View style={styles.leftPanelLandscape}>
-                                    <View style={styles.photoContainerLandscape}>
+                                    <View style={styles.photoContainerPortrait}>
                                         <Image src={student.photoUrl || PLACEHOLDER_AVATAR} style={styles.photo} />
                                     </View>
-                                    <View style={styles.badgeLandscape}>
-                                        <Text style={styles.badgeTextLandscape}>STUDENT ID</Text>
-                                    </View>
-                                </View>
 
-                                <View style={styles.rightPanelLandscape}>
-                                    <Text style={styles.schoolNameLandscape}>{SCHOOL_NAME}</Text>
-                                    <Text style={styles.schoolAddressLandscape}>{SCHOOL_ADDRESS}</Text>
+                                    <View style={styles.detailsPortrait}>
+                                        <Text style={styles.studentNamePortrait}>{student.name}</Text>
+                                        <Text style={styles.studentClassPortrait}>Class: {student.className} - {student.section}</Text>
 
-                                    <Text style={styles.studentNameLandscape}>{student.name}</Text>
-                                    <Text style={styles.studentClassLandscape}>Class: {student.className} - {student.section}</Text>
-
-                                    <View style={styles.infoGridLandscape}>
-                                        <View style={styles.infoColLandscape}>
-                                            <Text style={styles.infoLabelLandscape}>Roll No</Text>
-                                            <Text style={styles.infoValueLandscape}>{student.rollNumber}</Text>
-                                        </View>
-                                        <View style={styles.infoColLandscape}>
-                                            <Text style={styles.infoLabelLandscape}>D.O.B</Text>
-                                            <Text style={styles.infoValueLandscape}>{student.dob}</Text>
-                                        </View>
-                                        <View style={styles.infoColLandscape}>
-                                            <Text style={styles.infoLabelLandscape}>Blood Group</Text>
-                                            <Text style={styles.infoValueLandscape}>{student.bloodGroup}</Text>
-                                        </View>
-                                        <View style={styles.infoColLandscape}>
-                                            <Text style={styles.infoLabelLandscape}>Phone</Text>
-                                            <Text style={styles.infoValueLandscape}>{student.phone}</Text>
+                                        <View style={styles.infoGridPortrait}>
+                                            <View style={styles.infoRow}>
+                                                <Text style={styles.infoLabelPortrait}>Roll No</Text>
+                                                <Text style={styles.infoValuePortrait}>{student.rollNumber}</Text>
+                                            </View>
+                                            <View style={styles.infoRow}>
+                                                <Text style={styles.infoLabelPortrait}>D.O.B</Text>
+                                                <Text style={styles.infoValuePortrait}>{student.dob}</Text>
+                                            </View>
+                                            <View style={styles.infoRow}>
+                                                <Text style={styles.infoLabelPortrait}>Blood Grp</Text>
+                                                <Text style={styles.infoValuePortrait}>{student.bloodGroup}</Text>
+                                            </View>
+                                            <View style={styles.infoRow}>
+                                                <Text style={styles.infoLabelPortrait}>Phone</Text>
+                                                <Text style={styles.infoValuePortrait}>{student.phone}</Text>
+                                            </View>
                                         </View>
                                     </View>
 
-                                    <View style={styles.addressBlockLandscape}>
-                                        <Text style={styles.infoLabelLandscape}>Student Address</Text>
-                                        <Text style={styles.infoValueLandscape}>{student.address || 'N/A'}</Text>
+                                    <View style={styles.footerPortrait}>
+                                        <Text style={styles.footerTextPortrait}>VALID FOR ACADEMIC YEAR</Text>
                                     </View>
-                                </View>
-                            </React.Fragment>
-                        )}
+                                </React.Fragment>
+                            ) : (
+                                // LANDSCAPE STRUCTURE (Minimal & Premium)
+                                <React.Fragment>
+                                    <View style={styles.leftPanelLandscape}>
+                                        <View style={styles.photoContainerLandscape}>
+                                            <Image src={student.photoUrl || PLACEHOLDER_AVATAR} style={styles.photo} />
+                                        </View>
+                                        <View style={styles.badgeLandscape}>
+                                            <Text style={styles.badgeTextLandscape}>STUDENT ID</Text>
+                                        </View>
+                                    </View>
 
-                    </View>
-                ))}
-            </Page>
+                                    <View style={styles.rightPanelLandscape}>
+                                        <Text style={styles.schoolNameLandscape}>{SCHOOL_NAME}</Text>
+                                        <Text style={styles.schoolAddressLandscape}>{SCHOOL_ADDRESS}</Text>
+
+                                        <Text style={styles.studentNameLandscape}>{student.name}</Text>
+                                        <Text style={styles.studentClassLandscape}>Class: {student.className} - {student.section}</Text>
+
+                                        <View style={styles.infoGridLandscape}>
+                                            <View style={styles.infoColLandscape}>
+                                                <Text style={styles.infoLabelLandscape}>Roll No</Text>
+                                                <Text style={styles.infoValueLandscape}>{student.rollNumber}</Text>
+                                            </View>
+                                            <View style={styles.infoColLandscape}>
+                                                <Text style={styles.infoLabelLandscape}>D.O.B</Text>
+                                                <Text style={styles.infoValueLandscape}>{student.dob}</Text>
+                                            </View>
+                                            <View style={styles.infoColLandscape}>
+                                                <Text style={styles.infoLabelLandscape}>Blood Group</Text>
+                                                <Text style={styles.infoValueLandscape}>{student.bloodGroup}</Text>
+                                            </View>
+                                            <View style={styles.infoColLandscape}>
+                                                <Text style={styles.infoLabelLandscape}>Phone</Text>
+                                                <Text style={styles.infoValueLandscape}>{student.phone}</Text>
+                                            </View>
+                                        </View>
+
+                                        <View style={styles.addressBlockLandscape}>
+                                            <Text style={styles.infoLabelLandscape}>Student Address</Text>
+                                            <Text style={styles.infoValueLandscape}>{student.address || 'N/A'}</Text>
+                                        </View>
+                                    </View>
+                                </React.Fragment>
+                            )}
+
+                        </View>
+                    ))}
+                </Page>
+            ))}
         </Document>
     );
 };
