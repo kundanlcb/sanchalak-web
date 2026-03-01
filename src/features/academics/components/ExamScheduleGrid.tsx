@@ -78,11 +78,11 @@ export const ExamScheduleGrid: React.FC<ExamScheduleGridProps> = ({ examTermId, 
                         <tr>
                             <th className={thCls}>Subject</th>
                             <th className={thCls}>Exam Date</th>
-                            <th className={`${thCls} w-20`}>Max Marks</th>
-                            <th className={`${thCls} w-20`}>Pass Marks</th>
+                            <th className={`${thCls} w-28`}>Max Marks</th>
+                            <th className={`${thCls} w-28`}>Pass Marks</th>
                             <th className={thCls}>Start Time</th>
                             <th className={thCls}>End Time</th>
-                            <th className={`${thCls} w-20`}>Duration (min)</th>
+                            <th className={`${thCls} w-24`}>Duration (min)</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -105,7 +105,7 @@ export const ExamScheduleGrid: React.FC<ExamScheduleGridProps> = ({ examTermId, 
                                     <td className={tdCls}>
                                         <input
                                             type="number" min="1"
-                                            className={`${inputCls} w-20`}
+                                            className={`${inputCls} w-28`}
                                             value={getVal(subject.id, 'maxMarks', String(existing?.maxMarks ?? 100))}
                                             onChange={(e) => setVal(subject.id, 'maxMarks', e.target.value)}
                                         />
@@ -113,7 +113,7 @@ export const ExamScheduleGrid: React.FC<ExamScheduleGridProps> = ({ examTermId, 
                                     <td className={tdCls}>
                                         <input
                                             type="number" min="0"
-                                            className={`${inputCls} w-20`}
+                                            className={`${inputCls} w-28`}
                                             value={getVal(subject.id, 'passingMarks', String(existing?.passingMarks ?? 35))}
                                             onChange={(e) => setVal(subject.id, 'passingMarks', e.target.value)}
                                         />
