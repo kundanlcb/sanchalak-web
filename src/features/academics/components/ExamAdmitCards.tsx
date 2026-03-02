@@ -7,6 +7,9 @@ import { Button } from '../../../components/common/Button';
 import { Download, Loader2, Users, FileText } from 'lucide-react';
 import { apiClient } from '../../../services/api/client';
 import { useToast } from '../../../components/common/ToastContext';
+import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import { AdmitCardDocument } from './AdmitCardDocument';
+import type { AdmitCardDataResponse } from './AdmitCardDocument';
 
 export const ExamAdmitCards: React.FC = () => {
     const { examTerms } = useExamTerms();
@@ -17,9 +20,8 @@ export const ExamAdmitCards: React.FC = () => {
     const [selectedExamTerm, setSelectedExamTerm] = useState('');
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
-    const [isGeneratingBulk, setIsGeneratingBulk] = useState(false);
     const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [admitCardData, setAdmitCardData] = useState<AdmitCardDataResponse | null>(null);
 
     const [classId, section] = selectedClassTerm.split('|');
     const { students, isLoading: loadingStudents } = useStudentsByClass(classId || '', section || '');
@@ -35,19 +37,12 @@ export const ExamAdmitCards: React.FC = () => {
         }));
     }, [schoolClasses]);
 
-    // Cleanup object URL to prevent memory leaks
-    useEffect(() => {
-        return () => {
-            if (previewUrl) window.URL.revokeObjectURL(previewUrl);
-        };
-    }, [previewUrl]);
-
     // Automatically load preview when selection changes
     useEffect(() => {
         if (selectedStudentIds.length > 0 && selectedExamTerm && classId && section) {
             handlePreviewSelection();
         } else {
-            setPreviewUrl(null);
+            setAdmitCardData(null);
         }
     }, [selectedStudentIds, selectedExamTerm, classId, section]);
 
@@ -78,115 +73,42 @@ export const ExamAdmitCards: React.FC = () => {
         if (!selectedExamTerm) return;
 
         setIsLoadingPreview(true);
-        if (previewUrl) {
-            window.URL.revokeObjectURL(previewUrl);
-            setPreviewUrl(null);
-        }
+        setAdmitCardData(null);
 
         try {
             let response;
             // If ONLY ONE student is selected, use the individual endpoint for optimization
             if (selectedStudentIds.length === 1) {
-                response = await apiClient.post(
-                    '/api/documents/admit-card',
+                response = await apiClient.post<AdmitCardDataResponse>(
+                    '/api/documents/admit-card/data',
                     {
                         studentId: Number(selectedStudentIds[0]),
                         examTermId: Number(selectedExamTerm)
-                    },
-                    { responseType: 'blob' }
+                    }
                 );
             }
             // For multiple or all students, use the bulk endpoint with the selected IDs
             else if (selectedStudentIds.length > 1) {
-                response = await apiClient.post(
-                    '/api/documents/admit-card/bulk',
+                response = await apiClient.post<AdmitCardDataResponse>(
+                    '/api/documents/admit-card/bulk/data',
                     {
                         classId: Number(classId),
                         section,
                         examTermId: Number(selectedExamTerm),
                         studentIds: selectedStudentIds.map(id => Number(id))
-                    },
-                    { responseType: 'blob' }
+                    }
                 );
             } else {
                 setIsLoadingPreview(false);
                 return;
             }
 
-            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-            setPreviewUrl(url);
+            setAdmitCardData(response.data);
         } catch (err) {
             showToast('Failed to load Admit Card preview.', 'error');
             console.error(err);
         } finally {
             setIsLoadingPreview(false);
-        }
-    };
-
-    const handleDownloadIndividual = async () => {
-        if (!selectedExamTerm || selectedStudentIds.length !== 1) {
-            showToast('Please select exactly one Student to download individually.', 'error');
-            return;
-        }
-
-        try {
-            const response = await apiClient.post(
-                '/api/documents/admit-card',
-                {
-                    studentId: Number(selectedStudentIds[0]),
-                    examTermId: Number(selectedExamTerm)
-                },
-                { responseType: 'blob' }
-            );
-
-            // Create blob link to download
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `AdmitCard_${selectedStudentIds[0]}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            showToast('Admit Card downloaded successfully.', 'success');
-        } catch (err) {
-            showToast('Failed to download Admit Card.', 'error');
-            console.error(err);
-        }
-    };
-
-    const handleDownloadBulk = async () => {
-        if (!selectedExamTerm || !classId || !section) {
-            showToast('Please select both a Class and an Exam Term.', 'error');
-            return;
-        }
-
-        setIsGeneratingBulk(true);
-        try {
-            const response = await apiClient.post(
-                '/api/documents/admit-card/bulk',
-                {
-                    classId: Number(classId),
-                    section,
-                    examTermId: Number(selectedExamTerm),
-                    studentIds: selectedStudentIds.map(id => Number(id))
-                },
-                { responseType: 'blob' }
-            );
-
-            // Create blob link to download
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Bulk_AdmitCards_${classId}_${section}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            showToast('Bulk Admit Cards downloaded successfully.', 'success');
-        } catch (err) {
-            showToast('Failed to download Bulk Admit Cards.', 'error');
-            console.error(err);
-        } finally {
-            setIsGeneratingBulk(false);
         }
     };
 
@@ -197,14 +119,22 @@ export const ExamAdmitCards: React.FC = () => {
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Admit Cards</h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Generate and download admit cards for exams.</p>
                 </div>
-                <Button
-                    onClick={handleDownloadBulk}
-                    disabled={!selectedExamTerm || !selectedClassTerm || isGeneratingBulk}
-                    className="flex items-center shadow-lg shadow-blue-500/20"
-                >
-                    {isGeneratingBulk ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-                    Download Class Bundle
-                </Button>
+                {admitCardData && admitCardData.cards.length > 0 && (
+                    <PDFDownloadLink
+                        document={<AdmitCardDocument data={admitCardData} />}
+                        fileName={`Bulk_AdmitCards_${classId}_${section}.pdf`}
+                    >
+                        {({ loading }) => (
+                            <Button
+                                disabled={loading || !selectedExamTerm || !selectedClassTerm}
+                                className="flex items-center shadow-lg shadow-blue-500/20"
+                            >
+                                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                                {loading ? 'Preparing PDF...' : 'Download Class Bundle'}
+                            </Button>
+                        )}
+                    </PDFDownloadLink>
+                )}
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6 mt-6 min-h-[calc(100vh-16rem)]">
@@ -297,12 +227,19 @@ export const ExamAdmitCards: React.FC = () => {
 
                 {/* RIGHT PANEL: Live PDF Preview */}
                 <div className="flex-1 bg-gray-100 dark:bg-gray-950 rounded-xl shadow-inner border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col relative h-[600px] lg:h-auto">
-                    {previewUrl && selectedStudentIds.length === 1 && (
+                    {admitCardData && admitCardData.cards.length === 1 && (
                         <div className="absolute top-4 right-4 z-10 flex gap-2">
-                            <Button size="sm" variant="default" onClick={handleDownloadIndividual} className="shadow-lg shadow-blue-500/20">
-                                <Download className="w-4 h-4 mr-2" />
-                                Download Card
-                            </Button>
+                            <PDFDownloadLink
+                                document={<AdmitCardDocument data={admitCardData} />}
+                                fileName={`AdmitCard_${selectedStudentIds[0]}.pdf`}
+                            >
+                                {({ loading }) => (
+                                    <Button size="sm" variant="default" disabled={loading} className="shadow-lg shadow-blue-500/20">
+                                        <Download className="w-4 h-4 mr-2" />
+                                        {loading ? 'Preparing...' : 'Download Card'}
+                                    </Button>
+                                )}
+                            </PDFDownloadLink>
                         </div>
                     )}
 
@@ -317,9 +254,11 @@ export const ExamAdmitCards: React.FC = () => {
                             <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-500" />
                             <p>Loading document from server...</p>
                         </div>
-                    ) : previewUrl ? (
+                    ) : admitCardData ? (
                         <div className="flex-1 w-full h-full p-2">
-                            <iframe src={previewUrl} className="w-full h-full rounded-lg shadow-md border-0 bg-white" title="PDF Preview" />
+                            <PDFViewer width="100%" height="100%" showToolbar={true} className="rounded-lg shadow-md border-0 bg-white">
+                                <AdmitCardDocument data={admitCardData} />
+                            </PDFViewer>
                         </div>
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-red-400">

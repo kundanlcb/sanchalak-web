@@ -3,7 +3,6 @@
  * Initializes providers: Theme, Auth, QueryClient, and React strict mode
  */
 
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import './utils/i18n/i18nConfig'; // Initialize i18n
@@ -15,22 +14,20 @@ import { queryClient } from './lib/queryClient';
 import { persister } from './lib/persister';
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{ persister }}
-      onSuccess={() => {
-        // Resume any mutations that were paused while offline
-        queryClient.resumePausedMutations();
-      }}
-    >
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeProvider>
-    </PersistQueryClientProvider>
-  </StrictMode>,
+  <PersistQueryClientProvider
+    client={queryClient}
+    persistOptions={{ persister }}
+    onSuccess={() => {
+      // Resume any mutations that were paused while offline
+      queryClient.resumePausedMutations();
+    }}
+  >
+    <ThemeProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </ThemeProvider>
+  </PersistQueryClientProvider>
 );
 
 
