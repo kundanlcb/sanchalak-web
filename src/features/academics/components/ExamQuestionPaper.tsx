@@ -4,10 +4,11 @@ import { useAcademicStructure } from '../../school-ops/hooks/useAcademicStructur
 import { useSubjects } from '../hooks/useSubjects';
 import { useExamSchedules } from '../hooks/useExamSchedules';
 import { useExamQuestions } from '../hooks/useExamQuestions';
+import { useChapters } from '../hooks/curriculum/useChapters';
 import { useAllQuestions } from '../hooks/curriculum/useAllQuestions';
 import { Select } from '../../../components/common/Select';
 import { Button } from '../../../components/common/Button';
-import { Loader2, Plus, Trash2, FileQuestion, Check } from 'lucide-react';
+import { Loader2, Plus, Trash2, FileQuestion, Check, X } from 'lucide-react';
 
 export const ExamQuestionPaper: React.FC = () => {
     const { examTerms } = useExamTerms();
@@ -17,6 +18,13 @@ export const ExamQuestionPaper: React.FC = () => {
     const [selectedTerm, setSelectedTerm] = useState<string>('');
     const [selectedClass, setSelectedClass] = useState<string>('');
     const [selectedSubject, setSelectedSubject] = useState<string>('');
+    const [selectedChapter, setSelectedChapter] = useState<string>('');
+
+    // New Question Form State
+    const [showNewForm, setShowNewForm] = useState(false);
+    const [newText, setNewText] = useState('');
+    const [newType, setNewType] = useState<'MCQ' | 'TRUE_FALSE' | 'SUBJECTIVE'>('SUBJECTIVE');
+    const [newMarks, setNewMarks] = useState(5);
 
     // Mocks / hooks for schedules & papers
     const { schedules } = useExamSchedules({
@@ -34,10 +42,14 @@ export const ExamQuestionPaper: React.FC = () => {
         addQuestion, removeQuestion, isAdding
     } = useExamQuestions(selectedSchedule?.id);
 
-    // Fetch question bank for the selected class + subject
-    const { questions: questionBank, isLoading: loadingBank } = useAllQuestions({
+    // Fetch Chapters
+    const { chapters } = useChapters(selectedClass || undefined, selectedSubject || undefined);
+
+    // Fetch question bank for the selected class + subject + (optional) chapter
+    const { questions: questionBank, isLoading: loadingBank, createQuestion, isCreating } = useAllQuestions({
         classId: selectedClass || undefined,
         subjectId: selectedSubject || undefined,
+        chapterId: selectedChapter || undefined,
         size: 100,
     });
 
@@ -53,11 +65,33 @@ export const ExamQuestionPaper: React.FC = () => {
         });
     };
 
+    const handleCreateNewQuestion = async () => {
+        if (!selectedChapter || !newText.trim()) return;
+
+        try {
+            const created = await createQuestion({
+                chapterId: selectedChapter,
+                questionText: newText,
+                questionType: newType,
+                marks: newMarks,
+            });
+            // Automatically add the newly created question to the exam paper
+            if (created && created.id) {
+                await handleAdd(String(created.id), created.marks);
+                setShowNewForm(false);
+                setNewText('');
+            }
+        } catch (error) {
+            console.error("Failed to create question", error);
+        }
+    };
+
     const termOptions = examTerms.map(t => ({ value: String(t.id), label: t.name }));
     const classOptions = classes.map((c: any) => ({ value: String(c.id), label: c.name || c.className }));
     const subjectOptions = subjects
         .filter(s => String(s.classId) === selectedClass)
         .map(s => ({ value: s.id, label: s.name }));
+    const chapterOptions = chapters.map(c => ({ value: c.id, label: c.name }));
 
     const isReady = selectedTerm && selectedClass && selectedSubject && selectedSchedule;
 
@@ -89,9 +123,19 @@ export const ExamQuestionPaper: React.FC = () => {
                         label="Subject"
                         options={[{ value: '', label: 'Select Subject' }, ...subjectOptions]}
                         value={selectedSubject}
-                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        onChange={(e) => { setSelectedSubject(e.target.value); setSelectedChapter(''); }}
                     />
                 </div>
+                {selectedSubject && (
+                    <div className="w-full sm:w-56">
+                        <Select
+                            label="Chapter (Optional Filter)"
+                            options={[{ value: '', label: 'All Chapters' }, ...chapterOptions]}
+                            value={selectedChapter}
+                            onChange={(e) => setSelectedChapter(e.target.value)}
+                        />
+                    </div>
+                )}
             </div>
 
             {!isReady && (
@@ -158,12 +202,68 @@ export const ExamQuestionPaper: React.FC = () => {
 
                     {/* Right: Question Bank */}
                     <div className="space-y-4">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                            Question Bank
-                            <span className="ml-2 text-sm font-normal text-gray-500">
-                                ({availableQuestions.length} available)
-                            </span>
-                        </h3>
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-gray-900 dark:text-white">
+                                Question Bank
+                                <span className="ml-2 text-sm font-normal text-gray-500">
+                                    ({availableQuestions.length} available)
+                                </span>
+                            </h3>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowNewForm(!showNewForm)}
+                                className="flex items-center gap-1 text-xs"
+                            >
+                                {showNewForm ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                {showNewForm ? 'Cancel' : 'Create New'}
+                            </Button>
+                        </div>
+
+                        {showNewForm && (
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg space-y-3 mb-4">
+                                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">Create New Question</h4>
+                                {!selectedChapter ? (
+                                    <p className="text-xs text-red-500">Please select a Chapter from the top filter to create a question.</p>
+                                ) : (
+                                    <>
+                                        <textarea
+                                            className="w-full rounded-md border-gray-300 dark:border-gray-600 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white px-2 py-1.5 border"
+                                            rows={2}
+                                            placeholder="Enter question text..."
+                                            value={newText}
+                                            onChange={(e) => setNewText(e.target.value)}
+                                        />
+                                        <div className="flex gap-2">
+                                            <select
+                                                className="rounded-md border-gray-300 dark:border-gray-600 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white px-2 py-1.5 border w-1/2"
+                                                value={newType}
+                                                onChange={(e) => setNewType(e.target.value as any)}
+                                            >
+                                                <option value="SUBJECTIVE">Subjective</option>
+                                                <option value="MCQ">Multiple Choice</option>
+                                                <option value="TRUE_FALSE">True / False</option>
+                                            </select>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                placeholder="Marks"
+                                                className="rounded-md border-gray-300 dark:border-gray-600 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white px-2 py-1.5 border w-1/4"
+                                                value={newMarks}
+                                                onChange={(e) => setNewMarks(parseInt(e.target.value) || 1)}
+                                            />
+                                            <Button
+                                                onClick={handleCreateNewQuestion}
+                                                disabled={isCreating || !newText.trim()}
+                                                className="w-1/4 text-xs"
+                                            >
+                                                {isCreating ? 'Saving...' : 'Save & Add'}
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
 
                         {loadingBank ? (
                             <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
