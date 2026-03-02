@@ -85,20 +85,8 @@ export const ExamAdmitCards: React.FC = () => {
 
         try {
             let response;
-            // If ALL students in class are selected, use the bulk endpoint
-            if (isAllSelected && classId && section) {
-                response = await apiClient.post(
-                    '/api/documents/admit-card/bulk',
-                    {
-                        classId: Number(classId),
-                        section,
-                        examTermId: Number(selectedExamTerm)
-                    },
-                    { responseType: 'blob' }
-                );
-            }
-            // If ONLY ONE student is selected, use the individual endpoint
-            else if (selectedStudentIds.length === 1) {
+            // If ONLY ONE student is selected, use the individual endpoint for optimization
+            if (selectedStudentIds.length === 1) {
                 response = await apiClient.post(
                     '/api/documents/admit-card',
                     {
@@ -108,10 +96,19 @@ export const ExamAdmitCards: React.FC = () => {
                     { responseType: 'blob' }
                 );
             }
-            // We do not have a "selected subset" endpoint for admit cards yet, so if it's 2+ but not ALL, we warn.
-            // (The backend AdmitCardRequest only takes classId or studentId).
-            else {
-                showToast('API only supports single student or entire class preview currently.', 'warning');
+            // For multiple or all students, use the bulk endpoint with the selected IDs
+            else if (selectedStudentIds.length > 1) {
+                response = await apiClient.post(
+                    '/api/documents/admit-card/bulk',
+                    {
+                        classId: Number(classId),
+                        section,
+                        examTermId: Number(selectedExamTerm),
+                        studentIds: selectedStudentIds.map(id => Number(id))
+                    },
+                    { responseType: 'blob' }
+                );
+            } else {
                 setIsLoadingPreview(false);
                 return;
             }
@@ -170,7 +167,8 @@ export const ExamAdmitCards: React.FC = () => {
                 {
                     classId: Number(classId),
                     section,
-                    examTermId: Number(selectedExamTerm)
+                    examTermId: Number(selectedExamTerm),
+                    studentIds: selectedStudentIds.map(id => Number(id))
                 },
                 { responseType: 'blob' }
             );
