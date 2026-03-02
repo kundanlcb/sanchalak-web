@@ -7,7 +7,7 @@ import { Button } from '../../../components/common/Button';
 import { Download, Loader2, Users, FileText } from 'lucide-react';
 import { apiClient } from '../../../services/api/client';
 import { useToast } from '../../../components/common/ToastContext';
-import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import { AdmitCardDocument } from './AdmitCardDocument';
 import type { AdmitCardDataResponse } from './AdmitCardDocument';
 
@@ -255,10 +255,42 @@ export const ExamAdmitCards: React.FC = () => {
                             <p>Loading document from server...</p>
                         </div>
                     ) : admitCardData ? (
-                        <div className="flex-1 w-full h-full p-2">
-                            <PDFViewer width="100%" height="100%" showToolbar={true} className="rounded-lg shadow-md border-0 bg-white">
-                                <AdmitCardDocument data={admitCardData} />
-                            </PDFViewer>
+                        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-100 dark:border-gray-800 m-4">
+                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mb-4">
+                                <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                                Admit Cards Ready
+                            </h3>
+                            <p className="text-sm text-gray-500 text-center max-w-sm mb-6">
+                                Successfully generated admit cards for {admitCardData.cards.length} {admitCardData.cards.length === 1 ? 'student' : 'students'}.
+                                Live preview is disabled due to strict security headers in this environment. Please download to view.
+                            </p>
+
+                            <PDFDownloadLink
+                                document={<AdmitCardDocument data={admitCardData} />}
+                                fileName={selectedStudentIds.length === 1 ? `AdmitCard_${selectedStudentIds[0]}.pdf` : `Bulk_AdmitCards_${classId}_${section}.pdf`}
+                            >
+                                {({ loading }) => (
+                                    <Button
+                                        size="lg"
+                                        disabled={loading}
+                                        className="shadow-lg shadow-blue-500/20 px-8 py-6 text-lg"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                                                Preparing PDF...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Download className="w-6 h-6 mr-3" />
+                                                Download PDF Document
+                                            </>
+                                        )}
+                                    </Button>
+                                )}
+                            </PDFDownloadLink>
                         </div>
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-red-400">
